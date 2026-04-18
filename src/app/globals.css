@@ -46,6 +46,19 @@
   --radius-2xl: calc(var(--radius) * 1.8);
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
+
+  /* FrameMeta Brand Colors */
+  --color-brand-black: oklch(0 0 0);
+  --color-brand-dark: oklch(0.145 0 0);
+  --color-brand-surface: oklch(0.205 0 0);
+  --color-brand-muted: oklch(0.27 0 0);
+  --color-brand-accent: oklch(0.588 0.243 264.376);
+  --color-brand-glow: oklch(0.588 0.243 264.376 / 80%);
+
+  /* Glassmorphism Tokens */
+  --color-glass-bg: oklch(0.27 0 0 / 30%);
+  --color-glass-border: oklch(1 0 0 / 10%);
+  --color-glass-border-hover: oklch(1 0 0 / 20%);
 }
 
 :root {
@@ -121,10 +134,38 @@
   * {
     @apply border-border outline-ring/50;
   }
+
   body {
     @apply bg-background text-foreground;
   }
+
   html {
     @apply font-sans;
   }
+}
+
+/* Hide scrollbar for Chrome, Safari and Opera */
+*::-webkit-scrollbar {
+  display: none;
+}
+
+/* Hide scrollbar for IE, Edge and Firefox */
+* {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
+/* Infinite Scroll Carousel Animation */
+@keyframes infinite-scroll {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+.animate-infinite-scroll {
+  animation: infinite-scroll 60s linear infinite;
+  width: max-content;
+}
+
+.group\/carousel:hover .animate-infinite-scroll {
+  animation-play-state: paused;
 }
