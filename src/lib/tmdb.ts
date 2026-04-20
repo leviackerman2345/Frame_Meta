@@ -242,17 +242,21 @@ export async function getDiscoverableCollections(): Promise<MovieCard[]> {
   // Star Wars: 10, Harry Potter: 1241, James Bond: 645, Lord of the Rings: 119, John Wick: 403374
   const collectionIds = new Set<number>([10, 1241, 645, 119, 403374]);
   
-  const trending = await getTrendingMovies("week");
-  const sample = trending.results.slice(0, 40);
-  
-  const detailsPromises = sample.map((m: any) => getMovieDetails(m.id).catch(() => null));
-  const detailedMovies = await Promise.all(detailsPromises);
+  try {
+    const trendingData = await fetchFromTMDB('/trending/movie/week?language=en-US');
+    const sample = (trendingData?.results || []).slice(0, 40);
+    
+    const detailsPromises = sample.map((m: any) => getMovieDetails(m.id).catch(() => null));
+    const detailedMovies = await Promise.all(detailsPromises);
 
-  detailedMovies.forEach((m: any) => {
-    if (m && m.belongs_to_collection) {
-      collectionIds.add(m.belongs_to_collection.id);
-    }
-  });
+    detailedMovies.forEach((m: any) => {
+      if (m && m.belongs_to_collection) {
+        collectionIds.add(m.belongs_to_collection.id);
+      }
+    });
+  } catch (e) {
+    console.warn("Failed to fetch trending movies for collection discovery:", e);
+  }
 
   // 3. Batch fetch everything
   const universePromises = masterUniverses.map(u => getUniverseByKeyword(u.id));
