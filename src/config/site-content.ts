@@ -143,14 +143,15 @@ export const partners: Partner[] = [
     name: "Max",
     description:
       "The destination for prestige HBO titles, DC Universe films, and the Warner Bros. catalog.",
-    logo: "https://upload.wikimedia.org/wikipedia/commons/c/ce/Max_logo.svg",
+    logo: "https://www.vectorlogo.zone/logos/hbo_max/hbo_max-official.svg",
     href: "https://www.max.com",
+    customImgClass: "brightness-200 group-hover:brightness-100 invert group-hover:invert-0",
   },
   {
     name: "Amazon Prime Video",
     description:
       "A global powerhouse featuring a vast mix of original content and Hollywood blockbusters.",
-    logo: "https://svgl.app/library/prime-video.svg",
+    logo: "https://www.vectorlogo.zone/logos/amazon_prime/amazon_prime-ar21.svg",
     href: "https://www.primevideo.com",
     customImgClass: "brightness-150 group-hover:brightness-100",
   },
@@ -158,22 +159,25 @@ export const partners: Partner[] = [
     name: "Viu",
     description:
       "The leading platform in the Philippines for premium K-Dramas and localized Asian series.",
-    logo: "https://upload.wikimedia.org/wikipedia/commons/e/e4/Viu_logo.svg",
+    logo: "https://www.vectorlogo.zone/logos/viu/viu-ar21.svg",
     href: "https://www.viu.com",
+    customImgClass: "brightness-200 group-hover:brightness-100",
   },
   {
     name: "HBO Go",
     description:
       "The primary streaming access point for HBO's flagship shows and movies in the Southeast Asian market.",
-    logo: "https://upload.wikimedia.org/wikipedia/commons/2/22/HBO_Go_logo.svg",
+    logo: "https://www.vectorlogo.zone/logos/hbogo/hbogo-ar21.svg",
     href: "https://www.hbogoasia.com",
+    customImgClass: "brightness-150 group-hover:brightness-100",
   },
   {
     name: "Paramount+",
     description:
       "Home to the Star Trek universe, Mission Impossible franchise, and the full library of CBS and Nickelodeon.",
-    logo: "https://upload.wikimedia.org/wikipedia/commons/a/a5/Paramount_Plus_logo.svg",
+    logo: "https://www.vectorlogo.zone/logos/paramountplus/paramountplus-ar21.svg",
     href: "https://www.paramountplus.com",
+    customImgClass: "brightness-150 group-hover:brightness-100",
   },
   {
     name: "Hulu",
@@ -186,10 +190,12 @@ export const partners: Partner[] = [
     name: "Crunchyroll",
     description:
       "The world's largest dedicated platform for professional anime series and Japanese cinematic releases.",
-    logo: "https://upload.wikimedia.org/wikipedia/commons/0/08/Crunchyroll_Logo.svg",
+    logo: "https://www.vectorlogo.zone/logos/crunchyroll/crunchyroll-ar21.svg",
     href: "https://www.crunchyroll.com",
+    customImgClass: "brightness-150 group-hover:brightness-100",
   },
 ];
+
 
 // ---------------------------------------------------------------------------
 // Trending Section (Legacy/Placeholder)

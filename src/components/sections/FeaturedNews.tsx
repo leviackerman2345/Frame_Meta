@@ -34,7 +34,7 @@ export async function FeaturedNews() {
           {newsItems.map((item) => (
             <article 
               key={item.id} 
-              className="min-w-[85vw] sm:min-w-[65vw] md:min-w-[480px] flex flex-col snap-start group cursor-pointer transition-all duration-500"
+              className="min-w-[80vw] sm:min-w-[60vw] md:min-w-[480px] flex flex-col snap-start group cursor-pointer transition-all duration-500"
             >
               {/* Glassmorphic Container Wrapper */}
               <div className="relative flex flex-col h-full bg-zinc-900/30 backdrop-blur-3xl border border-white/10 rounded-[2.5rem] p-5 pb-10 shadow-2xl transition-all duration-500 group-hover:bg-zinc-900/50 group-hover:border-white/20 group-hover:-translate-y-2 group-hover:shadow-[0_40px_80px_-15px_rgba(0,0,0,0.9)]">
