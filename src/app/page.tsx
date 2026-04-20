@@ -11,6 +11,10 @@ import { AsianSpotlight } from "@/components/sections/AsianSpotlight";
 import { Collections } from "@/components/sections/Collections";
 import { FeaturedNews } from "@/components/sections/FeaturedNews";
 
+// Force dynamic rendering so TMDB data is always fetched at request time,
+// not baked in during build (where env vars may be unavailable on the host).
+export const dynamic = "force-dynamic";
+
 export default async function Home({
   searchParams,
 }: {

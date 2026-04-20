@@ -1,10 +1,14 @@
 import { MovieCard } from "@/types/types";
 
+let hasLoggedMissingToken = false;
+
 // Token is retrieved dynamically to ensure it's picked up correctly during different build phases
 const getAccessToken = () => {
-  const token = process.env.TMDB_ACCESS_TOKEN;
-  if (!token) {
-    console.warn("[TMDB] Critical: TMDB_ACCESS_TOKEN is undefined in process.env");
+  const token = process.env.TMDB_ACCESS_TOKEN || process.env.NEXT_PUBLIC_TMDB_ACCESS_TOKEN;
+  
+  if (!token && !hasLoggedMissingToken) {
+    console.warn("[TMDB] Warning: TMDB_ACCESS_TOKEN is undefined. This is common during static build phases if dynamic rendering is used, but required for production data.");
+    hasLoggedMissingToken = true;
   }
   return token;
 };

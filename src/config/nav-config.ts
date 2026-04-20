@@ -32,14 +32,34 @@ export const footerLinkGroups = [
     links: [
       { name: "Movies", href: "/movies" },
       { name: "TV Shows", href: "/tv-shows" },
-      { name: "News", href: "/news" },
+      { name: "Collections", href: "/collections" },
+      { name: "Coming Soon", href: "/coming-soon" },
+    ] satisfies NavLink[],
+  },
+  {
+    heading: "Platforms",
+    links: [
+      { name: "Netflix", href: "/platforms/netflix" },
+      { name: "Disney+", href: "/platforms/disney-plus" },
+      { name: "HBO Max", href: "/platforms/max" },
+      { name: "Apple TV+", href: "/platforms/apple-tv-plus" },
+    ] satisfies NavLink[],
+  },
+  {
+    heading: "Rankings",
+    links: [
+      { name: "Top 10 Movies", href: "/rankings/movies" },
+      { name: "Top 10 TV Shows", href: "/rankings/tv-shows" },
+      { name: "Global Trends", href: "/trends" },
+      { name: "Award Winners", href: "/awards" },
     ] satisfies NavLink[],
   },
   {
     heading: "Company",
     links: [
-      { name: "About", href: "/about" },
-      { name: "Contact", href: "/contact" },
+      { name: "About FrameMeta", href: "/about" },
+      { name: "Our Partners", href: "/partners" },
+      { name: "Press & Media", href: "/press" },
       { name: "Careers", href: "/careers" },
     ] satisfies NavLink[],
   },
