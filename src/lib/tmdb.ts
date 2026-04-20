@@ -4,12 +4,23 @@ let hasLoggedMissingToken = false;
 
 // Token is retrieved dynamically to ensure it's picked up correctly during different build phases
 const getAccessToken = () => {
-  const token = process.env.TMDB_ACCESS_TOKEN || process.env.NEXT_PUBLIC_TMDB_ACCESS_TOKEN;
+  let token = process.env.TMDB_ACCESS_TOKEN || process.env.NEXT_PUBLIC_TMDB_ACCESS_TOKEN;
   
+  if (token) {
+    // Sanitize: trim whitespace and remove potential surrounding quotes
+    token = token.trim().replace(/^["'](.+)["']$/, '$1');
+  }
+
   if (!token && !hasLoggedMissingToken) {
-    console.warn("[TMDB] Warning: TMDB_ACCESS_TOKEN is undefined. This is common during static build phases if dynamic rendering is used, but required for production data.");
+    console.warn("[TMDB] Warning: TMDB_ACCESS_TOKEN is undefined. Check Vercel Environment Variables.");
+    hasLoggedMissingToken = true;
+  } else if (token && !hasLoggedMissingToken) {
+    // Log masked token for verification
+    const masked = `${token.substring(0, 4)}...${token.substring(token.length - 4)}`;
+    console.log(`[TMDB] Token loaded: ${masked} (Length: ${token.length})`);
     hasLoggedMissingToken = true;
   }
+
   return token;
 };
 const TMDB_BASE_URL = "https://api.themoviedb.org/3";
@@ -35,7 +46,16 @@ async function fetchFromTMDB(endpoint: string, options: RequestInit = {}) {
     const response = await fetch(url, { ...options, headers });
 
     if (!response.ok) {
+      let errorDetail = "";
+      try {
+        const errorData = await response.json();
+        errorDetail = JSON.stringify(errorData);
+      } catch (e) {
+        errorDetail = "Could not parse error response body";
+      }
+
       console.warn(`[TMDB] API Warning: ${response.status} ${response.statusText} at ${endpoint}`);
+      console.warn(`[TMDB] Error Detail: ${errorDetail}`);
       return { results: [], parts: [] };
     }
 
