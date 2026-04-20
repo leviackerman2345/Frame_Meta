@@ -1,7 +1,13 @@
 import { MovieCard } from "@/types/types";
 
 // Token is retrieved dynamically to ensure it's picked up correctly during different build phases
-const getAccessToken = () => process.env.TMDB_ACCESS_TOKEN;
+const getAccessToken = () => {
+  const token = process.env.TMDB_ACCESS_TOKEN;
+  if (!token) {
+    console.warn("[TMDB] Critical: TMDB_ACCESS_TOKEN is undefined in process.env");
+  }
+  return token;
+};
 const TMDB_BASE_URL = "https://api.themoviedb.org/3";
 const TMDB_IMAGE_BASE_URL = process.env.TMDB_IMAGE_BASE_URL || "https://image.tmdb.org/t/p";
 
@@ -9,8 +15,8 @@ const TMDB_IMAGE_BASE_URL = process.env.TMDB_IMAGE_BASE_URL || "https://image.tm
 async function fetchFromTMDB(endpoint: string, options: RequestInit = {}) {
   const token = getAccessToken();
   if (!token) {
-    console.error(`TMDB API error: No access token provided for ${endpoint}`);
-    return { results: [], parts: [] }; // Return empty structure to prevent crashes
+    console.error(`TMDB API error: No access token provided for ${endpoint}. Check your .env.local file.`);
+    return { results: [], parts: [] };
   }
 
   const url = `${TMDB_BASE_URL}${endpoint}`;
@@ -25,16 +31,18 @@ async function fetchFromTMDB(endpoint: string, options: RequestInit = {}) {
     const response = await fetch(url, { ...options, headers });
 
     if (!response.ok) {
-      console.warn(`TMDB API error: ${response.status} ${response.statusText} at ${endpoint}`);
+      console.warn(`[TMDB] API Warning: ${response.status} ${response.statusText} at ${endpoint}`);
       return { results: [], parts: [] };
     }
 
-    return response.json();
+    const data = await response.json();
+    return data;
   } catch (error) {
     console.error(`TMDB network error at ${endpoint}:`, error);
     return { results: [], parts: [] };
   }
 }
+
 
 
 /**

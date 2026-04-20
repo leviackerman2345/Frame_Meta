@@ -45,7 +45,7 @@ export async function FeaturedMovie() {
                 </span>
               )}
 
-              <h3 className="text-white font-medium text-sm md:text-base leading-snug drop-shadow-sm line-clamp-2 truncate">
+              <h3 className="text-white font-bold text-sm md:text-base leading-tight drop-shadow-md line-clamp-2">
                 {movie.title}
               </h3>
 

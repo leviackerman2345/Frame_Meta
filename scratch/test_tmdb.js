@@ -14,6 +14,8 @@ async function test() {
     const data = await response.json();
     if (response.ok) {
       console.log("SUCCESS: Token is valid.");
+      console.log("First movie title:", data.results[0]?.title || data.results[0]?.name);
+      console.log("Results count:", data.results?.length);
     } else {
       console.error(`FAILURE: ${response.status} ${response.statusText}`);
       console.error(data);

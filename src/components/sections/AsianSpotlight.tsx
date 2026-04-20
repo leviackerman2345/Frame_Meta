@@ -66,12 +66,12 @@ export async function AsianSpotlight({ searchParams }: Props) {
 
             {/* Content Overlay */}
             <div className="absolute inset-0 transition-opacity flex flex-col justify-end p-5 z-10 bg-gradient-to-t from-black/95 via-black/40 to-transparent">
-              <h3 className="text-white font-medium text-sm md:text-base leading-snug drop-shadow-sm truncate">
+              <h3 className="text-white font-bold text-sm md:text-base leading-tight drop-shadow-md line-clamp-2">
                 {movie.title}
               </h3>
 
               {/* Rating, Genre, Year */}
-              <div className="flex items-center gap-1.5 mt-2 text-[10px] md:text-xs text-white/50 font-medium tracking-wide w-full overflow-hidden whitespace-nowrap">
+              <div className="flex items-center gap-1.5 mt-2 text-[10px] md:text-xs text-white/50 font-medium tracking-wide w-full overflow-hidden">
                 {movie.year && <span className="shrink-0">{movie.year}</span>}
                 {movie.year && (movie.genre || movie.rating) && <span className="opacity-50 text-[8px] shrink-0">•</span>}
                 {movie.genre && <span className="truncate min-w-0">{movie.genre}</span>}
