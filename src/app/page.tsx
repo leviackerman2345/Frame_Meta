@@ -11,7 +11,11 @@ import { AsianSpotlight } from "@/components/sections/AsianSpotlight";
 import { Collections } from "@/components/sections/Collections";
 import { FeaturedNews } from "@/components/sections/FeaturedNews";
 
-export default function Home() {
+export default async function Home({
+  searchParams,
+}: {
+  searchParams: Promise<{ tab?: string }>;
+}) {
   return (
     <div className="flex flex-col flex-1 w-full bg-black font-sans pb-24 text-white">
       <Hero />
@@ -21,7 +25,7 @@ export default function Home() {
       <FeaturedSeries />
       <Top10Movies />
       <Top10Series />
-      <NewReleases />
+      <NewReleases searchParams={searchParams} />
       <ComingSoon />
       <AsianSpotlight />
       <Collections />

@@ -37,10 +37,11 @@ export function getTMDBImageUrl(path: string | null | undefined, size: string = 
 }
 
 /**
- * Fetch trending movies for the day or week.
+ * Fetch trending movies for the day or week and format them.
  */
-export async function getTrendingMovies(timeWindow: "day" | "week" = "day") {
-  return fetchFromTMDB(`/trending/movie/${timeWindow}?language=en-US`);
+export async function getTrendingMovies(timeWindow: "day" | "week" = "day"): Promise<MovieCard[]> {
+  const data = await fetchFromTMDB(`/trending/movie/${timeWindow}?language=en-US`);
+  return (data.results || []).map((movie: any) => formatTMDBData(movie));
 }
 
 /**
@@ -53,7 +54,7 @@ export async function getMovieDetails(movieId: number) {
 /**
  * Helper to format raw TMDB data into MovieCard type.
  */
-function formatTMDBData(item: any, index?: number): MovieCard {
+export function formatTMDBData(item: any, index?: number): MovieCard {
   return {
     id: item.id,
     title: item.title || item.name,

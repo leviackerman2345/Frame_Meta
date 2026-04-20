@@ -12,19 +12,10 @@ export async function NewReleases({ searchParams }: Props) {
   const params = await searchParams;
   const activeTab = params?.tab === "month" ? "month" : "week";
   
-  const weekMovies = (await getNowPlayingMovies()).slice(0, 10);
-  const monthMoviesData = await getTrendingMovies("week");
-  const monthMovies = monthMoviesData.results.slice(0, 10).map((m: any) => ({
-    id: m.id,
-    title: m.title || m.name,
-    posterUrl: `https://image.tmdb.org/t/p/w500${m.poster_path}`,
-    rating: Math.round(m.vote_average * 10) / 10,
-    year: new Date(m.release_date || m.first_air_date).getFullYear(),
-    genre: "Movie",
-    badge: "TRENDING"
-  }));
-
-  const movies = activeTab === "week" ? weekMovies.slice(0, 10) : monthMovies.slice(0, 10);
+  // Fetch only the movies needed for the active tab
+  const movies = activeTab === "week" 
+    ? (await getNowPlayingMovies(10))
+    : (await getTrendingMovies("week")).slice(0, 10).map(m => ({ ...m, badge: "TRENDING" }));
 
   return (
     <section className="w-full max-w-7xl mx-auto px-6 md:px-12 py-10 relative z-20">
@@ -94,7 +85,7 @@ export async function NewReleases({ searchParams }: Props) {
 
             {/* Content Overlay */}
             <div className="absolute inset-0 transition-opacity flex flex-col justify-end p-5 z-10 bg-gradient-to-t from-black/95 via-black/40 to-transparent">
-              <h3 className="text-white font-medium text-sm md:text-base leading-snug drop-shadow-sm line-clamp-2 truncate">
+              <h3 className="text-white font-medium text-sm md:text-base leading-snug drop-shadow-sm line-clamp-2">
                 {movie.title}
               </h3>
               
