@@ -16,33 +16,33 @@ export function Footer() {
         <div className="absolute top-[20%] right-[10%] w-[30%] h-[40%] bg-rose-500/5 blur-[80px] rounded-full" />
       </div>
 
-      <div className="container mx-auto px-6 relative z-10">
+      <div className="container mx-auto px-6 relative z-20">
         {/* Top Section - Image 2 Style Headline */}
-        <div className="max-w-4xl mb-24">
-          <h2 className="text-4xl md:text-5xl lg:text-6xl font-medium tracking-tight leading-[1.1] text-zinc-200">
+        <div className="max-w-4xl mb-16 md:mb-24">
+          <h2 className="text-3xl md:text-5xl lg:text-6xl font-medium tracking-tight leading-[1.1] text-zinc-200">
             Interested in working together, <span className="text-zinc-500">trying our platform or simply learning more?</span>
           </h2>
         </div>
 
         {/* Middle Grid - Image 1 Style Distribution */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 mb-24">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 mb-16 md:mb-24">
           
           {/* Social and Contact Column (Left) */}
-          <div className="lg:col-span-4 space-y-12">
+          <div className="lg:col-span-4 space-y-8 md:space-y-12">
             {/* Social Icons matching Image 1 circle style */}
             <div className="flex items-center space-x-4">
-              <Link href="#" className="w-12 h-12 flex items-center justify-center rounded-full border border-white/20 text-white hover:bg-white hover:text-black transition-all">
-                <Camera className="w-5 h-5" />
+              <Link href="#" className="w-10 h-10 md:w-12 md:h-12 flex items-center justify-center rounded-full border border-white/20 text-white hover:bg-white hover:text-black transition-all">
+                <Camera className="w-4 h-4 md:w-5 md:h-5" />
               </Link>
-              <Link href="#" className="w-12 h-12 flex items-center justify-center rounded-full border border-white/20 text-white hover:bg-white hover:text-black transition-all">
-                <Share2 className="w-5 h-5" />
+              <Link href="#" className="w-10 h-10 md:w-12 md:h-12 flex items-center justify-center rounded-full border border-white/20 text-white hover:bg-white hover:text-black transition-all">
+                <Share2 className="w-4 h-4 md:w-5 md:h-5" />
               </Link>
-              <Link href="#" className="w-12 h-12 flex items-center justify-center rounded-full border border-white/20 text-white hover:bg-white hover:text-black transition-all">
-                <Video className="w-5 h-5" />
+              <Link href="#" className="w-10 h-10 md:w-12 md:h-12 flex items-center justify-center rounded-full border border-white/20 text-white hover:bg-white hover:text-black transition-all">
+                <Video className="w-4 h-4 md:w-5 md:h-5" />
               </Link>
             </div>
 
-            <div className="space-y-6 text-lg text-zinc-400">
+            <div className="space-y-6 text-base md:text-lg text-zinc-400">
               <p className="leading-snug">
                 The Cinematic Hub.<br />
                 Los Angeles, CA
@@ -55,14 +55,14 @@ export function Footer() {
           </div>
 
           {/* Nav Links Column (Right) */}
-          <div className="lg:col-span-8 grid grid-cols-2 md:grid-cols-4 gap-8">
+          <div className="lg:col-span-8 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-8 md:gap-12">
             {/* MENU column using navLinks as requested */}
-            <div className="space-y-6">
-              <h4 className="text-sm font-bold uppercase tracking-widest text-zinc-500">Menu</h4>
-              <ul className="space-y-4">
+            <div className="space-y-5 md:space-y-6">
+              <h4 className="text-[10px] md:text-xs font-bold uppercase tracking-widest text-zinc-500">Menu</h4>
+              <ul className="space-y-3 md:space-y-4">
                 {navLinks.map((link) => (
                   <li key={link.name}>
-                    <Link href={link.href} className="text-zinc-400 hover:text-white transition-colors text-base font-medium">
+                    <Link href={link.href} className="text-zinc-400 hover:text-white transition-colors text-sm md:text-base font-medium">
                       {link.name}
                     </Link>
                   </li>
@@ -72,16 +72,16 @@ export function Footer() {
 
             {/* Other Columns from footerLinkGroups */}
             {footerLinkGroups.filter(g => g.heading !== "Explore").map((group) => (
-              <div key={group.heading} className="space-y-6">
-                <h4 className="text-sm font-bold uppercase tracking-widest text-zinc-500">
+              <div key={group.heading} className="space-y-5 md:space-y-6">
+                <h4 className="text-[10px] md:text-xs font-bold uppercase tracking-widest text-zinc-500">
                   {group.heading}
                 </h4>
-                <ul className="space-y-4">
+                <ul className="space-y-3 md:space-y-4">
                   {group.links.map((link) => (
                     <li key={link.name}>
                       <Link 
                         href={link.href} 
-                        className="text-zinc-400 hover:text-white transition-colors text-base font-medium"
+                        className="text-zinc-400 hover:text-white transition-colors text-sm md:text-base font-medium"
                       >
                         {link.name}
                       </Link>
@@ -94,12 +94,12 @@ export function Footer() {
         </div>
 
         {/* Separator Line with Get Started Button - Image 1 Style */}
-        <div className="relative flex items-center mb-16">
-          <div className="flex-1 h-px bg-zinc-800" />
-          <div className="absolute right-0">
+        <div className="relative flex flex-col md:flex-row items-start md:items-center gap-6 md:gap-0 mb-16">
+          <div className="flex-1 w-full h-px bg-zinc-800" />
+          <div className="md:absolute md:right-0">
             <Link 
               href="/get-started" 
-              className="px-8 py-3 bg-white text-black rounded-full font-bold text-sm tracking-tight hover:bg-zinc-200 transition-all flex items-center gap-2 active:scale-95"
+              className="px-6 md:px-8 py-2.5 md:py-3 bg-white text-black rounded-full font-bold text-xs md:text-sm tracking-tight hover:bg-zinc-200 transition-all flex items-center gap-2 active:scale-95"
             >
               Get Started
             </Link>
@@ -107,23 +107,23 @@ export function Footer() {
         </div>
 
         {/* Bottom Bar with Footer Branding - Image 1 & 2 Style */}
-        <div className="flex flex-col md:flex-row items-end justify-between gap-12 relative pb-20">
-          <div className="max-w-xs text-sm text-zinc-500 leading-relaxed font-medium">
+        <div className="flex flex-col md:flex-row items-start md:items-end justify-between gap-10 md:gap-12 relative pb-16 md:pb-20">
+          <div className="max-w-xs text-xs md:text-sm text-zinc-500 leading-relaxed font-medium">
             Discover the ultimate cinematic experience. FrameMeta aggregates the world's best movies and series into one seamless discovery platform.
           </div>
 
-          <div className="flex flex-wrap items-center gap-x-12 gap-y-4 text-xs font-bold uppercase tracking-widest text-zinc-500">
+          <div className="flex flex-wrap items-center gap-x-8 md:gap-x-12 gap-y-3 md:gap-y-4 text-[10px] md:text-xs font-bold uppercase tracking-widest text-zinc-500">
             <Link href="/terms" className="hover:text-white transition-colors text-zinc-400">Terms & Conditions</Link>
             <Link href="/privacy" className="hover:text-white transition-colors text-zinc-400">Privacy Policy</Link>
           </div>
         </div>
 
         {/* Copyright and Bottom Mini-nav */}
-        <div className="flex flex-col md:flex-row items-center justify-between gap-6 py-8 border-t border-white/5 relative z-20">
-          <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-600">
+        <div className="flex flex-col md:flex-row items-center justify-between gap-6 py-6 md:py-8 border-t border-white/5 relative z-20">
+          <p className="text-[9px] md:text-[10px] font-bold uppercase tracking-widest text-zinc-600">
             © {currentYear} {brand.nameStart.toUpperCase()}{brand.nameEnd.toUpperCase()}. All rights reserved.
           </p>
-          <div className="flex items-center gap-8 text-[10px] font-bold uppercase tracking-widest text-zinc-600">
+          <div className="flex items-center gap-6 md:gap-8 text-[9px] md:text-[10px] font-bold uppercase tracking-widest text-zinc-600">
             <Link href="#" className="hover:text-white transition-colors">LinkedIn</Link>
             <Link href="#" className="hover:text-white transition-colors">Facebook</Link>
             <Link href="#" className="hover:text-white transition-colors">Twitter</Link>
@@ -132,8 +132,8 @@ export function Footer() {
       </div>
 
       {/* Hero Brand Backdrop - Seamless integration as requested */}
-      <div className="absolute bottom-[-5%] md:bottom-[-10%] left-0 w-full pointer-events-none select-none text-center flex justify-center z-10 transition-opacity duration-1000">
-        <h2 className="text-[25vw] font-black tracking-tighter leading-none whitespace-nowrap text-zinc-400 opacity-[0.08]">
+      <div className="absolute bottom-[-2%] md:bottom-[-10%] left-0 w-full pointer-events-none select-none text-center flex justify-center z-10 transition-opacity duration-1000">
+        <h2 className="text-[20vw] md:text-[25vw] font-black tracking-tighter leading-none whitespace-nowrap text-zinc-400 opacity-[0.05] md:opacity-[0.08]">
           {brand.nameStart.toLowerCase()}{brand.nameEnd.toLowerCase()}
         </h2>
       </div>

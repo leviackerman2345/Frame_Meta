@@ -53,4 +53,10 @@ export interface NewsItem {
   description?: string;
 }
 
+/** A single FAQ item */
+export interface FAQItem {
+  question: string;
+  answer: string;
+}
+
 

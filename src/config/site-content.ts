@@ -1,4 +1,4 @@
-import type { Partner, FeaturedMovie, MovieCard, NewsItem } from "@/types/types";
+import type { Partner, FeaturedMovie, MovieCard, NewsItem, FAQItem } from "@/types/types";
 
 // ---------------------------------------------------------------------------
 // Hero Section
@@ -250,6 +250,15 @@ export const newReleasesHeading = {
   subtitle: "Fresh to your screens",
 } as const;
 
+// ---------------------------------------------------------------------------
+// In Cinema
+// ---------------------------------------------------------------------------
+
+export const inCinemaHeading = {
+  title: "In Cinema",
+  subtitle: "Experience them on the big screen",
+} as const;
+
 export const newReleasesThisWeek: MovieCard[] = [
   { id: 201, title: "Galactic Wars", studio: "Fox", badge: "NEW", releaseDate: "Oct 12", rating: 4.5, genre: "Sci-Fi", year: 2024, posterUrl: "/images/poster-placeholder.jpg" },
   { id: 202, title: "Mystery Island", studio: "Netflix", badge: "NEW", releaseDate: "Oct 14", rating: 4.2, genre: "Adventure", year: 2024, posterUrl: "/images/poster-placeholder.jpg" },
@@ -481,3 +490,46 @@ export const featuredNewsData: NewsItem[] = [
     description: "Tracing the meteoric rise of the indie darling studio and its unconventional marketing strategies that made 'weird cinema' cool again."
   }
 ];
+
+/**
+ * FAQ SECTION
+ */
+export const faqHeading = {
+  label: "",
+  title: "Frequently Asked\nQuestions.",
+  description: "Everything you need to know about navigating the global streaming landscape with FrameMeta. From real-time tracking to local trends, we've got you covered.",
+};
+
+export const faqData: FAQItem[] = [
+  {
+    question: "Is FrameMeta a streaming service?",
+    answer: "No. We are the central hub for your cinematic life. FrameMeta is a discovery platform that aggregates metadata—trailers, ratings, and plot details—so you can decide what to watch in one place, then jump directly to the platform hosting it.",
+  },
+  {
+    question: "How do I know where a movie is streaming?",
+    answer: "Every movie page on FrameMeta features a \"Watch Now\" section. We track real-time availability across global and local platforms like Netflix, Disney+, and Viu (PH), so you never have to search multiple apps again.",
+  },
+  {
+    question: "What makes FrameMeta different from IMDb or Google?",
+    answer: "We prioritize discovery over data. While other sites are just lists, FrameMeta uses a \"Bold UI\" philosophy and curated sections like The Vault to help you find hidden gems and trending titles through a premium, high-performance interface.",
+  },
+  {
+    question: "Does FrameMeta show what’s trending in my area?",
+    answer: "Yes. Our \"Top Near You\" row is specifically tuned to show what’s trending locally in the Philippines. We combine global data with local streaming habits to keep your feed relevant.",
+  },
+  {
+    question: "Do I need an account to browse?",
+    answer: "Never. You can access our full library, watch trailers, and check streaming availability without ever signing in. Your browsing experience is fast, private, and entirely ad-lite.",
+  },
+];
+
+/**
+ * NEWSLETTER SECTION
+ */
+export const newsletterContent = {
+  title: "Stay Ahead of the\nCinematic Curve.",
+  subtitle: "Join 50,000+ cinephiles receiving weekly curated deep-dives, industry news, and early access to FrameMeta features.",
+  placeholder: "Enter your email address",
+  buttonText: "Subscribe",
+  disclaimer: "By subscribing, you agree to our Privacy Policy and consent to receive updates.",
+};

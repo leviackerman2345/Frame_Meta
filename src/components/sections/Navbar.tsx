@@ -1,12 +1,17 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Search } from "lucide-react";
+import { Search, Menu, X } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import { brand, navLinks } from "@/config/nav-config";
 
 export function Navbar() {
   const pathname = usePathname();
+  const [isOpen, setIsOpen] = useState(false);
+
+  const toggleMenu = () => setIsOpen(!isOpen);
 
   return (
     <nav className="fixed top-6 left-1/2 z-50 w-full max-w-6xl -translate-x-1/2 px-4">
@@ -21,18 +26,18 @@ export function Navbar() {
           </Link>
         </div>
 
-        {/* Menu Background - Darken shade glassmorphism */}
-        <div className="hidden md:flex items-center space-x-1 rounded-full bg-black/40 backdrop-blur-2xl border border-white/10 px-8 py-2.5 shadow-inner">
+        {/* Menu Background - Solid background container */}
+        <div className="hidden md:flex items-center space-x-1 rounded-full bg-zinc-900/90 backdrop-blur-md border border-white/10 px-2 py-2 shadow-xl">
           {navLinks.map((link) => {
             const isActive = pathname === link.href;
             return (
               <Link
                 key={link.name}
                 href={link.href}
-                className={`relative px-4 py-1.5 text-sm font-medium transition-all duration-300 tracking-wide ${
+                className={`relative px-5 py-1.5 text-sm font-medium transition-all duration-300 tracking-wide rounded-full ${
                   isActive
-                    ? "text-blue-500 drop-shadow-[0_0_8px_rgba(59,130,246,0.8)]"
-                    : "text-zinc-200 hover:text-blue-400"
+                    ? "bg-white text-black shadow-[0_2px_10px_rgba(255,255,255,0.2)]"
+                    : "text-zinc-400 hover:text-white hover:bg-white/5"
                 }`}
               >
                 {link.name}
@@ -42,18 +47,66 @@ export function Navbar() {
         </div>
 
         {/* Right Section */}
-        <div className="flex items-center space-x-3 pr-2">
+        <div className="flex items-center space-x-2 md:space-x-3 pr-2">
           {/* Icon Button matching the image */}
-          <button className="flex h-11 w-11 items-center justify-center rounded-xl bg-white text-black hover:bg-zinc-200 transition-colors shadow-sm">
+          <button className="flex h-10 w-10 md:h-11 md:w-11 items-center justify-center rounded-xl bg-white text-black hover:bg-zinc-200 transition-colors shadow-sm">
             <Search className="h-5 w-5" />
           </button>
           {/* Login Button */}
-          <button className="h-11 rounded-full bg-black px-7 text-sm font-semibold text-white border border-white/10 hover:bg-zinc-900 transition-colors shadow-md">
+          <button className="hidden sm:block h-10 md:h-11 rounded-full bg-black px-5 md:px-7 text-xs md:text-sm font-semibold text-white border border-white/10 hover:bg-zinc-900 transition-colors shadow-md">
             Login
+          </button>
+          
+          {/* Mobile Toggle */}
+          <button 
+            onClick={toggleMenu}
+            className="flex md:hidden h-10 w-10 items-center justify-center rounded-xl bg-zinc-800 text-white hover:bg-zinc-700 transition-colors border border-white/10"
+          >
+            {isOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </button>
         </div>
 
       </div>
+
+      {/* Mobile Menu Dropdown */}
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: -20, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -20, scale: 0.95 }}
+            transition={{ duration: 0.2, ease: "easeOut" }}
+            className="md:hidden mt-4 w-full rounded-[2rem] bg-zinc-900/95 backdrop-blur-2xl border border-white/10 p-4 shadow-2xl overflow-hidden"
+          >
+            <div className="flex flex-col space-y-2">
+              {navLinks.map((link) => {
+                const isActive = pathname === link.href;
+                return (
+                  <Link
+                    key={link.name}
+                    href={link.href}
+                    onClick={() => setIsOpen(false)}
+                    className={`px-6 py-4 text-lg font-medium transition-all duration-300 rounded-2xl ${
+                      isActive
+                        ? "bg-white text-black shadow-lg"
+                        : "text-zinc-400 hover:text-white hover:bg-white/5"
+                    }`}
+                  >
+                    {link.name}
+                  </Link>
+                );
+              })}
+              
+              {/* Extra Mobile Actions */}
+              <div className="pt-4 mt-2 border-t border-white/5 sm:hidden">
+                <button className="w-full py-4 rounded-2xl bg-black text-white font-semibold border border-white/10 hover:bg-zinc-800 transition-colors">
+                  Login
+                </button>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </nav>
   );
 }
