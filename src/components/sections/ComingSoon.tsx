@@ -3,6 +3,8 @@ import Image from "next/image";
 import { comingSoonHeading } from "@/config/site-content";
 import { getComingSoon } from "@/lib/tmdb";
 import { Bell } from "lucide-react";
+import { TitleLogo } from "@/components/ui/TitleLogo";
+
 
 export async function ComingSoon() {
   const content = await getComingSoon(20);
@@ -56,20 +58,22 @@ export async function ComingSoon() {
               </div>
             </div>
 
-            {/* Content Overlay */}
-            <div className="absolute inset-0 transition-opacity flex flex-col justify-end p-5 z-10 bg-gradient-to-t from-black/95 via-black/40 to-transparent rounded-3xl">
-              <span className="text-[10px] text-zinc-400 font-bold uppercase tracking-tighter mb-1 opacity-0 group-hover:opacity-100 transition-opacity duration-500 truncate">
-                {item.genre}
-              </span>
-              <h3 className="text-white font-medium text-sm md:text-base leading-snug drop-shadow-sm line-clamp-2">
-                {item.title}
-              </h3>
-              
-              {/* Metadata String */}
-              <div className="flex items-center gap-1.5 mt-2 text-[10px] md:text-xs text-white/50 font-medium tracking-wide w-full overflow-hidden whitespace-nowrap">
-                {item.year && <span className="shrink-0">{item.year}</span>}
-                <span className="opacity-30 text-[8px] shrink-0">•</span>
-                <span className="shrink-0">{item.genre === "Series" ? "Season Premiere" : "Theatrical Release"}</span>
+            {/* Clean Content Overlay */}
+            <div className="absolute inset-0 transition-opacity flex flex-col justify-end p-5 items-center z-10 bg-gradient-to-t from-black/95 via-black/40 to-transparent text-center rounded-3xl">
+              {/* Fixed-height container to lock label alignment */}
+              <div className="h-[4.5rem] flex flex-col justify-center w-full">
+                <TitleLogo
+                  id={item.id}
+                  title={item.title || ""}
+                  type={item.genre === "Series" ? "series" : "movie"}
+                />
+
+                {/* Metadata String */}
+                <div className="flex items-center justify-center gap-1.5 mt-2 text-[10px] md:text-xs text-white/50 font-medium tracking-wide w-full overflow-hidden whitespace-nowrap">
+                  {item.year && <span className="shrink-0">{item.year}</span>}
+                  <span className="opacity-30 text-[8px] shrink-0">•</span>
+                  <span className="shrink-0">{item.genre === "Series" ? "Season Premiere" : "Theatrical Release"}</span>
+                </div>
               </div>
             </div>
             

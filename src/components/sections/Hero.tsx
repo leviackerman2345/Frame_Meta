@@ -9,10 +9,8 @@ import { ChevronRight, Play } from "lucide-react";
 export function Hero() {
   const { title, brandName, description, buttons, posters } = companyHero;
   const [isMobile, setIsMobile] = useState(false);
-  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    setMounted(true);
     const checkMobile = () => setIsMobile(window.innerWidth < 768);
     checkMobile();
     window.addEventListener("resize", checkMobile);
@@ -28,7 +26,7 @@ export function Hero() {
       <div className="relative z-20 w-full max-w-5xl mx-auto px-6 text-center flex flex-col items-center gap-6 md:gap-10">
         {/* Text Section */}
         <motion.div
-           initial={mounted ? { opacity: 0, y: 30 } : { opacity: 1, y: 0 }}
+           initial={{ opacity: 0, y: 30 }}
            animate={{ opacity: 1, y: 0 }}
            transition={{ duration: 0.8, ease: "easeOut" }}
            className="space-y-4 md:space-y-6"
@@ -69,7 +67,7 @@ export function Hero() {
             return (
               <motion.div
                 key={id}
-                initial={mounted ? { opacity: 0, y: 100, rotate: 0 } : { opacity: 1, y: 100, rotate: 0 }}
+                initial={{ opacity: 0, y: 100, rotate: 0 }}
                 animate={{ 
                   opacity: 1, 
                   y: translationsY[index % translationsY.length], 

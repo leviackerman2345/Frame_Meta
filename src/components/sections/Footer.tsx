@@ -109,7 +109,7 @@ export function Footer() {
         {/* Bottom Bar with Footer Branding - Image 1 & 2 Style */}
         <div className="flex flex-col md:flex-row items-start md:items-end justify-between gap-10 md:gap-12 relative pb-16 md:pb-20">
           <div className="max-w-xs text-xs md:text-sm text-zinc-500 leading-relaxed font-medium">
-            Discover the ultimate cinematic experience. FrameMeta aggregates the world's best movies and series into one seamless discovery platform.
+            Discover the ultimate cinematic experience. FrameMeta aggregates the world&apos;s best movies and series into one seamless discovery platform.
           </div>
 
           <div className="flex flex-wrap items-center gap-x-8 md:gap-x-12 gap-y-3 md:gap-y-4 text-[10px] md:text-xs font-bold uppercase tracking-widest text-zinc-500">

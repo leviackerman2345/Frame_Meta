@@ -29,6 +29,7 @@ export interface MovieCard {
   title?: string;
   genre?: string;
   posterUrl?: string;
+  originalPosterUrl?: string; // Fallback: the original TMDB poster (with text)
   studio?: string;       // e.g., "Disney Pixar"
   rank?: number;         // e.g., 1 for Top 10
   badge?: string;        // e.g., "NEW"
@@ -37,7 +38,9 @@ export interface MovieCard {
   year?: number;         // e.g., 2026
   description?: string;  // e.g., "A long time ago..."
   backdropUrl?: string;  // e.g., "https://..."
+  logoUrl?: string;      // e.g., "https://..."
   isAnticipated?: boolean; // e.g., true for collections with upcoming releases
+  type?: 'movie' | 'series';
 }
 
 /** A news article or editorial piece */

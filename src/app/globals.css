@@ -55,10 +55,15 @@
   --color-brand-accent: oklch(0.588 0.243 264.376);
   --color-brand-glow: oklch(0.588 0.243 264.376 / 80%);
 
-  /* Glassmorphism Tokens */
-  --color-glass-bg: oklch(0.27 0 0 / 30%);
-  --color-glass-border: oklch(1 0 0 / 10%);
-  --color-glass-border-hover: oklch(1 0 0 / 20%);
+  /* Premium Intent Accents */
+  --color-intent-cyan: oklch(0.8 0.1 200);
+  --color-intent-gold: oklch(0.85 0.1 85);
+  --color-intent-rose: oklch(0.75 0.12 25);
+  --color-intent-lime: oklch(0.9 0.15 125);
+  
+  /* Vibrancy (Keeping for backward compat if needed) */
+  --color-brand-lime: oklch(0.88 0.25 125);
+  --color-brand-lime-glow: oklch(0.88 0.25 125 / 40%);
 }
 
 :root {
@@ -169,3 +174,70 @@
 .group\/carousel:hover .animate-infinite-scroll {
   animation-play-state: paused;
 }
+
+/* Skeleton Shimmer Animation */
+@keyframes skeleton-shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+.skeleton-shimmer {
+  background: linear-gradient(
+    105deg,
+    transparent 30%,
+    rgba(255, 255, 255, 0.03) 38%,
+    rgba(255, 255, 255, 0.06) 42%,
+    rgba(255, 255, 255, 0.03) 46%,
+    transparent 54%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 2.4s ease-in-out infinite;
+}
+
+.skeleton-shimmer-inline {
+  background: linear-gradient(
+    105deg,
+    rgba(39, 39, 42, 0.6) 30%,
+    rgba(63, 63, 70, 0.4) 38%,
+    rgba(82, 82, 91, 0.3) 42%,
+    rgba(63, 63, 70, 0.4) 46%,
+    rgba(39, 39, 42, 0.6) 54%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 2.4s ease-in-out infinite;
+}
+
+.skeleton-card {
+  position: relative;
+  will-change: transform;
+}
+
+.show-scrollbar::-webkit-scrollbar {
+  display: block !important;
+  width: 6px;
+}
+.show-scrollbar::-webkit-scrollbar-track {
+  background: transparent !important;
+}
+.show-scrollbar::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 255, 255, 0.2) !important;
+  border-radius: 3px !important;
+}
+.show-scrollbar::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(255, 255, 255, 0.4) !important;
+}
+.show-scrollbar {
+  -ms-overflow-style: auto !important;
+  scrollbar-width: thin !important;
+  scrollbar-color: rgba(255, 255, 255, 0.2) transparent !important;
+}
+
+/* Hide navbar when modal is open */
+body.modal-open nav {
+  display: none !important;
+}
+

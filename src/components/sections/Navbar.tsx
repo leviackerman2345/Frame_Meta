@@ -11,6 +11,10 @@ export function Navbar() {
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
 
+  if (pathname.startsWith("/titles/")) {
+    return null;
+  }
+
   const toggleMenu = () => setIsOpen(!isOpen);
 
   return (
@@ -49,9 +53,12 @@ export function Navbar() {
         {/* Right Section */}
         <div className="flex items-center space-x-2 md:space-x-3 pr-2">
           {/* Icon Button matching the image */}
-          <button className="flex h-10 w-10 md:h-11 md:w-11 items-center justify-center rounded-xl bg-white text-black hover:bg-zinc-200 transition-colors shadow-sm">
+          <Link 
+            href="/search"
+            className="flex h-10 w-10 md:h-11 md:w-11 items-center justify-center rounded-xl bg-white text-black hover:bg-zinc-200 transition-colors shadow-sm"
+          >
             <Search className="h-5 w-5" />
-          </button>
+          </Link>
           {/* Login Button */}
           <button className="hidden sm:block h-10 md:h-11 rounded-full bg-black px-5 md:px-7 text-xs md:text-sm font-semibold text-white border border-white/10 hover:bg-zinc-900 transition-colors shadow-md">
             Login
