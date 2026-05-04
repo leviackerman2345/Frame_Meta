@@ -196,6 +196,18 @@ export const partners: Partner[] = [
   },
 ];
 
+// ---------------------------------------------------------------------------
+// Platform Filters
+// ---------------------------------------------------------------------------
+
+export const platformOptions = [
+  "All",
+  "Netflix",
+  "Disney+",
+  "Prime",
+  "Apple TV+",
+] as const;
+
 
 // ---------------------------------------------------------------------------
 // Trending Section (Legacy/Placeholder)
@@ -282,6 +294,13 @@ export const asianSpotlightHeading = {
   subtitle: "Curated hits from across the globe",
 } as const;
 
+export const asianSpotlightCountries = [
+  { code: "KR", label: "Korean" },
+  { code: "JP", label: "Japanese" },
+  { code: "CN", label: "Chinese" },
+  { code: "TH", label: "Thai" },
+] as const;
+
 export const asianSpotlightKorean: MovieCard[] = [
   { id: 401, title: "Squid Game", studio: "Netflix", rating: 4.8, genre: "Thriller", year: 2021, posterUrl: "/images/poster-placeholder.jpg" },
   { id: 402, title: "Parasite", studio: "CJ ENM", rating: 4.9, genre: "Thriller", year: 2019, posterUrl: "/images/poster-placeholder.jpg" },
@@ -323,7 +342,7 @@ export const collectionsData = [
     description: "The groundbreaking 23-film intertwining narrative that redefined superhero cinema. Witness the rise of the Avengers against the Mad Titan Thanos.",
     badge: "23 Movies",
     rating: 4.8,
-    genre: "Action/Sci-Fi",
+    genre: "Action • Sci-Fi",
     year: "2008-2019",
     totalRuntime: "49h 59m",
     backgroundImage: "/images/poster-placeholder.jpg",
@@ -334,7 +353,7 @@ export const collectionsData = [
     description: "Christopher Nolan's gritty, grounded take on the Caped Crusader that elevated the comic book genre to new cinematic heights.",
     badge: "3 Movies",
     rating: 4.9,
-    genre: "Action/Crime",
+    genre: "Action • Crime",
     year: "2005-2012",
     totalRuntime: "7h 36m",
     backgroundImage: "/images/poster-placeholder.jpg",
@@ -345,7 +364,7 @@ export const collectionsData = [
     description: "Plug into the groundbreaking cyberpunk saga that challenged reality and redefined action cinema with revolutionary visual effects.",
     badge: "4 Movies",
     rating: 4.6,
-    genre: "Sci-Fi/Action",
+    genre: "Sci-Fi • Action",
     year: "1999-2021",
     totalRuntime: "9h 14m",
     backgroundImage: "/images/poster-placeholder.jpg",
@@ -362,12 +381,12 @@ export const comingSoonHeading = {
 } as const;
 
 export const comingSoonData: MovieCard[] = [
-  { id: 901, title: "Gladiator II", studio: "Paramount", badge: "NOV 22", releaseDate: "Nov 22", rating: 4.9, genre: "Action/Drama", year: 2024, posterUrl: "/images/poster-placeholder.jpg" },
-  { id: 902, title: "Wicked", studio: "Universal", badge: "NOV 27", releaseDate: "Nov 27", rating: 4.8, genre: "Fantasy/Musical", year: 2024, posterUrl: "/images/poster-placeholder.jpg" },
+  { id: 901, title: "Gladiator II", studio: "Paramount", badge: "NOV 22", releaseDate: "Nov 22", rating: 4.9, genre: "Action • Drama", year: 2024, posterUrl: "/images/poster-placeholder.jpg" },
+  { id: 902, title: "Wicked", studio: "Universal", badge: "NOV 27", releaseDate: "Nov 27", rating: 4.8, genre: "Fantasy • Musical", year: 2024, posterUrl: "/images/poster-placeholder.jpg" },
   { id: 903, title: "Moana 2", studio: "Disney", badge: "NOV 27", releaseDate: "Nov 27", rating: 4.7, genre: "Animation/Adventure", year: 2024, posterUrl: "/images/poster-placeholder.jpg" },
-  { id: 904, title: "Nosferatu", studio: "Focus Features", badge: "DEC 25", releaseDate: "Dec 25", rating: 4.9, genre: "Horror/Gothic", year: 2024, posterUrl: "/images/poster-placeholder.jpg" },
-  { id: 905, title: "Sonic the Hedgehog 3", studio: "Paramount", badge: "DEC 20", releaseDate: "Dec 20", rating: 4.5, genre: "Action/Comedy", year: 2024, posterUrl: "/images/poster-placeholder.jpg" },
-  { id: 906, title: "Mufasa: The Lion King", studio: "Disney", badge: "DEC 20", releaseDate: "Dec 20", rating: 4.6, genre: "Adventure/Drama", year: 2024, posterUrl: "/images/poster-placeholder.jpg" },
+  { id: 904, title: "Nosferatu", studio: "Focus Features", badge: "DEC 25", releaseDate: "Dec 25", rating: 4.9, genre: "Horror • Gothic", year: 2024, posterUrl: "/images/poster-placeholder.jpg" },
+  { id: 905, title: "Sonic the Hedgehog 3", studio: "Paramount", badge: "DEC 20", releaseDate: "Dec 20", rating: 4.5, genre: "Action • Comedy", year: 2024, posterUrl: "/images/poster-placeholder.jpg" },
+  { id: 906, title: "Mufasa: The Lion King", studio: "Disney", badge: "DEC 20", releaseDate: "Dec 20", rating: 4.6, genre: "Adventure • Drama", year: 2024, posterUrl: "/images/poster-placeholder.jpg" },
 ];
 
 /**
@@ -388,6 +407,9 @@ export const featuredNewsData: NewsItem[] = [
     readTime: "8 min read",
     imageUrl: "https://images.unsplash.com/photo-1626814026160-2237a95fc5a0?q=80&w=2070&auto=format&fit=crop",
     author: "Elena Vance",
+    authorAvatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=200&auto=format&fit=crop",
+    sourceLogo: "https://svgl.app/library/apple_dark.svg",
+    slug: "dune-messiah-interview",
     description: "The visionary director discusses the challenges of adapting the complex themes of the third book and what fans can expect from the final chapter of Paul Atreides' journey through Arrakis."
   },
   {
@@ -399,6 +421,9 @@ export const featuredNewsData: NewsItem[] = [
     readTime: "5 min read",
     imageUrl: "https://images.unsplash.com/photo-1536440136628-849c177e76a1?q=80&w=2025&auto=format&fit=crop",
     author: "Michael Berzatto",
+    authorAvatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?q=80&w=200&auto=format&fit=crop",
+    sourceLogo: "https://www.variety.com/wp-content/themes/vip/pmc-variety-2020/assets/public/images/variety-logo.svg",
+    slug: "the-bear-tv-drama",
     description: "A deep dive into why FX's culinary masterpiece resonates so deeply, from its high-octane kitchen sequences to its tender exploration of grief and family."
   },
   {
@@ -410,6 +435,9 @@ export const featuredNewsData: NewsItem[] = [
     readTime: "12 min read",
     imageUrl: "https://images.unsplash.com/photo-1485846234645-a62644f84728?q=80&w=2059&auto=format&fit=crop",
     author: "Stan Winston Jr.",
+    authorAvatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=200&auto=format&fit=crop",
+    sourceLogo: "https://www.hollywoodreporter.com/wp-content/themes/vip/pmc-hollywoodreporter-2021/assets/public/images/logo.svg",
+    slug: "practical-effects-renaissance",
     description: "As audiences show 'CGI fatigue,' major studios are returning to animatronics and miniature work. We talk to the SFX veterans leading the charge in Hollywood's tactile revival."
   },
   {
@@ -421,6 +449,8 @@ export const featuredNewsData: NewsItem[] = [
     readTime: "6 min read",
     imageUrl: "https://images.unsplash.com/photo-1598899134739-24c46f58b8c0?q=80&w=2070&auto=format&fit=crop",
     author: "Sarah Gerwig",
+    authorAvatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?q=80&w=200&auto=format&fit=crop",
+    sourceLogo: "https://www.indiewire.com/wp-content/themes/vip/pmc-indiewire-2023/assets/public/images/logo.svg",
     description: "Beyond the big-budget contenders, these smaller productions are making waves at festivals and are poised to become the breakout hits of the year."
   },
   {
@@ -432,6 +462,8 @@ export const featuredNewsData: NewsItem[] = [
     readTime: "4 min read",
     imageUrl: "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?q=80&w=2070&auto=format&fit=crop",
     author: "Marcus Aurelius",
+    authorAvatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=200&auto=format&fit=crop",
+    sourceLogo: "https://deadline.com/wp-content/themes/vip/pmc-deadline-2019/assets/public/images/logo.svg",
     description: "Tracking data suggests Ridley Scott's highly anticipated sequel could break November records as it prepares to charge into thousands of theaters worldwide."
   },
   {

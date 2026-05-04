@@ -4,25 +4,21 @@ import { comingSoonHeading } from "@/config/site-content";
 import { getComingSoon } from "@/lib/tmdb";
 import { Bell } from "lucide-react";
 import { TitleLogo } from "@/components/ui/TitleLogo";
+import { SectionHeader } from "@/components/sections/SectionHeader";
 
 
 export async function ComingSoon() {
-  const content = await getComingSoon(20);
+  const content = await getComingSoon(20, true);
 
   return (
     <section className="w-full max-w-7xl mx-auto px-6 md:px-12 py-10 relative z-20">
-      <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-5">
-        <div>
-          <h2 className="text-2xl font-semibold text-white tracking-tight drop-shadow-sm">
-            {comingSoonHeading.title}
-          </h2>
-          {comingSoonHeading.subtitle && (
-            <p className="text-sm text-zinc-400/90 mt-1.5 font-medium">{comingSoonHeading.subtitle}</p>
-          )}
-        </div>
-      </div>
+      <SectionHeader
+        title={comingSoonHeading.title}
+        subtitle={comingSoonHeading.subtitle}
+        layout="split"
+      />
 
-      <div className="flex gap-5 md:gap-6 overflow-x-auto pb-6 custom-scrollbar snap-x">
+      <div className="flex gap-5 md:gap-6 overflow-x-auto pb-6 custom-scrollbar snap-x px-1 scroll-smooth">
         {content.map((item) => (
           <div
             key={item.id}

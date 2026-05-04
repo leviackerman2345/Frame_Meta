@@ -7,8 +7,8 @@ import { SkeletonCardGrid } from "@/components/ui/SkeletonCardGrid";
 import { MovieCard } from "@/types/types";
 import { AnimatePresence, motion } from "framer-motion";
 
-/** How many TMDB API pages to fetch for ~180 titles (30 rows) */
-const API_PAGES_TO_FETCH = 10;
+/** Max API pages to fetch per query/genre */
+const MAX_PAGES = 10;
 
 /** Minimum time (ms) the loader must stay visible to avoid jitter */
 const MIN_LOADER_MS = 1300;
@@ -102,12 +102,16 @@ export default function SearchPage() {
   const [visibleCount, setVisibleCount] = useState(0);
   const [isPreloading, setIsPreloading] = useState(false);
   const [isReady, setIsReady] = useState(false);
+  const [currentPage, setCurrentPage] = useState(0);
+  const [hasMorePages, setHasMorePages] = useState(true);
+  const [isFetchingPage, setIsFetchingPage] = useState(false);
 
   // ── Column-aware chunk sizing ──
   const [columns, setColumns] = useState(6);
 
   const observerTarget = useRef<HTMLDivElement>(null);
   const cooldownRef = useRef(false);
+  const requestTokenRef = useRef(0);
 
   const chunkSize = ROWS_PER_CHUNK * columns;
 
@@ -138,75 +142,114 @@ export default function SearchPage() {
     [allTitles, evenVisibleCount]
   );
 
-  const hasMore = evenVisibleCount < allTitles.length;
+  const hasMoreVisible = evenVisibleCount < allTitles.length;
+  const hasMore = hasMoreVisible || hasMorePages;
+
+  const fetchPage = useCallback(
+    async (page: number, options?: { initial?: boolean; token?: number }) => {
+      const token = options?.token ?? requestTokenRef.current;
+      const isInitial = options?.initial === true;
+
+      setIsFetchingPage(true);
+
+      try {
+        const endpoint = getEndpoint(searchQuery, activeGenre, page);
+        const response = await fetch(endpoint);
+        if (!response.ok) {
+          setHasMorePages(false);
+          return;
+        }
+        const data = await response.json();
+
+        const rawResults: MovieCard[] = Array.isArray(data)
+          ? data
+          : data.results || [];
+
+        if (token !== requestTokenRef.current) return;
+
+        if (rawResults.length === 0) {
+          setHasMorePages(false);
+          if (isInitial) {
+            setAllTitles([]);
+            setVisibleCount(0);
+            setIsReady(true);
+            cooldownRef.current = false;
+          }
+          return;
+        }
+
+        if (page >= MAX_PAGES) {
+          setHasMorePages(false);
+        } else {
+          setHasMorePages(true);
+        }
+
+        if (isInitial) {
+          const deduped = deduplicateById(rawResults);
+          setAllTitles(deduped);
+
+          const cols = getColumnCount();
+          const firstChunkSize = ROWS_PER_CHUNK * cols;
+          const firstChunk = deduped.slice(0, firstChunkSize);
+          await Promise.all([preloadImages(firstChunk), delay(MIN_LOADER_MS)]);
+
+          if (token !== requestTokenRef.current) return;
+
+          setVisibleCount(firstChunk.length);
+          setIsReady(true);
+
+          setTimeout(() => {
+            cooldownRef.current = false;
+          }, 800);
+        } else {
+          setAllTitles((prev) => deduplicateById([...prev, ...rawResults]));
+        }
+
+        setCurrentPage(page);
+      } catch (error) {
+        console.error("Fetch failed:", error);
+      } finally {
+        if (token === requestTokenRef.current) {
+          setIsFetchingPage(false);
+        }
+      }
+    },
+    [searchQuery, activeGenre]
+  );
 
   // ── Unified fetch: triggers on search query OR genre change ──
   useEffect(() => {
-    let cancelled = false;
+    requestTokenRef.current += 1;
+    const token = requestTokenRef.current;
 
-    const fetchAll = async () => {
-      setIsReady(false);
-      setVisibleCount(0);
-      setAllTitles([]);
-      cooldownRef.current = true;
+    setIsReady(false);
+    setVisibleCount(0);
+    setAllTitles([]);
+    setCurrentPage(0);
+    setHasMorePages(true);
+    cooldownRef.current = true;
 
-      try {
-        const accumulated: MovieCard[] = [];
+    const timer = setTimeout(() => {
+      fetchPage(1, { initial: true, token });
+    }, searchQuery ? 500 : 0);
 
-        for (let p = 1; p <= API_PAGES_TO_FETCH; p++) {
-          const endpoint = getEndpoint(searchQuery, activeGenre, p);
-
-          const response = await fetch(endpoint);
-          const data = await response.json();
-
-          const rawResults: MovieCard[] = Array.isArray(data)
-            ? data
-            : data.results || [];
-
-          if (rawResults.length === 0) break;
-
-          accumulated.push(...rawResults);
-
-          if (cancelled) return;
-
-          const deduped = deduplicateById(accumulated);
-          setAllTitles([...deduped]);
-
-          // After first page: preload first chunk, then reveal
-          if (p === 1 && deduped.length > 0) {
-            const cols = getColumnCount();
-            const firstChunkSize = ROWS_PER_CHUNK * cols;
-            const firstChunk = deduped.slice(0, firstChunkSize);
-            await Promise.all([preloadImages(firstChunk), delay(MIN_LOADER_MS)]);
-            if (cancelled) return;
-            setVisibleCount(firstChunk.length);
-            setIsReady(true);
-
-            // Cooldown after initial reveal
-            setTimeout(() => {
-              cooldownRef.current = false;
-            }, 800);
-          }
-        }
-
-        if (!cancelled) {
-          setAllTitles((prev) => deduplicateById(prev));
-        }
-      } catch (error) {
-        console.error("Fetch failed:", error);
-      }
-    };
-
-    const timer = setTimeout(fetchAll, searchQuery ? 500 : 0);
-    return () => {
-      cancelled = true;
-      clearTimeout(timer);
-    };
-  }, [searchQuery, activeGenre]);
+    return () => clearTimeout(timer);
+  }, [searchQuery, activeGenre, fetchPage]);
 
   // ── Reveal next chunk with image preloading ──
   const revealNextChunk = useCallback(async () => {
-    if (isPreloading || cooldownRef.current || visibleCount >= allTitles.length) return;
+    if (isPreloading || cooldownRef.current) return;
+
+    if (visibleCount >= allTitles.length) {
+      if (hasMorePages && !isFetchingPage) {
+        await fetchPage(currentPage + 1, { token: requestTokenRef.current });
+      }
+      return;
+    }
+
+    if (visibleCount + chunkSize >= allTitles.length && hasMorePages && !isFetchingPage) {
+      fetchPage(currentPage + 1, { token: requestTokenRef.current });
+    }
 
     setIsPreloading(true);
     cooldownRef.current = true;
@@ -228,7 +271,16 @@ export default function SearchPage() {
     setTimeout(() => {
       cooldownRef.current = false;
     }, 800);
-  }, [isPreloading, visibleCount, allTitles, chunkSize]);
+  }, [
+    isPreloading,
+    visibleCount,
+    allTitles,
+    chunkSize,
+    hasMorePages,
+    isFetchingPage,
+    currentPage,
+    fetchPage,
+  ]);
 
   // ── Infinite scroll observer ──
   useEffect(() => {

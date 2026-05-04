@@ -23,6 +23,38 @@ const nextConfig: NextConfig = {
         protocol: "https",
         hostname: "i.pravatar.cc",
       },
+      {
+        protocol: "https",
+        hostname: "www.vectorlogo.zone",
+      },
+      {
+        protocol: "https",
+        hostname: "vectorlogo.zone",
+      },
+      {
+        protocol: "https",
+        hostname: "static01.nyt.com",
+      },
+      {
+        protocol: "https",
+        hostname: "www.variety.com",
+      },
+      {
+        protocol: "https",
+        hostname: "www.hollywoodreporter.com",
+      },
+      {
+        protocol: "https",
+        hostname: "deadline.com",
+      },
+      {
+        protocol: "https",
+        hostname: "www.indiewire.com",
+      },
+      {
+        protocol: "https",
+        hostname: "ui-avatars.com",
+      },
     ],
   },
 };

@@ -241,3 +241,31 @@ body.modal-open nav {
   display: none !important;
 }
 
+.footer-brand-backdrop::after {
+  content: attr(data-brand);
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -2%;
+  z-index: 10;
+  pointer-events: none;
+  user-select: none;
+  text-align: center;
+  font-size: 20vw;
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  white-space: nowrap;
+  color: rgb(161 161 170);
+  opacity: 0.05;
+  transition: opacity 1000ms;
+}
+
+@media (min-width: 768px) {
+  .footer-brand-backdrop::after {
+    bottom: -10%;
+    font-size: 25vw;
+    opacity: 0.08;
+  }
+}
+

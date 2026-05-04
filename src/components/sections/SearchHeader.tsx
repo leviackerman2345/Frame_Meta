@@ -17,6 +17,7 @@ export function SearchHeader({ onSearch, onGenreSelect, activeGenre, genres }: S
   const [query, setQuery] = useState("");
   const [suggestions, setSuggestions] = useState<MovieCard[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [activeIndex, setActiveIndex] = useState(-1);
   const [isSticky, setIsSticky] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const placeholderRef = useRef<HTMLDivElement>(null);
@@ -47,15 +48,22 @@ export function SearchHeader({ onSearch, onGenreSelect, activeGenre, genres }: S
   });
 
   useEffect(() => {
+    const controller = new AbortController();
     const fetchSuggestions = async (q: string) => {
       if (q.length >= 2) {
         try {
-          const response = await fetch(`/api/search?query=${encodeURIComponent(q)}`);
+          const response = await fetch(`/api/search?query=${encodeURIComponent(q)}`, {
+            signal: controller.signal,
+          });
+          if (!response.ok) return;
           const data = await response.json();
-          setSuggestions(data.slice(0, 10));
+          const results = Array.isArray(data) ? data : data.results || [];
+          setSuggestions(results.slice(0, 10));
           setShowSuggestions(true);
         } catch (error) {
-          console.error("Suggestion fetch failed:", error);
+          if ((error as Error).name !== "AbortError") {
+            console.error("Suggestion fetch failed:", error);
+          }
         }
       } else {
         setSuggestions([]);
@@ -64,7 +72,10 @@ export function SearchHeader({ onSearch, onGenreSelect, activeGenre, genres }: S
     };
 
     const timer = setTimeout(() => fetchSuggestions(query), 300);
-    return () => clearTimeout(timer);
+    return () => {
+      controller.abort();
+      clearTimeout(timer);
+    };
   }, [query]);
 
   useEffect(() => {
@@ -77,8 +88,40 @@ export function SearchHeader({ onSearch, onGenreSelect, activeGenre, genres }: S
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  useEffect(() => {
+    setActiveIndex(-1);
+  }, [suggestions, showSuggestions]);
+
   const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "ArrowDown") {
+      if (!showSuggestions && suggestions.length > 0) {
+        setShowSuggestions(true);
+      }
+      if (suggestions.length > 0) {
+        e.preventDefault();
+        setActiveIndex((prev) => (prev + 1) % suggestions.length);
+      }
+      return;
+    }
+
+    if (e.key === "ArrowUp") {
+      if (suggestions.length > 0) {
+        e.preventDefault();
+        setActiveIndex((prev) => (prev - 1 + suggestions.length) % suggestions.length);
+      }
+      return;
+    }
+
+    if (e.key === "Escape") {
+      setShowSuggestions(false);
+      return;
+    }
+
     if (e.key === "Enter") {
+      if (showSuggestions && activeIndex >= 0 && activeIndex < suggestions.length) {
+        handleSuggestionClick(suggestions[activeIndex].title || "");
+        return;
+      }
       onSearch(query);
       setShowSuggestions(false);
     }
@@ -119,6 +162,15 @@ export function SearchHeader({ onSearch, onGenreSelect, activeGenre, genres }: S
             onKeyDown={handleKeyDown}
             onFocus={() => query.length >= 2 && setShowSuggestions(true)}
             placeholder="Search movies, series, genres..."
+            role="combobox"
+            aria-autocomplete="list"
+            aria-expanded={showSuggestions}
+            aria-controls="search-suggestions"
+            aria-activedescendant={
+              activeIndex >= 0 && suggestions[activeIndex]
+                ? `search-suggestion-${suggestions[activeIndex].id}-${activeIndex}`
+                : undefined
+            }
             style={{ 
               backgroundColor: useTransform(inputBgOpacity, v => `rgba(24, 24, 27, ${v})`),
               borderColor: useTransform(inputBorderOpacity, v => `rgba(255, 255, 255, ${v})`),
@@ -155,11 +207,18 @@ export function SearchHeader({ onSearch, onGenreSelect, activeGenre, genres }: S
                   <div className="px-5 py-1 text-[11px] font-medium text-zinc-400 uppercase tracking-[0.1em]">
                     Suggestions
                   </div>
-                  <div className="grid gap-1 max-h-[320px] overflow-y-auto show-scrollbar px-2">
-                    {suggestions.map((suggestion) => (
+                  <div
+                    id="search-suggestions"
+                    role="listbox"
+                    className="grid gap-1 max-h-[320px] overflow-y-auto show-scrollbar px-2"
+                  >
+                    {suggestions.map((suggestion, index) => (
                       <button
                         key={suggestion.id}
                         onClick={() => handleSuggestionClick(suggestion.title || "")}
+                        id={`search-suggestion-${suggestion.id}-${index}`}
+                        role="option"
+                        aria-selected={index === activeIndex}
                         className="flex w-full items-center gap-4 rounded-xl p-2.5 text-left hover:bg-white/5 transition-colors"
                       >
                         <div className="relative h-16 w-11 flex-shrink-0 overflow-hidden rounded-lg bg-zinc-800 border border-white/5 shadow-md">

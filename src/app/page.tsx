@@ -15,19 +15,24 @@ import { FeaturedNews } from "@/components/sections/FeaturedNews";
 import { FeaturedAbout } from "@/components/sections/FeaturedAbout";
 import { FAQ } from "@/components/sections/FAQ";
 import { Newsletter } from "@/components/sections/Newsletter";
+import { getPopularMovies } from "@/lib/tmdb";
 
-// Force dynamic rendering so TMDB data is always fetched at request time,
-// not baked in during build (where env vars may be unavailable on the host).
-export const dynamic = "force-dynamic";
+// Revalidate every 5 minutes — trending/popular data doesn't need per-request freshness.
+export const revalidate = 300;
 
 export default async function Home({
   searchParams,
 }: {
   searchParams: Promise<{ tab?: string }>;
 }) {
+  const popularMovies = await getPopularMovies(12);
+  const posterUrls = popularMovies
+    .map((m) => m.posterUrl)
+    .filter((url): url is string => !!url && !url.includes("placeholder"));
+
   return (
     <div className="flex flex-col flex-1 w-full bg-black font-sans pb-24 text-white">
-      <Hero />
+      <Hero posters={posterUrls} />
       <Partners />
 
       <PlatformControls />

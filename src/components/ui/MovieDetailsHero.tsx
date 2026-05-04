@@ -2,9 +2,10 @@
 
 import Image from "next/image";
 import { Sparkles, Plus } from "lucide-react";
+import type { TMDBTitleDetails } from "@/types/types";
 
 interface MovieDetailsHeroProps {
-  details: any;
+  details: TMDBTitleDetails;
   logoUrl: string | null;
   backdropUrl: string;
   children?: React.ReactNode;
@@ -16,23 +17,23 @@ export function MovieDetailsHero({
   backdropUrl,
   children,
 }: MovieDetailsHeroProps) {
-  const title = details.title;
+  const title = details.title || details.name || "Title";
 
   return (
-    <>
-      {/* Hero Image Section (Absolute to fill modal) */}
+    <div className="relative w-full overflow-hidden min-h-[85vh] md:min-h-screen flex flex-col">
+      {/* Hero Image Section (Absolute to fill section) */}
       <div className="absolute inset-0 z-0 w-full h-full">
         <Image
           src={backdropUrl}
           alt={title}
           fill
-          className="object-cover object-center"
+          className="object-cover object-center contrast-[1.1] saturate-[1.1]"
           sizes="100vw"
           unoptimized
           priority
         />
         {/* Sleek minimalist dark overlay for Apple-like depth and readability */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/30 to-transparent" />
+        <div className="absolute inset-0 bg-linear-to-t from-black/60 via-black/30 to-transparent" />
       </div>
 
       {/* Content Section */}
@@ -40,7 +41,7 @@ export function MovieDetailsHero({
         {/* Title Logo or Fallback */}
         <div className="mb-10 md:mb-12 w-full flex justify-center md:justify-start">
           {logoUrl ? (
-            <div className="relative w-[90%] max-w-[500px] h-24 md:h-40">
+            <div className="relative w-[90%] max-w-125 h-24 md:h-40">
               <Image
                 src={logoUrl}
                 alt={title}
@@ -59,17 +60,17 @@ export function MovieDetailsHero({
         {/* Action Buttons */}
         <div className="flex flex-nowrap items-center justify-center md:justify-start gap-2 sm:gap-4 w-full md:w-auto mb-10 md:mb-12">
           <button className="flex-1 md:flex-none flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-8 py-3 md:py-3.5 rounded-full bg-white text-black hover:bg-zinc-200 font-bold text-xs sm:text-sm md:text-lg shadow-xl transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98] cursor-pointer whitespace-nowrap">
-            <Sparkles className="w-4 h-4 md:w-5 md:h-5 flex-shrink-0" />
+            <Sparkles className="w-4 h-4 md:w-5 md:h-5 shrink-0" />
             Where to Watch
           </button>
           <button className="flex-1 md:flex-none flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-8 py-3 md:py-3.5 rounded-full bg-zinc-800/60 backdrop-blur-md border border-white/10 hover:bg-zinc-700/60 text-white font-semibold text-xs sm:text-sm md:text-lg transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98] cursor-pointer whitespace-nowrap">
-            <Plus className="w-4 h-4 md:w-5 md:h-5 flex-shrink-0" />
+            <Plus className="w-4 h-4 md:w-5 md:h-5 shrink-0" />
             My Wish List
           </button>
         </div>
 
         {children}
       </div>
-    </>
+    </div>
   );
 }

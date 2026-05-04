@@ -1,14 +1,23 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { Camera, Share2, Video } from "lucide-react";
 import { brand, footerLinkGroups, navLinks } from "@/config/nav-config";
 
 export function Footer() {
+  const pathname = usePathname();
   const currentYear = new Date().getFullYear();
 
+  if (pathname.startsWith("/titles/") || pathname.startsWith("/collection/")) {
+    return null;
+  }
+
   return (
-    <footer className="relative w-full bg-[#050505] text-white pt-32 pb-8 overflow-hidden border-t border-white/5">
+    <footer
+      className="relative w-full bg-[#050505] text-white pt-32 pb-8 overflow-hidden border-t border-white/5 footer-brand-backdrop"
+      data-brand={`${brand.nameStart.toLowerCase()}${brand.nameEnd.toLowerCase()}`}
+    >
       {/* Dynamic Background Gradients inspired by Image 2 */}
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[60%] bg-indigo-600/15 blur-[120px] rounded-full animate-pulse" />
@@ -131,12 +140,7 @@ export function Footer() {
         </div>
       </div>
 
-      {/* Hero Brand Backdrop - Seamless integration as requested */}
-      <div className="absolute bottom-[-2%] md:bottom-[-10%] left-0 w-full pointer-events-none select-none text-center flex justify-center z-10 transition-opacity duration-1000">
-        <h2 className="text-[20vw] md:text-[25vw] font-black tracking-tighter leading-none whitespace-nowrap text-zinc-400 opacity-[0.05] md:opacity-[0.08]">
-          {brand.nameStart.toLowerCase()}{brand.nameEnd.toLowerCase()}
-        </h2>
-      </div>
+      {/* Hero Brand Backdrop handled via CSS to avoid LCP impact */}
     </footer>
   );
 }

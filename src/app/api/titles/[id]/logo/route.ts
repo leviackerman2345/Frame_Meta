@@ -14,7 +14,14 @@ export async function GET(
 
   try {
     const logoUrl = await getTitleLogo(id, type);
-    return NextResponse.json({ logoUrl });
+    return NextResponse.json(
+      { logoUrl },
+      {
+        headers: {
+          "Cache-Control": "public, s-maxage=21600, stale-while-revalidate=86400",
+        },
+      }
+    );
   } catch (error) {
     return NextResponse.json({ logoUrl: null }, { status: 500 });
   }

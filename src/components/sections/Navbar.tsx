@@ -11,7 +11,7 @@ export function Navbar() {
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
 
-  if (pathname.startsWith("/titles/")) {
+  if (pathname.startsWith("/titles/") || pathname.startsWith("/collection/")) {
     return null;
   }
 
@@ -56,6 +56,7 @@ export function Navbar() {
           <Link 
             href="/search"
             className="flex h-10 w-10 md:h-11 md:w-11 items-center justify-center rounded-xl bg-white text-black hover:bg-zinc-200 transition-colors shadow-sm"
+            aria-label="Search"
           >
             <Search className="h-5 w-5" />
           </Link>
@@ -68,6 +69,9 @@ export function Navbar() {
           <button 
             onClick={toggleMenu}
             className="flex md:hidden h-10 w-10 items-center justify-center rounded-xl bg-zinc-800 text-white hover:bg-zinc-700 transition-colors border border-white/10"
+            aria-label={isOpen ? "Close menu" : "Open menu"}
+            aria-expanded={isOpen}
+            aria-controls="mobile-nav"
           >
             {isOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </button>
@@ -84,6 +88,7 @@ export function Navbar() {
             exit={{ opacity: 0, y: -20, scale: 0.95 }}
             transition={{ duration: 0.2, ease: "easeOut" }}
             className="md:hidden mt-4 w-full rounded-[2rem] bg-zinc-900/95 backdrop-blur-2xl border border-white/10 p-4 shadow-2xl overflow-hidden"
+            id="mobile-nav"
           >
             <div className="flex flex-col space-y-2">
               {navLinks.map((link) => {

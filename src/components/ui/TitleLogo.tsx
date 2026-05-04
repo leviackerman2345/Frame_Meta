@@ -9,33 +9,62 @@ interface TitleLogoProps {
   title: string;
   type?: "movie" | "series" | "tv";
   className?: string;
+  logoUrl?: string | null;
 }
 
-export function TitleLogo({ id, title, type = "movie", className = "" }: TitleLogoProps) {
-  const [logoUrl, setLogoUrl] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
+const clientLogoCache = new Map<string, string | null>();
+
+export function TitleLogo({ id, title, type = "movie", className = "", logoUrl: providedLogoUrl }: TitleLogoProps) {
+  const [logoUrl, setLogoUrl] = useState<string | null>(providedLogoUrl ?? null);
+  const [loading, setLoading] = useState(providedLogoUrl === undefined);
 
   // Normalize type for API
   const apiType = type === "series" || type === "tv" ? "tv" : "movie";
 
   useEffect(() => {
+    if (providedLogoUrl !== undefined) {
+      setLogoUrl(providedLogoUrl);
+      setLoading(false);
+      return;
+    }
+
     let isMounted = true;
+    const controller = new AbortController();
+    const cacheKey = `${apiType}-${id}`;
+
+    if (clientLogoCache.has(cacheKey)) {
+      setLogoUrl(clientLogoCache.get(cacheKey) ?? null);
+      setLoading(false);
+      return () => {
+        isMounted = false;
+        controller.abort();
+      };
+    }
     const fetchLogo = async () => {
       try {
-        const response = await fetch(`/api/titles/${id}/logo?type=${apiType}`);
+        const response = await fetch(`/api/titles/${id}/logo?type=${apiType}`, {
+          signal: controller.signal,
+        });
+        if (!response.ok) return;
         const data = await response.json();
         if (isMounted) {
           setLogoUrl(data.logoUrl);
+          clientLogoCache.set(cacheKey, data.logoUrl ?? null);
           setLoading(false);
         }
       } catch (error) {
-        if (isMounted) setLoading(false);
+        if (isMounted && (error as Error).name !== "AbortError") {
+          setLoading(false);
+        }
       }
     };
 
     fetchLogo();
-    return () => { isMounted = false; };
-  }, [id, apiType]);
+    return () => {
+      isMounted = false;
+      controller.abort();
+    };
+  }, [id, apiType, providedLogoUrl]);
 
   return (
     <div className={`relative w-full flex items-center justify-center ${className}`}>

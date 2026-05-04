@@ -10,16 +10,19 @@ interface MediaCardProps {
   data: MovieCard;
   variant?: "catalog" | "slider";
   container?: "grid" | "slider";
+  glow?: boolean;
 }
 
 export function MediaCard({
   data,
   variant = "slider",
   container = "slider",
+  glow = false,
 }: MediaCardProps) {
-  const { id, title, genre, posterUrl, year, rating, badge, rank } = data;
+  const { id, title, genre, posterUrl, year, rating, badge, rank, logoUrl } = data;
   const getBadgeStyles = (label: string) => {
     const text = label.toUpperCase();
+    if (glow) return "bg-intent-cyan text-black border-transparent shadow-[0_0_20px_rgba(34,211,238,0.6)] font-black";
     if (text.includes("FEATURED")) return "text-intent-cyan border-intent-cyan/30";
     if (text.includes("AWARD") || text.includes("WINNER")) return "text-intent-gold border-intent-gold/30";
     if (text.includes("MUST") || text.includes("WATCH")) return "text-intent-rose border-intent-rose/30";
@@ -37,7 +40,7 @@ export function MediaCard({
   return (
     <Component
       href={href}
-      className={`relative block aspect-[2/3] bg-zinc-800/30 backdrop-blur-2xl border border-white/5 rounded-3xl shadow-xl overflow-hidden group cursor-pointer transition-transform duration-500 hover:-translate-y-1 ${container === "grid" ? "w-full" : "min-w-[160px] md:min-w-[200px] snap-start shrink-0"
+      className={`relative block aspect-[2/3] bg-zinc-800/30 backdrop-blur-2xl border border-white/5 rounded-3xl shadow-xl overflow-hidden group cursor-pointer transition-all duration-500 hover:border-white hover:ring-2 hover:ring-white/10 ${container === "grid" ? "w-full" : "min-w-[160px] md:min-w-[200px] snap-start shrink-0"
         }`}
     >
       {/* Poster Image */}
@@ -46,7 +49,7 @@ export function MediaCard({
           src={posterUrl && !posterUrl.includes('placeholder') ? posterUrl : `https://images.unsplash.com/photo-1626814026160-2237a95fc5a0?q=80&w=2070&auto=format&fit=crop`}
           alt={title || ""}
           fill
-          className="object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
+          className="object-cover group-hover:scale-105 transition-transform duration-700 ease-out contrast-[1.1] saturate-[1.1]"
           sizes="(max-width: 768px) 160px, 200px"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent opacity-80" />
@@ -93,6 +96,7 @@ export function MediaCard({
             id={id}
             title={title || ""}
             type={isSeries ? "series" : "movie"}
+            logoUrl={logoUrl}
           />
 
           {/* Metadata String */}

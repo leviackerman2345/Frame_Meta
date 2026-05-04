@@ -1,14 +1,16 @@
 "use client";
 
 import { Star } from "lucide-react";
+import type { OMDbRating, TMDBTitleDetails } from "@/types/types";
+import { MediaSpecs } from "./MediaSpecs";
 
 interface MovieDetailsMetaProps {
-  details: any;
+  details: TMDBTitleDetails;
   year: string | number;
   runtimeStr: string;
   certification: string;
   rating: string | number;
-  omdbRatings?: any[];
+  omdbRatings?: OMDbRating[];
 }
 
 export function MovieDetailsMeta({
@@ -44,20 +46,13 @@ export function MovieDetailsMeta({
       </div>
 
       {/* Tech Specs */}
-      <div className="flex flex-wrap items-center justify-center md:justify-start gap-2">
-        <span className="px-1.5 py-1 text-[10px] md:text-xs font-black tracking-widest bg-zinc-900 border border-white/5 rounded text-zinc-400">
-          4K
-        </span>
-        <span className="px-1.5 py-1 text-[10px] md:text-xs font-black tracking-widest bg-zinc-900 border border-white/5 rounded text-zinc-400">
-          HDR
-        </span>
-        <span className="px-1.5 py-1 text-[10px] md:text-xs font-black tracking-widest bg-zinc-900 border border-white/5 rounded text-zinc-400">
-          DOLBY VISION
-        </span>
-        <span className="px-1.5 py-1 text-[10px] md:text-xs font-black tracking-widest bg-zinc-900 border border-white/5 rounded text-zinc-400">
-          DOLBY ATMOS
-        </span>
-      </div>
+      <MediaSpecs 
+        year={year}
+        popularity={details.popularity}
+        voteAverage={details.vote_average}
+        genres={details.genres}
+        mediaType={details.title ? "movie" : "tv"}
+      />
     </>
   );
 }
