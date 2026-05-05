@@ -1,6 +1,6 @@
 import React from "react";
 import Link from "next/link";
-import { newReleasesHeading } from "@/constants/titles";
+import { titlesContent } from "@/constants/titles";
 import { getNowPlayingMovies, getTrendingMovies } from "@/lib/tmdb";
 import { MediaCard } from "@/components/ui/MediaCard";
 import { SectionHeader } from "@/components/sections/SectionHeader";
@@ -22,8 +22,8 @@ export async function NewReleases({ searchParams }: Props) {
   return (
     <section className="w-full max-w-7xl mx-auto px-6 md:px-12 py-10 relative z-20">
       <SectionHeader
-        title={newReleasesHeading.title}
-        subtitle={newReleasesHeading.subtitle}
+        title={titlesContent.newReleases.heading.title}
+        subtitle={titlesContent.newReleases.heading.subtitle}
         layout="split"
         action={(
           <div className="flex items-center bg-zinc-800/40 p-1 rounded-full border border-white/5 backdrop-blur-xl transition-all duration-500">

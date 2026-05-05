@@ -156,7 +156,7 @@ export function ArtistFilmography({ movieCredits, tvCredits }: ArtistFilmography
     }
   };
 
-  const slideVariants = {
+  const slideVariants: Variants = {
     enter: (direction: number) => ({
       x: direction > 0 ? 50 : -50,
       opacity: 0
@@ -180,7 +180,7 @@ export function ArtistFilmography({ movieCredits, tvCredits }: ArtistFilmography
         opacity: { duration: 0.2 }
       }
     })
-  };
+  } as unknown as Variants;
 
   const cardVariants: Variants = {
     hidden: { opacity: 0, scale: 0.95 },

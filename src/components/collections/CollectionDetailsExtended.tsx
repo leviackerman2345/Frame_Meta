@@ -79,7 +79,7 @@ export function CollectionDetailsExtended({ data }: CollectionDetailsExtendedPro
         {/* Background Image with Glassmorphism */}
         {backdropUrl && (
           <div className="absolute inset-0 z-[-1] pointer-events-none">
-            <div className="sticky top-0 w-full h-[100dvh]">
+            <div className="sticky top-0 w-full h-dvh">
               <Image
                 src={backdropUrl}
                 alt={title || "Background"}
@@ -98,7 +98,7 @@ export function CollectionDetailsExtended({ data }: CollectionDetailsExtendedPro
         </h4>
 
         {/* Synopsis Section */}
-        <div className="max-w-[1224px] text-left w-full mx-auto flex flex-col gap-4">
+        <div className="max-w-306 text-left w-full mx-auto flex flex-col gap-4">
           <h3 className="text-4xl md:text-5xl font-bold tracking-tight text-white">
             Synopsis
           </h3>
@@ -108,7 +108,7 @@ export function CollectionDetailsExtended({ data }: CollectionDetailsExtendedPro
         </div>
 
         {/* Metadata Grid (Matched to Movie Modal Design) */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-16 gap-y-5 max-w-[1224px] text-left w-full mx-auto">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-16 gap-y-5 max-w-306 text-left w-full mx-auto">
           {/* Left Metadata Column */}
           <div className="flex flex-col gap-4">
             <div className="text-sm md:text-base">
@@ -148,7 +148,7 @@ export function CollectionDetailsExtended({ data }: CollectionDetailsExtendedPro
 
         {/* Titles Grid (Matched to Movie Modal "Episode Guide" Style) */}
         {parts.length > 0 && (
-          <div className="max-w-[1224px] w-full mx-auto flex flex-col gap-8 text-left">
+          <div className="max-w-306 w-full mx-auto flex flex-col gap-8 text-left">
             <div>
               <h3 className="text-3xl md:text-4xl font-bold tracking-tight text-white mb-2">
                 Titles in Collection
@@ -177,7 +177,7 @@ export function CollectionDetailsExtended({ data }: CollectionDetailsExtendedPro
 
         {/* Coming Soon Section */}
         {data.comingSoon && data.comingSoon.length > 0 && (
-          <div className="max-w-[1224px] w-full mx-auto flex flex-col gap-8 text-left">
+          <div className="max-w-306 w-full mx-auto flex flex-col gap-8 text-left">
             <div>
               <h3 className="text-3xl md:text-4xl font-bold tracking-tight text-white mb-2">
                 Coming Soon

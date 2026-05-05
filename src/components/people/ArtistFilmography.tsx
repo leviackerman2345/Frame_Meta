@@ -156,7 +156,7 @@ export function ArtistFilmography({ movieCredits, tvCredits }: ArtistFilmography
     }
   };
 
-  const slideVariants = {
+  const slideVariants: any = {
     enter: (direction: number) => ({
       x: direction > 0 ? 50 : -50,
       opacity: 0

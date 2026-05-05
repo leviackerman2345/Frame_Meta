@@ -1,6 +1,6 @@
 import React from "react";
 import Link from "next/link";
-import { featuredNewsHeading, featuredNewsData } from "@/constants/news";
+import { newsContent } from "@/constants/news";
 import { getLatestNews } from "@/lib/news";
 import { NewsCard } from "@/components/ui/NewsCard";
 import { NewsArticle } from "@/types/types";
@@ -8,13 +8,13 @@ import { NewsArticle } from "@/types/types";
 export async function FeaturedNews() {
   const dynamicNews = await getLatestNews(10);
   const validDynamic = dynamicNews.filter((n) => !!n.imageUrl);
-  const newsItems = validDynamic.length > 0 ? validDynamic : featuredNewsData.filter((n) => !!n.imageUrl).slice(0, 10);
+  const newsItems = validDynamic.length > 0 ? validDynamic : newsContent.featured.items.filter((n) => !!n.imageUrl).slice(0, 10);
 
   const articles: NewsArticle[] = newsItems.map((item) => ({
     id: item.id.toString(),
     title: item.title,
     excerpt: item.description || "",
-    url: item.slug ? `/news/${item.slug}` : (item.url || "#"),
+    url: item.slug ? `/news/${item.slug}` : (("url" in item ? (item as any).url : "") || "#"),
     source: item.source,
     publishedAt: item.date,
     thumbnailUrl: item.imageUrl || "",
@@ -25,10 +25,10 @@ export async function FeaturedNews() {
       <div className="flex items-end justify-between mb-8 gap-5 px-2">
         <div className="max-w-[70%]">
           <h2 className="text-xl md:text-2xl font-semibold text-white tracking-tight drop-shadow-sm">
-            {featuredNewsHeading.title}
+            {newsContent.featured.heading.title}
           </h2>
-          {featuredNewsHeading.subtitle && (
-            <p className="text-[11px] md:text-sm text-zinc-400/90 mt-1 font-medium">{featuredNewsHeading.subtitle}</p>
+          {newsContent.featured.heading.subtitle && (
+            <p className="text-[11px] md:text-sm text-zinc-400/90 mt-1 font-medium">{newsContent.featured.heading.subtitle}</p>
           )}
         </div>
 

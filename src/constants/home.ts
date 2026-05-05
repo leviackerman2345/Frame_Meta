@@ -1,11 +1,6 @@
 import type { Partner, FAQItem } from "@/types/types";
 
-// ---------------------------------------------------------------------------
-// Hero Section
-// ---------------------------------------------------------------------------
-
-
-export const companyHero = {
+const hero = {
   title: "Discover the Ultimate Streaming Experience with",
   brandName: "FrameMeta",
   description:
@@ -22,23 +17,16 @@ export const companyHero = {
     "photo-1616530940355-351fabd9524b", // Dark Movie Posterish
     "photo-1598899134739-24c46f58b8c0", // Vibrant/Abstract
     "photo-1518709268805-4e9042af9f23", // Moody cinematic 2
-  ]
+  ],
 };
 
-
-// ---------------------------------------------------------------------------
-// Featured Spotlight (Below Platform Controls)
-// ---------------------------------------------------------------------------
-
-
-export const partnersHeading = {
+const partnersHeading = {
   title: "Watch Everywhere",
   subtitle:
     "Stream your favorite movies independently through our integrated world-class production and streaming partners.",
 } as const;
 
-
-export const partners: Partner[] = [
+const partners = [
   {
     name: "Netflix",
     description:
@@ -117,14 +105,9 @@ export const partners: Partner[] = [
     href: "https://www.crunchyroll.com",
     customImgClass: "brightness-150 group-hover:brightness-100",
   },
-];
+] satisfies Partner[];
 
-// ---------------------------------------------------------------------------
-// Platform Filters
-// ---------------------------------------------------------------------------
-
-
-export const platformOptions = [
+const platformOptions = [
   "All",
   "Netflix",
   "Disney+",
@@ -132,20 +115,13 @@ export const platformOptions = [
   "Apple TV+",
 ] as const;
 
-
-// ---------------------------------------------------------------------------
-// Trending Section (Legacy/Placeholder)
-// ---------------------------------------------------------------------------
-
-
-export const faqHeading = {
+const faqHeading = {
   label: "",
   title: "Frequently Asked\nQuestions.",
   description: "Everything you need to know about navigating the global streaming landscape with FrameMeta. From real-time tracking to local trends, we've got you covered.",
 };
 
-
-export const faqData: FAQItem[] = [
+const faqData = [
   {
     question: "Is FrameMeta a streaming service?",
     answer: "No. We are the central hub for your cinematic life. FrameMeta is a discovery platform that aggregates metadata—trailers, ratings, and plot details—so you can decide what to watch in one place, then jump directly to the platform hosting it.",
@@ -166,17 +142,29 @@ export const faqData: FAQItem[] = [
     question: "Do I need an account to browse?",
     answer: "Never. You can access our full library, watch trailers, and check streaming availability without ever signing in. Your browsing experience is fast, private, and entirely ad-lite.",
   },
-];
+] satisfies FAQItem[];
 
-/**
- * NEWSLETTER SECTION
- */
-
-export const newsletterContent = {
+const newsletterContent = {
   title: "Stay Ahead of the\nCinematic Curve.",
   subtitle: "Join 50,000+ cinephiles receiving weekly curated deep-dives, industry news, and early access to FrameMeta features.",
   placeholder: "Enter your email address",
   buttonText: "Subscribe",
   disclaimer: "By subscribing, you agree to our Privacy Policy and consent to receive updates.",
 };
+
+export const homeContent = {
+  hero,
+  partners: {
+    heading: partnersHeading,
+    items: partners,
+  },
+  platforms: {
+    options: platformOptions,
+  },
+  faq: {
+    heading: faqHeading,
+    items: faqData,
+  },
+  newsletter: newsletterContent,
+} as const;
 

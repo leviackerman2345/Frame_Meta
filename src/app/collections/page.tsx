@@ -19,7 +19,7 @@ export default async function CollectionsPage() {
       <div className="pt-32 pb-20 px-6 md:px-12 max-w-7xl mx-auto">
         {/* Header - Apple Style */}
         <header className="mb-16 space-y-4">
-          <h1 className="text-4xl md:text-6xl font-bold tracking-tight bg-gradient-to-b from-white to-white/60 bg-clip-text text-transparent">
+          <h1 className="text-4xl md:text-6xl font-bold tracking-tight bg-linear-to-b from-white to-white/60 bg-clip-text text-transparent">
             Collections
           </h1>
           <p className="text-zinc-400 text-lg md:text-xl max-w-2xl font-medium leading-relaxed">

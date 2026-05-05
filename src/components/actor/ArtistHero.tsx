@@ -72,7 +72,7 @@ export function ArtistHero({
 
 
 
-  const containerVariants = {
+  const containerVariants: any = {
     hidden: { opacity: 0, y: 20 },
     visible: { 
       opacity: 1, 

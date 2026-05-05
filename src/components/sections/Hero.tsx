@@ -3,11 +3,11 @@
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import { motion } from "framer-motion";
-import { companyHero } from "@/constants/home";
+import { homeContent } from "@/constants/home";
 import { ChevronRight, Play } from "lucide-react";
 
 export function Hero({ posters: customPosters }: { posters?: string[] }) {
-  const { title, brandName, description, buttons, posters: defaultPosters } = companyHero;
+  const { title, brandName, description, buttons, posters: defaultPosters } = homeContent.hero;
   const posters = customPosters && customPosters.length > 0 ? customPosters : defaultPosters;
   const [isMobile, setIsMobile] = useState(false);
 
@@ -19,9 +19,9 @@ export function Hero({ posters: customPosters }: { posters?: string[] }) {
   }, []);
 
   return (
-    <section className="relative w-full min-h-[100dvh] flex flex-col items-center justify-center pt-48 pb-12 overflow-hidden bg-brand-black">
+    <section className="relative w-full min-h-dvh flex flex-col items-center justify-center pt-48 pb-12 overflow-hidden bg-brand-black">
       {/* Background Decorative Element */}
-      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[600px] md:w-[800px] h-[600px] md:h-[800px] bg-brand-accent/5 rounded-full blur-[80px] md:blur-[120px] pointer-events-none" />
+      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-150 md:w-200 h-150 md:h-200 bg-brand-accent/5 rounded-full blur-[80px] md:blur-[120px] pointer-events-none" />
       
       {/* Content Container */}
       <div className="relative z-20 w-full max-w-5xl mx-auto px-6 text-center flex flex-col items-center gap-16 md:gap-28 -mt-10 md:-mt-16">
@@ -54,7 +54,7 @@ export function Hero({ posters: customPosters }: { posters?: string[] }) {
         </motion.div>
 
         {/* Poster Cluster Visualization */}
-        <div className="relative w-full h-[250px] sm:h-[300px] md:h-[500px] mt-8 md:mt-12">
+        <div className="relative w-full h-62.5 sm:h-75 md:h-125 mt-8 md:mt-12">
           {posters.map((poster, index) => {
             // Calculate dynamic positions for the fan/cluster based on number of items
             const count = posters.length;
@@ -95,7 +95,7 @@ export function Hero({ posters: customPosters }: { posters?: string[] }) {
                   delay: 0.2 + (index * 0.05),
                   ease: [0.16, 1, 0.3, 1] 
                 }}
-                className="absolute left-1/2 top-0 -translate-x-1/2 origin-bottom w-[120px] sm:w-[150px] md:w-[220px] aspect-[2/3] rounded-xl md:rounded-2xl overflow-hidden border border-white/10 shadow-2xl bg-zinc-900"
+                className="absolute left-1/2 top-0 -translate-x-1/2 origin-bottom w-30 sm:w-37.5 md:w-55 aspect-2/3 rounded-xl md:rounded-2xl overflow-hidden border border-white/10 shadow-2xl bg-zinc-900"
                 style={{ 
                   zIndex: zIndex,
                   scale: scale
@@ -111,7 +111,7 @@ export function Hero({ posters: customPosters }: { posters?: string[] }) {
                     priority={index < 4}
                   />
                   {/* Subtle Glow Overlay */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                  <div className="absolute inset-0 bg-linear-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                 </div>
               </motion.div>
             );
@@ -120,7 +120,7 @@ export function Hero({ posters: customPosters }: { posters?: string[] }) {
       </div>
 
       {/* Bottom Gradient Fade */}
-      <div className="absolute bottom-0 left-0 w-full h-32 bg-gradient-to-t from-brand-black to-transparent z-30" />
+      <div className="absolute bottom-0 left-0 w-full h-32 bg-linear-to-t from-brand-black to-transparent z-30" />
     </section>
   );
 }

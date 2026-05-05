@@ -1,17 +1,11 @@
 import type { NewsItem } from "@/types/types";
 
-// ---------------------------------------------------------------------------
-// Hero Section
-// ---------------------------------------------------------------------------
-
-
-export const featuredNewsHeading = {
+const featuredNewsHeading = {
   title: "Featured News",
   subtitle: "The latest headlines from the world of cinema",
 } as const;
 
-
-export const featuredNewsData: NewsItem[] = [
+const featuredNewsData = [
   {
     id: 1001,
     title: "Denis Villeneuve on the Visionary World of 'Dune: Messiah'",
@@ -135,9 +129,12 @@ export const featuredNewsData: NewsItem[] = [
     author: "Florence Pugh",
     description: "Tracing the meteoric rise of the indie darling studio and its unconventional marketing strategies that made 'weird cinema' cool again."
   }
-];
+] satisfies NewsItem[];
 
-/**
- * FAQ SECTION
- */
+export const newsContent = {
+  featured: {
+    heading: featuredNewsHeading,
+    items: featuredNewsData,
+  },
+} as const;
 

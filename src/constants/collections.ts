@@ -1,17 +1,9 @@
-// No type imports needed here currently
-
-// ---------------------------------------------------------------------------
-// Hero Section
-// ---------------------------------------------------------------------------
-
-
-export const collectionsHeading = {
+const collectionsHeading = {
   title: "Collections",
   subtitle: "Epic franchises and legendary trilogies",
 } as const;
 
-
-export const collectionsData = [
+const collectionsData = [
   {
     id: 601,
     title: "The Lord of the Rings Cinematic Universe",
@@ -58,8 +50,8 @@ export const collectionsData = [
   }
 ];
 
-// ---------------------------------------------------------------------------
-// Coming Soon
-// ---------------------------------------------------------------------------
-
+export const collectionsContent = {
+  heading: collectionsHeading,
+  items: collectionsData,
+} as const;
 

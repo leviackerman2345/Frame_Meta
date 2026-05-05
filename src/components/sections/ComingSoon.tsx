@@ -1,6 +1,6 @@
 import React from "react";
 import Image from "next/image";
-import { comingSoonHeading } from "@/constants/titles";
+import { titlesContent } from "@/constants/titles";
 import { getComingSoon } from "@/lib/tmdb";
 import { Bell } from "lucide-react";
 import { TitleLogo } from "@/components/ui/TitleLogo";
@@ -13,8 +13,8 @@ export async function ComingSoon() {
   return (
     <section className="w-full max-w-7xl mx-auto px-6 md:px-12 py-10 relative z-20">
       <SectionHeader
-        title={comingSoonHeading.title}
-        subtitle={comingSoonHeading.subtitle}
+        title={titlesContent.comingSoon.heading.title}
+        subtitle={titlesContent.comingSoon.heading.subtitle}
         layout="split"
       />
 
@@ -22,7 +22,7 @@ export async function ComingSoon() {
         {content.map((item) => (
           <div
             key={item.id}
-            className="min-w-[160px] md:min-w-[200px] aspect-[2/3] bg-zinc-800/30 backdrop-blur-2xl border border-white/5 rounded-3xl shadow-xl snap-start relative group cursor-pointer transition-all duration-500 hover:scale-[1.03] hover:z-50 hover:shadow-2xl overflow-hidden"
+            className="min-w-40 md:min-w-50 aspect-2/3 bg-zinc-800/30 backdrop-blur-2xl border border-white/5 rounded-3xl shadow-xl snap-start relative group cursor-pointer transition-all duration-500 hover:scale-[1.03] hover:z-50 hover:shadow-2xl overflow-hidden"
           >
             {/* Poster Image */}
             {item.posterUrl && (

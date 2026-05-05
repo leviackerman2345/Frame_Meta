@@ -1,5 +1,4 @@
-import { featuredMovies, featuredSeries, top10Movies, top10Series, newReleasesThisWeek, newReleasesThisMonth, asianSpotlightKorean, asianSpotlightJapanese, comingSoonData } from "@/constants/titles";
-import { collectionsData } from "@/constants/collections";
+import { titlesContent } from "@/constants/titles";
 import { MovieCard } from "@/types/types";
 import { isTitleAvailable } from "./tmdb";
 
@@ -8,16 +7,26 @@ import { isTitleAvailable } from "./tmdb";
  * We normalize the data to ensure they all follow the MovieCard interface.
  */
 export const getAllTitles = (): MovieCard[] => {
+  const {
+    featuredMovies,
+    featuredSeries,
+    top10Movies,
+    top10Series,
+    newReleases,
+    asianSpotlight,
+    comingSoon,
+  } = titlesContent;
+
   const allTitles: MovieCard[] = [
-    ...featuredMovies.map(m => ({ ...m, type: 'movie' as const })),
-    ...featuredSeries.map(s => ({ ...s, type: 'series' as const })),
-    ...top10Movies.map(m => ({ ...m, type: 'movie' as const })),
-    ...top10Series.map(s => ({ ...s, type: 'series' as const })),
-    ...newReleasesThisWeek.map(m => ({ ...m, type: 'movie' as const })),
-    ...newReleasesThisMonth.map(m => ({ ...m, type: 'movie' as const })),
-    ...asianSpotlightKorean.map(m => ({ ...m, type: 'movie' as const })),
-    ...asianSpotlightJapanese.map(m => ({ ...m, type: 'movie' as const })),
-    ...comingSoonData.map(m => ({ ...m, type: 'movie' as const })),
+    ...featuredMovies.items.map(m => ({ ...m, type: "movie" as const })),
+    ...featuredSeries.items.map(s => ({ ...s, type: "series" as const })),
+    ...top10Movies.items.map(m => ({ ...m, type: "movie" as const })),
+    ...top10Series.items.map(s => ({ ...s, type: "series" as const })),
+    ...newReleases.thisWeek.map(m => ({ ...m, type: "movie" as const })),
+    ...newReleases.thisMonth.map(m => ({ ...m, type: "movie" as const })),
+    ...asianSpotlight.korean.map(m => ({ ...m, type: "movie" as const })),
+    ...asianSpotlight.japanese.map(m => ({ ...m, type: "movie" as const })),
+    ...comingSoon.items.map(m => ({ ...m, type: "movie" as const })),
   ];
 
   // For collections, we might want to treat them differently or extract titles

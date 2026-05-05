@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Plus, Minus } from "lucide-react";
-import { faqHeading, faqData } from "@/constants/home";
+import { homeContent } from "@/constants/home";
 import { FAQItem } from "@/types/types";
 
 /* ------------------------------------------------------------------ */
@@ -22,7 +22,7 @@ function AccordionItem({
   return (
     <div
       className={`group relative overflow-hidden transition-all duration-500 rounded-[24px] md:rounded-[32px] mb-4 ${
-        isOpen ? "bg-white/[0.05]" : "bg-white/[0.03] hover:bg-white/[0.05]"
+        isOpen ? "bg-white/5" : "bg-white/3 hover:bg-white/5"
       }`}
     >
       <button
@@ -82,7 +82,7 @@ function AccordionItem({
           >
             <div className="px-6 pb-6 md:px-8 md:pb-8">
               {/* Nested Answer Card */}
-              <div className="p-6 md:p-8 rounded-[16px] md:rounded-[20px] border border-white/10 bg-white/[0.02]">
+              <div className="p-6 md:p-8 rounded-[16px] md:rounded-[20px] border border-white/10 bg-white/2">
                 <p className="text-zinc-400 text-sm md:text-base leading-relaxed">
                   {item.answer}
                 </p>
@@ -100,6 +100,7 @@ function AccordionItem({
 /* ------------------------------------------------------------------ */
 
 export function FAQ() {
+  const { heading, items } = homeContent.faq;
   const [openIndex, setOpenIndex] = useState<number | null>(0);
 
   const toggleItem = (index: number) => {
@@ -109,8 +110,8 @@ export function FAQ() {
   return (
     <section id="faq" className="relative w-full bg-black pt-24 pb-40 overflow-hidden">
       {/* Decorative ambient glow */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[600px] bg-brand-accent/[0.03] rounded-full blur-[180px] pointer-events-none" />
-      <div className="absolute bottom-0 right-0 w-[500px] h-[500px] bg-[#e2ff00]/[0.02] rounded-full blur-[150px] pointer-events-none" />
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-200 h-150 bg-brand-accent/3 rounded-full blur-[180px] pointer-events-none" />
+      <div className="absolute bottom-0 right-0 w-125 h-125 bg-[#e2ff00]/2 rounded-full blur-[150px] pointer-events-none" />
 
       <div className="max-w-4xl mx-auto px-4 md:px-6">
         {/* Centered Header */}
@@ -122,10 +123,10 @@ export function FAQ() {
             transition={{ duration: 0.6 }}
           >
             <h2 className="text-4xl md:text-5xl lg:text-7xl font-bold text-white tracking-tight leading-[1.1] mb-8">
-              {faqHeading.title}
+              {heading.title}
             </h2>
             <p className="text-zinc-400 text-base md:text-lg leading-relaxed max-w-2xl mx-auto">
-              {faqHeading.description}
+              {heading.description}
             </p>
           </motion.div>
         </div>
@@ -137,7 +138,7 @@ export function FAQ() {
           viewport={{ once: true }}
           transition={{ duration: 0.8, delay: 0.2 }}
         >
-          {faqData.map((item, index) => (
+          {items.map((item, index) => (
             <AccordionItem
               key={index}
               item={item}

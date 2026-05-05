@@ -1,6 +1,6 @@
 import { getPersonDetails } from "@/lib/tmdb";
 import { getNewsByQuery } from "@/lib/news";
-import { featuredNewsData } from "@/constants/news";
+import { newsContent } from "@/constants/news";
 import { ArtistHero } from "@/components/actor/ArtistHero";
 import { ArtistDescription } from "@/components/actor/ArtistDescription";
 import { ArtistFilmography } from "@/components/actor/ArtistFilmography";
@@ -39,14 +39,14 @@ export default async function ArtistPage({ params }: PageProps) {
 
   // Fetch news articles filtered by artist name
   const dynamicNews = await getNewsByQuery(person.name, 6);
-  const newsItems = dynamicNews.length > 0 ? dynamicNews : featuredNewsData.slice(0, 6);
+  const newsItems = dynamicNews.length > 0 ? dynamicNews : newsContent.featured.items.slice(0, 6);
   
   // Map NewsItem (from lib/news.ts) to NewsArticle (as required by ArtistFeaturedNews)
   const articles: NewsArticle[] = newsItems.map((item) => ({
     id: item.id.toString(),
     title: item.title,
     excerpt: item.description || "",
-    url: item.slug ? `/news/${item.slug}` : (item.url || "#"),
+    url: item.slug ? `/news/${item.slug}` : (("url" in item ? (item as any).url : "") || "#"),
     source: item.source,
     publishedAt: item.date, // news.ts returns formatted date string
     thumbnailUrl: item.imageUrl || "",

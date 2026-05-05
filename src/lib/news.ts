@@ -1,5 +1,5 @@
 import { NewsItem } from "@/types/types";
-import { featuredNewsData } from "@/constants/news";
+import { newsContent } from "@/constants/news";
 
 const NYT_API_KEY = process.env.NYT_API_KEY;
 const NYT_BASE_URL = "https://api.nytimes.com/svc";
@@ -19,7 +19,7 @@ function getSlugFromId(nytId: string): string {
 export async function getLatestNews(limit: number = 10): Promise<NewsItem[]> {
   if (!NYT_API_KEY) {
     console.warn("[News] NYT_API_KEY is not defined in environment variables. Falling back to local data.");
-    return featuredNewsData.slice(0, limit);
+    return newsContent.featured.items.slice(0, limit);
   }
 
   try {
@@ -36,13 +36,13 @@ export async function getLatestNews(limit: number = 10): Promise<NewsItem[]> {
     });
 
     if (!response.ok) {
-      return featuredNewsData.slice(0, limit);
+      return newsContent.featured.items.slice(0, limit);
     }
 
     const data = await response.json();
     const docs: any[] = data?.response?.docs || [];
 
-    if (docs.length === 0) return featuredNewsData.slice(0, limit);
+    if (docs.length === 0) return newsContent.featured.items.slice(0, limit);
 
     const cinemaKeywords = /movie|film|cinema|hollywood|streaming|series|netflix|disney|hbo|box.?office|director|actor|actress|oscars?|emmy|award/i;
     const cinemaDocs = docs.filter((article: any) => {
@@ -104,7 +104,7 @@ export async function getLatestNews(limit: number = 10): Promise<NewsItem[]> {
     });
   } catch (error) {
     console.error("[News] Error fetching news:", error);
-    return featuredNewsData.slice(0, limit);
+    return newsContent.featured.items.slice(0, limit);
   }
 }
 
@@ -112,7 +112,7 @@ export async function getLatestNews(limit: number = 10): Promise<NewsItem[]> {
  * Fetch news articles based on a specific query (e.g., artist name).
  */
 export async function getNewsByQuery(query: string, limit: number = 6): Promise<NewsItem[]> {
-  if (!NYT_API_KEY) return featuredNewsData.slice(0, limit);
+  if (!NYT_API_KEY) return newsContent.featured.items.slice(0, limit);
 
   try {
     const q = encodeURIComponent(`"${query}" OR ${query}`);
@@ -127,12 +127,12 @@ export async function getNewsByQuery(query: string, limit: number = 6): Promise<
       next: { revalidate: 600 },
     });
 
-    if (!response.ok) return featuredNewsData.slice(0, limit);
+    if (!response.ok) return newsContent.featured.items.slice(0, limit);
 
     const data = await response.json();
     const docs: any[] = data?.response?.docs || [];
 
-    if (docs.length === 0) return featuredNewsData.slice(0, limit);
+    if (docs.length === 0) return newsContent.featured.items.slice(0, limit);
 
     const validArticles = docs
       .filter((article: any) => {
@@ -174,7 +174,7 @@ export async function getNewsByQuery(query: string, limit: number = 6): Promise<
     });
   } catch (error) {
     console.error("[News] Error fetching query news:", error);
-    return featuredNewsData.slice(0, limit);
+    return newsContent.featured.items.slice(0, limit);
   }
 }
 
@@ -183,7 +183,7 @@ export async function getNewsByQuery(query: string, limit: number = 6): Promise<
  */
 export async function getNewsBySlug(slug: string): Promise<NewsItem | null> {
   // Check static fallback first
-  const staticMatch = featuredNewsData.find(n => n.slug === slug);
+  const staticMatch = (newsContent.featured.items as NewsItem[]).find(n => n.slug === slug);
   if (staticMatch) return staticMatch;
 
   if (!NYT_API_KEY) return null;

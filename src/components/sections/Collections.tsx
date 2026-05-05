@@ -1,5 +1,5 @@
 import React from "react";
-import { collectionsHeading } from "@/constants/collections";
+import { collectionsContent } from "@/constants/collections";
 import { getDiscoverableCollections } from "@/lib/tmdb";
 import { SectionHeader } from "@/components/sections/SectionHeader";
 import { CollectionCard } from "@/components/ui/CollectionCard";
@@ -13,8 +13,8 @@ export async function Collections() {
   return (
     <section className="w-full max-w-7xl mx-auto px-6 md:px-12 py-10 relative z-20">
       <SectionHeader
-        title={collectionsHeading.title}
-        subtitle={collectionsHeading.subtitle}
+        title={collectionsContent.heading.title}
+        subtitle={collectionsContent.heading.subtitle}
         layout="split"
         action={(
           <Link href="/collections" className="hidden md:flex items-center gap-2 px-4 py-2 text-xs font-semibold text-zinc-400 hover:text-white transition-colors duration-300">
