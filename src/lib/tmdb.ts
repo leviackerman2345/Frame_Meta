@@ -749,7 +749,6 @@ export async function getDiscoverableCollections(limit: number | null = 15): Pro
     422834,   // Fantastic Beasts
     115575,   // The Dark Knight
     33514,    // Thor
-    130062,   // Iron Man
     748,      // Indiana Jones
     8650,     // Back to the Future
     8091,     // Alien
@@ -757,7 +756,6 @@ export async function getDiscoverableCollections(limit: number | null = 15): Pro
     8945,     // Transformers
     94602,    // Guardians of the Galaxy
     748,      // X-Men (original)
-    386546,   // Captain America
     263,      // The Bourne
     5039,     // Rambo (correct)
     173710,   // Planet of the Apes (reboot)
@@ -773,14 +771,11 @@ export async function getDiscoverableCollections(limit: number | null = 15): Pro
     528,      // Ace Ventura
     529,      // Beverly Hills Cop
     8354,     // Ice Age (correct)
-    9737,     // Lethal Weapon (correct)
     8945,     // Transformers
     9818,     // Mad Max (correct)
     1575,     // Rocky
     10243,    // Spider-Man (Raimi)
     94301,    // Spider-Man (Amazing / Webb)
-    126286,   // Spider-Man (MCU)
-    11030,    // Scream (correct)
     10237,    // Friday the 13th (correct)
     407887,   // The Conjuring Universe (correct)
     126929,   // Halloween
