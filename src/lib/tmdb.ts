@@ -775,17 +775,11 @@ export async function getDiscoverableCollections(limit: number | null = 15): Pro
     9818,     // Mad Max (correct)
     1575,     // Rocky
     10243,    // Spider-Man (Raimi)
-    94301,    // Spider-Man (Amazing / Webb)
-    10237,    // Friday the 13th (correct)
-    407887,   // The Conjuring Universe (correct)
     126929,   // Halloween
     91361,    // Ant-Man
     131292,   // Doctor Strange
     403374,   // Jack Reacher
-    126288,   // Kung Fu Panda (correct)
     87236,    // Creed
-    12627,    // Underworld (correct)
-    12648,    // RoboCop (correct)
     2150,     // The Mummy
   ]);
 
