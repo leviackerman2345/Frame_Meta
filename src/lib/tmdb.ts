@@ -732,55 +732,47 @@ export async function getDiscoverableCollections(limit: number | null = 15): Pro
 
   // 2. Curated seed list — verified valid TMDB collection IDs, no duplicates, no 404s
   const collectionIds = new Set<number>([
-    // Sci-Fi / Action blockbusters
-    10,       // Star Wars
-    1241,     // Harry Potter
-    645,      // James Bond
-    119,      // Lord of the Rings
-    404609,   // John Wick
-    86311,    // The Avengers
-    230,      // The Terminator
-    945,      // Fast & Furious
-    295,      // Pirates of the Caribbean
-    328,      // Jurassic Park
-    2344,     // The Matrix
-    133352,   // Mission: Impossible (correct)
-    1570,     // Die Hard
-    422834,   // Fantastic Beasts
-    115575,   // The Dark Knight
-    33514,    // Thor
-    748,      // Indiana Jones
-    8650,     // Back to the Future
-    8091,     // Alien
-    14890,    // Predator
-    8945,     // Transformers
-    94602,    // Guardians of the Galaxy
-    748,      // X-Men (original)
-    263,      // The Bourne
-    5039,     // Rambo (correct)
-    173710,   // Planet of the Apes (reboot)
-    10194,    // Toy Story
-    121938,   // The Hobbit
-    72728,    // Hunger Games (correct)
-    86055,    // Men in Black
-    2806,     // Batman (Burton/Schumacher)
-    2901,     // Shrek
-    86066,    // Despicable Me (correct)
-    89137,    // How to Train Your Dragon (correct)
-    304,      // Ocean's (correct)
-    528,      // Ace Ventura
-    529,      // Beverly Hills Cop
-    8354,     // Ice Age (correct)
-    8945,     // Transformers
-    9818,     // Mad Max (correct)
-    1575,     // Rocky
-    10243,    // Spider-Man (Raimi)
-    126929,   // Halloween
-    91361,    // Ant-Man
-    131292,   // Doctor Strange
-    403374,   // Jack Reacher
-    87236,    // Creed
-    2150,     // The Mummy
+    10, // Star Wars Collection
+    1241, // Harry Potter Collection
+    645, // James Bond Collection
+    119, // The Lord of the Rings Collection
+    404609, // John Wick Collection
+    86311, // The Avengers Collection
+    230, // The Terminator Collection
+    9485, // The Fast and the Furious Collection
+    295, // Pirates of the Caribbean Collection
+    328, // Jurassic Park Collection
+    2344, // The Matrix Collection
+    133352, // Mission: Impossible Collection
+    1570, // Die Hard Collection
+    115575, // The Dark Knight Collection
+    131292, // Iron Man Collection
+    131295, // Captain America Collection
+    33514, // Thor Collection
+    8650, // Transformers Collection
+    284433, // Guardians of the Galaxy Collection
+    31562, // The Bourne Collection
+    1709, // Planet of the Apes (Original) Collection
+    131635, // The Hunger Games Collection
+    86055, // Men in Black Collection
+    2150, // Shrek Collection
+    86066, // Despicable Me Collection
+    89137, // How to Train Your Dragon Collection
+    8354, // Ice Age Collection
+    1575, // Rocky Collection
+    556, // Spider-Man Collection
+    125574, // The Amazing Spider-Man Collection
+    2602, // Scream Collection
+    9735, // Friday the 13th Collection
+    313086, // The Conjuring Collection
+    91361, // Halloween Collection
+    422834, // Ant-Man Collection
+    618529, // Doctor Strange Collection
+    77816, // Kung Fu Panda Collection
+    553717, // Creed Collection
+    2326, // Underworld Collection
+    5547, // RoboCop Collection
+    8945, // Mad Max Collection
   ]);
 
   try {
