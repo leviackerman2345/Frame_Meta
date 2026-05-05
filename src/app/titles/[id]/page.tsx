@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { MovieDetailsModal } from "@/components/ui/MovieDetailsModal";
+import { MovieDetailsModal } from "@/components/titles/MovieDetailsModal";
 import { getTitleDetailsBundle } from "@/lib/title-details";
 
 interface TitlePageProps {

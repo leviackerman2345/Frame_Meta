@@ -1,4 +1,3 @@
-import React from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -36,6 +35,7 @@ export default async function NewsArticlePage({
               src={article.imageUrl}
               alt={article.title}
               fill
+              sizes="100vw"
               className="object-cover brightness-[0.15] contrast-[1.2] saturate-[0.8]"
               priority
             />
@@ -79,7 +79,7 @@ export default async function NewsArticlePage({
               <div className="flex items-center gap-4">
                 <div className="w-12 h-12 rounded-2xl bg-zinc-900 border border-white/10 flex items-center justify-center text-zinc-500 font-bold overflow-hidden relative shadow-2xl">
                   {article.authorAvatar ? (
-                    <Image src={article.authorAvatar} alt={article.author} fill className="object-cover" />
+                    <Image src={article.authorAvatar} alt={article.author} fill sizes="48px" className="object-cover" />
                   ) : (
                     <span className="text-lg">{article.author.charAt(0)}</span>
                   )}
@@ -107,6 +107,7 @@ export default async function NewsArticlePage({
                 src={article.imageUrl!}
                 alt=""
                 fill
+                sizes="(max-width: 768px) 100vw, 1440px"
                 className="object-cover blur-3xl opacity-30 scale-110"
               />
             </div>
@@ -114,6 +115,7 @@ export default async function NewsArticlePage({
               src={article.imageUrl!}
               alt={article.title}
               fill
+              sizes="(max-width: 768px) 100vw, 1200px"
               className="relative z-10 object-contain p-4 md:p-8"
               priority
             />
@@ -216,6 +218,7 @@ export default async function NewsArticlePage({
                         src={item.imageUrl!}
                         alt=""
                         fill
+                        sizes="(max-width: 768px) 100vw, 400px"
                         className="object-cover blur-2xl opacity-20"
                       />
                     </div>
@@ -223,6 +226,7 @@ export default async function NewsArticlePage({
                       src={item.imageUrl!}
                       alt={item.title}
                       fill
+                      sizes="(max-width: 768px) 100vw, 400px"
                       className="relative z-10 object-contain p-4 grayscale-[0.5] group-hover:grayscale-0 transition-all duration-700 ease-out"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-60" />

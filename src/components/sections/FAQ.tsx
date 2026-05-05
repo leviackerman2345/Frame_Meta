@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Plus, Minus } from "lucide-react";
-import { faqHeading, faqData } from "@/config/site-content";
+import { faqHeading, faqData } from "@/constants/home";
 import { FAQItem } from "@/types/types";
 
 /* ------------------------------------------------------------------ */

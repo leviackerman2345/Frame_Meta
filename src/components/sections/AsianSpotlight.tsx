@@ -1,6 +1,6 @@
 import React from "react";
 import Link from "next/link";
-import { asianSpotlightCountries, asianSpotlightHeading } from "@/config/site-content";
+import { asianSpotlightCountries, asianSpotlightHeading } from "@/constants/titles";
 import { getAsianSpotlight } from "@/lib/tmdb";
 import { MediaCard } from "@/components/ui/MediaCard";
 import { SectionHeader } from "@/components/sections/SectionHeader";

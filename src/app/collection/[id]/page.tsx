@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { getCollectionOrUniverseDetails } from "@/lib/tmdb";
-import { CollectionDetailsExtended } from "@/components/ui/CollectionDetailsExtended";
+import { CollectionDetailsExtended } from "@/components/collections/CollectionDetailsExtended";
 import { Navbar } from "@/components/sections/Navbar";
 import { Footer } from "@/components/sections/Footer";
 

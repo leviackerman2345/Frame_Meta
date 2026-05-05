@@ -1,5 +1,5 @@
 import React from "react";
-import { platformOptions } from "@/config/site-content";
+import { platformOptions } from "@/constants/home";
 
 export function PlatformControls() {
   return (

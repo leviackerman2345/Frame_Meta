@@ -1,5 +1,5 @@
 import React from "react";
-import { CollectionGridSkeleton } from "@/components/ui/CollectionSkeleton";
+import { CollectionGridSkeleton } from "@/components/collections/CollectionSkeleton";
 
 export default function CollectionsLoading() {
   return (

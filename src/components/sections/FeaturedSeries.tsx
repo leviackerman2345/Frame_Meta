@@ -1,5 +1,5 @@
 import React from "react";
-import { featuredSeriesHeading } from "@/config/site-content";
+import { featuredSeriesHeading } from "@/constants/titles";
 import { getOnTheAirTVSeries } from "@/lib/tmdb";
 import { MediaCard } from "@/components/ui/MediaCard";
 import { SectionHeader } from "@/components/sections/SectionHeader";

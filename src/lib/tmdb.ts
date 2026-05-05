@@ -652,6 +652,8 @@ export async function getComingSoon(
   return includeLogos ? enrichWithLogos(posters) : posters;
 }
 
+
+
 /**
  * Fetch content from specific Asian regions (KR, JP, CN, TH).
  */
@@ -1268,4 +1270,11 @@ export async function getCollectionOrUniverseDetails(id: string): Promise<Collec
     cast: aggregatedCast,
     crew: aggregatedCrew
   };
+}
+/**
+ * Fetch details for a specific person.
+ */
+export async function getPersonDetails(personId: string | number) {
+  const endpoint = `/person/${personId}?language=en-US&append_to_response=movie_credits,tv_credits,external_ids,images`;
+  return fetchFromTMDB(endpoint);
 }

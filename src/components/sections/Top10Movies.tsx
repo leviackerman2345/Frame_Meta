@@ -1,5 +1,5 @@
 import React from "react";
-import { top10MoviesHeading } from "@/config/site-content";
+import { top10MoviesHeading } from "@/constants/titles";
 import { getPopularMovies } from "@/lib/tmdb";
 import { MediaCard } from "@/components/ui/MediaCard";
 import { SectionHeader } from "@/components/sections/SectionHeader";

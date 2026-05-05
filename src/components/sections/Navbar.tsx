@@ -5,7 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Search, Menu, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { brand, navLinks } from "@/config/nav-config";
+import { brand, navLinks } from "@/constants/navigation";
 
 export function Navbar() {
   const pathname = usePathname();

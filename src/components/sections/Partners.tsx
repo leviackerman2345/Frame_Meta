@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { partners, partnersHeading } from "@/config/site-content";
+import { partners, partnersHeading } from "@/constants/home";
 import { createInfiniteScrollData } from "@/lib/carousel";
 import type { Partner } from "@/types/types";
 

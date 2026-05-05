@@ -1,5 +1,5 @@
 import React from "react";
-import { collectionsHeading } from "@/config/site-content";
+import { collectionsHeading } from "@/constants/collections";
 import { getDiscoverableCollections } from "@/lib/tmdb";
 import { SectionHeader } from "@/components/sections/SectionHeader";
 import { CollectionCard } from "@/components/ui/CollectionCard";

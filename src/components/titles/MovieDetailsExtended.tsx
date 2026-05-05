@@ -7,7 +7,7 @@ import Link from "next/link";
 import { Ticket, Play, MoreHorizontal, Check, Download, Share2, Pause, X, Volume2, VolumeX, Maximize, Minimize, Settings } from "lucide-react";
 import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
 import { MediaCard } from "@/components/ui/MediaCard";
-import { CastSection } from "@/components/ui/CastSection";
+import { CastSection } from "@/components/sections/CastSection";
 import { getTMDBImageUrl } from "@/lib/tmdb";
 import type {
   MovieCard,

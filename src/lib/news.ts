@@ -1,5 +1,5 @@
 import { NewsItem } from "@/types/types";
-import { featuredNewsData } from "@/config/site-content";
+import { featuredNewsData } from "@/constants/news";
 
 const NYT_API_KEY = process.env.NYT_API_KEY;
 const NYT_BASE_URL = "https://api.nytimes.com/svc";
@@ -8,8 +8,9 @@ const NYT_BASE_URL = "https://api.nytimes.com/svc";
  * Helper to slugify a string or generate a stable ID from NYT _id
  */
 function getSlugFromId(nytId: string): string {
-  // NYT IDs look like nyt://article/uuid
-  return nytId.split("/").pop() || nytId;
+  // NYT IDs look like nyt://article/uuid or nyt://interactive/2024/...
+  // We transform them to a URL-safe format: article--uuid
+  return nytId.replace("nyt://", "").replace(/\//g, "--");
 }
 
 /**
@@ -17,8 +18,8 @@ function getSlugFromId(nytId: string): string {
  */
 export async function getLatestNews(limit: number = 10): Promise<NewsItem[]> {
   if (!NYT_API_KEY) {
-    console.warn("[News] NYT_API_KEY is not defined in environment variables.");
-    return [];
+    console.warn("[News] NYT_API_KEY is not defined in environment variables. Falling back to local data.");
+    return featuredNewsData.slice(0, limit);
   }
 
   try {
@@ -31,17 +32,17 @@ export async function getLatestNews(limit: number = 10): Promise<NewsItem[]> {
       `&api-key=${NYT_API_KEY}`;
 
     const response = await fetch(url, {
-      next: { revalidate: 14400 }, // Cache for 4 hours
+      next: { revalidate: 600 }, // Cache for 10 minutes (was 4 hours)
     });
 
     if (!response.ok) {
-      return [];
+      return featuredNewsData.slice(0, limit);
     }
 
     const data = await response.json();
     const docs: any[] = data?.response?.docs || [];
 
-    if (docs.length === 0) return [];
+    if (docs.length === 0) return featuredNewsData.slice(0, limit);
 
     const cinemaKeywords = /movie|film|cinema|hollywood|streaming|series|netflix|disney|hbo|box.?office|director|actor|actress|oscars?|emmy|award/i;
     const cinemaDocs = docs.filter((article: any) => {
@@ -103,7 +104,77 @@ export async function getLatestNews(limit: number = 10): Promise<NewsItem[]> {
     });
   } catch (error) {
     console.error("[News] Error fetching news:", error);
-    return [];
+    return featuredNewsData.slice(0, limit);
+  }
+}
+
+/**
+ * Fetch news articles based on a specific query (e.g., artist name).
+ */
+export async function getNewsByQuery(query: string, limit: number = 6): Promise<NewsItem[]> {
+  if (!NYT_API_KEY) return featuredNewsData.slice(0, limit);
+
+  try {
+    const q = encodeURIComponent(`"${query}" OR ${query}`);
+    const url =
+      `${NYT_BASE_URL}/search/v2/articlesearch.json` +
+      `?q=${q}` +
+      `&sort=newest` +
+      `&page=0` +
+      `&api-key=${NYT_API_KEY}`;
+
+    const response = await fetch(url, {
+      next: { revalidate: 600 },
+    });
+
+    if (!response.ok) return featuredNewsData.slice(0, limit);
+
+    const data = await response.json();
+    const docs: any[] = data?.response?.docs || [];
+
+    if (docs.length === 0) return featuredNewsData.slice(0, limit);
+
+    const validArticles = docs
+      .filter((article: any) => {
+        const hasImage = Array.isArray(article.multimedia) && article.multimedia.length > 0;
+        return !!article.abstract && hasImage;
+      })
+      .slice(0, limit);
+
+    return validArticles.map((article: any, index: number) => {
+      const multimedia = article.multimedia;
+      const isArr = Array.isArray(multimedia);
+      const bestImage = isArr ? (
+        multimedia.find((m: any) => m.subtype === "superJumbo") || 
+        multimedia.find((m: any) => m.subtype === "xlarge") || 
+        multimedia[0]
+      ) : null;
+      
+      const imageUrl = bestImage?.url ? `https://static01.nyt.com/${bestImage.url}` : undefined;
+      const author = (article.byline?.original || "").replace(/^By\s+/i, "").split(",")[0].trim() || "FrameMeta Editorial";
+
+      return {
+        id: index + 6000,
+        slug: getSlugFromId(article._id),
+        title: article.headline?.main || article.abstract,
+        category: article.section_name || "Spotlight",
+        source: "The New York Times",
+        sourceLogo: "https://www.vectorlogo.zone/logos/nytimes/nytimes-icon.svg",
+        date: new Date(article.pub_date).toLocaleDateString("en-US", {
+          month: "short", day: "numeric", year: "numeric",
+        }),
+        readTime: "5 min read",
+        imageUrl,
+        author,
+        authorAvatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(author)}&background=random&color=fff`,
+        description: article.abstract,
+        content: article.lead_paragraph || article.abstract,
+        url: article.web_url,
+      } satisfies NewsItem;
+    });
+  } catch (error) {
+    console.error("[News] Error fetching query news:", error);
+    return featuredNewsData.slice(0, limit);
   }
 }
 
@@ -119,10 +190,17 @@ export async function getNewsBySlug(slug: string): Promise<NewsItem | null> {
 
   try {
     // Search by the specific NYT ID
-    const nytId = `nyt://article/${slug}`;
+    // Reconstruct the full NYT ID from the slug (e.g., article--uuid -> nyt://article/uuid)
+    let nytId = slug;
+    if (slug.includes("--")) {
+      nytId = "nyt://" + slug.replace(/--/g, "/");
+    } else {
+      nytId = `nyt://article/${slug}`;
+    }
+
     const url = `${NYT_BASE_URL}/search/v2/articlesearch.json?fq=_id:("${nytId}")&api-key=${NYT_API_KEY}`;
 
-    const response = await fetch(url, { next: { revalidate: 3600 } });
+    const response = await fetch(url, { next: { revalidate: 600 } });
     if (!response.ok) return null;
 
     const data = await response.json();

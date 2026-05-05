@@ -4,7 +4,7 @@ import Image from "next/image";
 import { Sparkles, Plus, Star, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { MediaCard } from "@/components/ui/MediaCard";
-import { CastSection } from "@/components/ui/CastSection";
+import { CastSection } from "@/components/sections/CastSection";
 import { MediaSpecs } from "@/components/ui/MediaSpecs";
 import type { CollectionData } from "@/types/types";
 

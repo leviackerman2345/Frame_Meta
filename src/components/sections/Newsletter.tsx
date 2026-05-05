@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import { Send, BellRing } from "lucide-react";
-import { newsletterContent } from "@/config/site-content";
+import { newsletterContent } from "@/constants/home";
 
 export function Newsletter() {
   return (

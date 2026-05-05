@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { TMDBCastMember } from "@/types/types";
+import Link from "next/link";
 
 interface CastCardProps {
   actor: {
@@ -19,7 +19,7 @@ interface CastCardProps {
 
 export function CastCard({ actor, index }: CastCardProps) {
   const actorPhoto = actor.profile_path
-    ? `https://image.tmdb.org/t/p/h632${actor.profile_path}`
+    ? `https://image.tmdb.org/t/p/original${actor.profile_path}`
     : null;
   
   const initial = (actor.name?.[0] || "A").toUpperCase();
@@ -34,7 +34,8 @@ export function CastCard({ actor, index }: CastCardProps) {
   const bgColor = bgColors[index % bgColors.length];
 
   return (
-    <div className="w-full aspect-[2/3] rounded-[2.5rem] overflow-hidden relative border border-white/10 bg-[#121214] shadow-xl transform-gpu backface-hidden [perspective:1000px]">
+    <Link href={`/actor/${actor.id}`}>
+      <div className="w-full aspect-2/3 rounded-[2.5rem] overflow-hidden relative border border-white/10 bg-[#121214] shadow-xl transform-gpu backface-hidden perspective-[1000px]">
       {/* Photo Container — own GPU layer via will-change */}
       <div className="absolute top-0 inset-x-0 h-full overflow-hidden z-0">
         {actorPhoto ? (
@@ -42,13 +43,14 @@ export function CastCard({ actor, index }: CastCardProps) {
             src={actorPhoto}
             alt={actor.name || "Actor"}
             fill
-            className="object-cover object-top contrast-[1.1] saturate-[1.1]"
+            quality={100}
+            className="object-cover object-center contrast-[1.05] saturate-[1.1]"
             unoptimized
           />
         ) : (
-          <div className={`w-full h-full bg-gradient-to-br ${bgColor} flex items-center justify-center relative`}>
-            <div className="absolute inset-4 rounded-full border border-white/[0.05] bg-white/[0.02] backdrop-blur-md flex items-center justify-center shadow-inner">
-              <span className="text-6xl md:text-7xl font-black bg-gradient-to-b from-white via-zinc-100 to-zinc-400 bg-clip-text text-transparent drop-shadow-[0_4px_16px_rgba(0,0,0,0.6)] tracking-tighter">
+          <div className={`w-full h-full bg-linear-to-br ${bgColor} flex items-center justify-center relative`}>
+            <div className="absolute inset-4 rounded-full border border-white/5 bg-white/2 backdrop-blur-md flex items-center justify-center shadow-inner">
+              <span className="text-6xl md:text-7xl font-black bg-linear-to-b from-white via-zinc-100 to-zinc-400 bg-clip-text text-transparent drop-shadow-[0_4px_16px_rgba(0,0,0,0.6)] tracking-tighter">
                 {initial}
               </span>
             </div>
@@ -76,17 +78,20 @@ export function CastCard({ actor, index }: CastCardProps) {
           <p className="text-white/70 font-medium text-xs md:text-sm truncate px-2">
             {actor.displayRole || actor.character || actor.job}
           </p>
+        <div className="flex items-center gap-2 w-full pt-2">
+          <button className="flex-1 px-4 py-2 rounded-2xl bg-transparent hover:bg-white border border-white text-white hover:text-black text-[10px] md:text-xs font-bold transition-all active:scale-95 uppercase tracking-widest">
+            View
+          </button>
+          <button className="px-4 py-2 rounded-2xl bg-white text-black hover:bg-black hover:text-white border border-white text-[10px] md:text-xs font-bold transition-all active:scale-95 flex items-center justify-center gap-1 uppercase tracking-widest">
+            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M12 4v16m8-8H4" />
+            </svg>
+            Follow
+          </button>
         </div>
-
-        <a
-          href={`https://www.themoviedb.org/person/${actor.id}`}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="w-full max-w-[160px] py-2.5 rounded-full bg-white text-black text-xs font-bold tracking-wide hover:bg-zinc-200 active:scale-95 transition-all duration-300 shadow-lg text-center"
-        >
-          View
-        </a>
+        </div>
       </div>
-    </div>
+      </div>
+    </Link>
   );
 }

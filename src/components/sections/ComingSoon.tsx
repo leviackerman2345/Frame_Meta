@@ -1,6 +1,6 @@
 import React from "react";
 import Image from "next/image";
-import { comingSoonHeading } from "@/config/site-content";
+import { comingSoonHeading } from "@/constants/titles";
 import { getComingSoon } from "@/lib/tmdb";
 import { Bell } from "lucide-react";
 import { TitleLogo } from "@/components/ui/TitleLogo";

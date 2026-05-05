@@ -1,15 +1,5 @@
-import { 
-  featuredMovies, 
-  featuredSeries, 
-  top10Movies, 
-  top10Series, 
-  newReleasesThisWeek, 
-  newReleasesThisMonth, 
-  asianSpotlightKorean, 
-  asianSpotlightJapanese, 
-  collectionsData, 
-  comingSoonData 
-} from "@/config/site-content";
+import { featuredMovies, featuredSeries, top10Movies, top10Series, newReleasesThisWeek, newReleasesThisMonth, asianSpotlightKorean, asianSpotlightJapanese, comingSoonData } from "@/constants/titles";
+import { collectionsData } from "@/constants/collections";
 import { MovieCard } from "@/types/types";
 import { isTitleAvailable } from "./tmdb";
 

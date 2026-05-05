@@ -241,3 +241,33 @@ export interface CollectionData {
   })[];
 }
 
+/** Standardized API response wrapper */
+export interface ApiResponse<T> {
+  data?: T;
+  error?: string;
+  status?: number;
+}
+
+export interface Credit {
+  id: number;
+  title?: string;
+  name?: string;
+  character?: string;
+  job?: string;
+  poster_path?: string;
+  release_date?: string;
+  first_air_date?: string;
+  media_type?: "movie" | "tv";
+  vote_average?: number;
+  popularity?: number;
+}
+
+export interface NewsArticle {
+  id: string;
+  title: string;
+  excerpt: string;
+  url: string;
+  source: string;
+  publishedAt: string;
+  thumbnailUrl: string;
+}

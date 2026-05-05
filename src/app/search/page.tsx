@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useEffect, useMemo, useRef, useCallback } from "react";
-import { SearchHeader } from "@/components/sections/SearchHeader";
-import { SearchCatalog } from "@/components/sections/SearchCatalog";
+import { SearchHeader } from "@/components/search/SearchHeader";
+import { SearchCatalog } from "@/components/search/SearchCatalog";
 import { SkeletonCardGrid } from "@/components/ui/SkeletonCardGrid";
 import { MovieCard } from "@/types/types";
 import { AnimatePresence, motion } from "framer-motion";

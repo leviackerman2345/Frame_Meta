@@ -3,7 +3,7 @@
 import React, { useState, useMemo, useEffect, useRef } from "react";
 import { MovieCard } from "@/types/types";
 import { CollectionCard } from "@/components/ui/CollectionCard";
-import { CollectionSkeleton } from "@/components/ui/CollectionSkeleton";
+import { CollectionSkeleton } from "@/components/collections/CollectionSkeleton";
 
 interface CollectionsClientProps {
   initialCollections: MovieCard[];

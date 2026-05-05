@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Camera, Share2, Video } from "lucide-react";
-import { brand, footerLinkGroups, navLinks } from "@/config/nav-config";
+import { brand, footerLinkGroups, navLinks } from "@/constants/navigation";
 
 export function Footer() {
   const pathname = usePathname();

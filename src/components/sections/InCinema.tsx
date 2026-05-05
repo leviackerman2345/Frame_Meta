@@ -1,5 +1,5 @@
 import React from "react";
-import { inCinemaHeading } from "@/config/site-content";
+import { inCinemaHeading } from "@/constants/titles";
 import { getNowPlayingMovies } from "@/lib/tmdb";
 import { MediaCard } from "@/components/ui/MediaCard";
 import { SectionHeader } from "@/components/sections/SectionHeader";

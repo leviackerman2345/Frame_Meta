@@ -1,6 +1,6 @@
 import React from "react";
 import Link from "next/link";
-import { newReleasesHeading } from "@/config/site-content";
+import { newReleasesHeading } from "@/constants/titles";
 import { getNowPlayingMovies, getTrendingMovies } from "@/lib/tmdb";
 import { MediaCard } from "@/components/ui/MediaCard";
 import { SectionHeader } from "@/components/sections/SectionHeader";

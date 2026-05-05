@@ -2,7 +2,7 @@
 
 import { Star } from "lucide-react";
 import type { OMDbRating, TMDBTitleDetails } from "@/types/types";
-import { MediaSpecs } from "./MediaSpecs";
+import { MediaSpecs } from "@/components/ui/MediaSpecs";
 
 interface MovieDetailsMetaProps {
   details: TMDBTitleDetails;

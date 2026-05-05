@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import { motion } from "framer-motion";
-import { companyHero } from "@/config/site-content";
+import { companyHero } from "@/constants/home";
 import { ChevronRight, Play } from "lucide-react";
 
 export function Hero({ posters: customPosters }: { posters?: string[] }) {

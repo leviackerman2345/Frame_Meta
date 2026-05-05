@@ -2,7 +2,6 @@
 
 import { useRef, useState } from "react";
 import { CastCard } from "./CastCard";
-import { TMDBCastMember } from "@/types/types";
 
 interface CastSectionProps {
   title?: string;
@@ -30,7 +29,7 @@ export function CastSection({
 
   const handleScroll = () => {
     if (!scrollRef.current || !indicatorRef.current) return;
-    
+
     if (!ticking.current) {
       window.requestAnimationFrame(() => {
         if (!scrollRef.current || !indicatorRef.current) return;
