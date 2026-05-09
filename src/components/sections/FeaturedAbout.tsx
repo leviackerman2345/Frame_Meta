@@ -147,7 +147,7 @@ export function FeaturedAbout() {
     <section
       ref={sectionRef}
       id="featured-about"
-      className="relative w-full bg-brand-black"
+      className="relative w-full bg-brand-black overflow-hidden"
     >
       {/* Decorative ambient glow */}
       <div className="absolute top-1/3 left-0 w-[500px] h-[500px] bg-brand-accent/[0.03] rounded-full blur-[150px] pointer-events-none" />

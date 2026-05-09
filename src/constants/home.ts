@@ -16,7 +16,6 @@ const hero = {
     "photo-1536440136628-849c177e76a1", // Modern Cinema
     "photo-1616530940355-351fabd9524b", // Dark Movie Posterish
     "photo-1598899134739-24c46f58b8c0", // Vibrant/Abstract
-    "photo-1518709268805-4e9042af9f23", // Moody cinematic 2
   ],
 };
 
@@ -117,7 +116,7 @@ const platformOptions = [
 
 const faqHeading = {
   label: "",
-  title: "Frequently Asked\nQuestions.",
+  title: "Frequently Asked Questions.",
   description: "Everything you need to know about navigating the global streaming landscape with FrameMeta. From real-time tracking to local trends, we've got you covered.",
 };
 
@@ -145,7 +144,7 @@ const faqData = [
 ] satisfies FAQItem[];
 
 const newsletterContent = {
-  title: "Stay Ahead of the\nCinematic Curve.",
+  title: "Stay Ahead of the Cinematic Curve.",
   subtitle: "Join 50,000+ cinephiles receiving weekly curated deep-dives, industry news, and early access to FrameMeta features.",
   placeholder: "Enter your email address",
   buttonText: "Subscribe",

@@ -14,11 +14,11 @@ export function CollectionCard({ collection, index = 0 }: CollectionCardProps) {
   return (
     <Link
       href={`/collection/${collection.id}`}
-      className="min-w-[300px] sm:min-w-[400px] md:min-w-[calc((100%-48px)/3)] aspect-[16/11] rounded-[2.5rem] overflow-hidden cursor-pointer shadow-2xl snap-start relative group bg-zinc-950/10 border border-white/5 transition-all duration-700 hover:border-white/20 hover:bg-black/40 block"
+      className="min-w-[280px] sm:min-w-[400px] md:min-w-[calc((100%-48px)/3)] aspect-[16/11] rounded-[2rem] md:rounded-[2.5rem] overflow-hidden cursor-pointer shadow-2xl border border-zinc-800 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.1)] outline outline-1 outline-transparent [transform:translateZ(0)] snap-start relative group bg-zinc-950/10 transition-all duration-700 hover:border-white/20 hover:bg-black/40 block"
     >
       {/* Backdrop with Fade Blur Effect */}
       {collection.backdropUrl && (
-        <div className="absolute inset-0 z-0 overflow-hidden">
+        <div className="absolute top-0 inset-x-0 h-[calc(100%+1px)] z-0 overflow-hidden">
           <Image
             src={collection.backdropUrl}
             alt={collection.title || "Collection Backdrop"}
@@ -41,7 +41,7 @@ export function CollectionCard({ collection, index = 0 }: CollectionCardProps) {
       <div className="absolute inset-0 bg-gradient-to-r from-black/[0.08] via-transparent to-transparent z-10" />
       
       {/* Content Container with Backdrop Blur (Glassmorphism) */}
-      <div className="absolute inset-0 z-20 flex flex-col justify-end p-6 md:px-10 md:pb-6">
+      <div className="absolute inset-0 z-20 flex flex-col justify-end p-5 md:px-10 md:pb-6">
         <div className="translate-y-8 group-hover:translate-y-0 transition-transform duration-700 ease-out">
           {collection.badge && (
             <span className="inline-block px-3 py-1 mb-4 text-[10px] md:text-[11px] font-bold tracking-[0.2em] text-white bg-white/10 backdrop-blur-xl border border-white/10 rounded-full uppercase shadow-2xl w-max">
@@ -60,7 +60,7 @@ export function CollectionCard({ collection, index = 0 }: CollectionCardProps) {
               />
             </div>
           ) : (
-            <h3 className="text-2xl md:text-3xl font-bold text-white tracking-tight drop-shadow-[0_8px_16px_rgba(0,0,0,0.8)] mb-5 line-clamp-2 leading-tight">
+            <h3 className="text-xl sm:text-2xl md:text-3xl font-bold text-white tracking-tight drop-shadow-[0_8px_16px_rgba(0,0,0,0.8)] mb-4 md:mb-5 line-clamp-2 leading-tight">
               {collection.title}
             </h3>
           )}

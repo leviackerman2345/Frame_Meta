@@ -56,9 +56,27 @@ const getAccessToken = () => {
 };
 const TMDB_BASE_URL = "https://api.themoviedb.org/3";
 const TMDB_IMAGE_BASE_URL = process.env.TMDB_IMAGE_BASE_URL || "https://image.tmdb.org/t/p";
-const DEFAULT_REVALIDATE_SECONDS = 300;
-const DEFAULT_FETCH_TIMEOUT_MS = 15000;
+const DEFAULT_REVALIDATE_SECONDS = 3600; // 1 hour — data is stable
+const DEFAULT_FETCH_TIMEOUT_MS = 5000;   // Fail fast; 15s was causing page hangs
 const inFlightRequests = new Map<string, Promise<any>>();
+
+/**
+ * Thin wrapper around fetch() that aborts after `timeoutMs` milliseconds.
+ * Prevents third-party API calls (OMDb, etc.) from hanging indefinitely.
+ */
+export async function fetchWithTimeout(
+  url: string,
+  options: RequestInit = {},
+  timeoutMs: number = DEFAULT_FETCH_TIMEOUT_MS
+): Promise<Response> {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    return await fetch(url, { ...options, signal: controller.signal });
+  } finally {
+    clearTimeout(timer);
+  }
+}
 
 // In-memory cache to prevent N+1 API call limits and improve initial SSR load performance
 const textlessPosterCache = new Map<string, string | null>();
@@ -141,15 +159,24 @@ export const fetchFromTMDB = async (endpoint: string, options: RequestInit = {})
             console.warn(`[TMDB] Timeout after ${DEFAULT_FETCH_TIMEOUT_MS}ms at ${endpoint}. Retrying (attempt ${attempts + 1}/${maxAttempts})...`);
             continue;
           }
+          // FIX: Log before throwing — the error propagates up to SectionErrorBoundary.
+          //      Previously this returned {} which silently starved components of data,
+          //      leaving the <Suspense> skeleton frozen with no error UI shown.
           console.error(`[TMDB] Timeout after ${DEFAULT_FETCH_TIMEOUT_MS}ms at ${endpoint}. Max retries reached.`);
+          // Throw AFTER the finally block clears the timer (execution resumes after finally).
+          throw new Error(`TMDB request timed out after ${DEFAULT_FETCH_TIMEOUT_MS}ms (${endpoint}). Please try again.`);
         } else {
           console.error(`[TMDB] Network error at ${endpoint}:`, error);
           return { results: [], parts: [] };
         }
       } finally {
+        // FIX: clearTimeout is always called — even when we are about to throw —
+        //      because finally runs before the throw propagates. No timer leak.
         clearTimeout(timeout);
       }
     }
+    // This line is now unreachable on timeout (we throw above), but is kept as
+    // a type-safe fallback for any future loop-exit path that doesn't throw.
     return { results: [], parts: [] };
   })();
 
@@ -432,7 +459,7 @@ export async function getOMDbRatings(
     return [];
   }
   try {
-    const res = await fetch(`https://www.omdbapi.com/?i=${imdbId}&apikey=${apiKey}`);
+    const res = await fetchWithTimeout(`https://www.omdbapi.com/?i=${imdbId}&apikey=${apiKey}`);
     if (!res.ok) return [];
     const data = await res.json();
     return (data?.Ratings || []) as OMDbRating[];
@@ -1252,8 +1279,57 @@ export async function getCollectionOrUniverseDetails(id: string): Promise<Collec
     crew: aggregatedCrew
   };
 }
+// ─── Server-side in-memory cache for person data ──────────────────────────────
+// Person data rarely changes, so we cache it aggressively to avoid
+// round-trips to TMDB on every page visit within the same server instance.
+interface PersonCache {
+  data: any;
+  expiresAt: number;
+}
+const personBasicCache = new Map<string, PersonCache>();
+const personCreditsCache = new Map<string, PersonCache>();
+const PERSON_CACHE_TTL_MS = 30 * 60 * 1000; // 30 minutes
+
 /**
- * Fetch details for a specific person.
+ * Fetch ONLY the essential info for a specific person (fast, small payload).
+ * Cached in-memory for 30 minutes to eliminate repeat TMDB calls.
+ */
+export async function getPersonBasicInfo(personId: string | number) {
+  const key = String(personId);
+  const cached = personBasicCache.get(key);
+  if (cached && Date.now() < cached.expiresAt) return cached.data;
+
+  const endpoint = `/person/${personId}?language=en-US&append_to_response=external_ids,images`;
+  const data = await fetchFromTMDB(endpoint, { next: { revalidate: 3600 } } as any);
+  if (data?.id) {
+    personBasicCache.set(key, { data, expiresAt: Date.now() + PERSON_CACHE_TTL_MS });
+  }
+  return data;
+}
+
+/**
+ * Fetch ONLY the movie and TV credits for a person (heavy payload).
+ * Parallelized and cached in-memory for 30 minutes.
+ */
+export async function getPersonCredits(personId: string | number) {
+  const key = String(personId);
+  const cached = personCreditsCache.get(key);
+  if (cached && Date.now() < cached.expiresAt) return cached.data;
+
+  const [movieCredits, tvCredits] = await Promise.all([
+    fetchFromTMDB(`/person/${personId}/movie_credits?language=en-US`, { next: { revalidate: 3600 } } as any),
+    fetchFromTMDB(`/person/${personId}/tv_credits?language=en-US`, { next: { revalidate: 3600 } } as any),
+  ]);
+  const result = { movieCredits, tvCredits };
+  if (movieCredits?.cast || tvCredits?.cast) {
+    personCreditsCache.set(key, { data: result, expiresAt: Date.now() + PERSON_CACHE_TTL_MS });
+  }
+  return result;
+}
+
+/**
+ * Fetch details for a specific person (full payload, kept for compatibility).
+ * @deprecated Use getPersonBasicInfo + getPersonCredits for better performance.
  */
 export async function getPersonDetails(personId: string | number) {
   const endpoint = `/person/${personId}?language=en-US&append_to_response=movie_credits,tv_credits,external_ids,images`;

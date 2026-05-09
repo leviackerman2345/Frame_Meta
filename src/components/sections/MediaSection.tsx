@@ -47,7 +47,7 @@ export function MediaSection({ title, items, layout = "grid" }: MediaSectionProp
           className={
             layout === "grid" 
               ? "grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6 md:gap-8"
-              : "flex overflow-x-auto gap-6 pb-4 scrollbar-hide"
+              : "flex overflow-x-auto gap-6 pb-6 custom-scrollbar snap-x snap-mandatory px-1 scroll-smooth"
           }
         >
           {items.map((item, idx) => (

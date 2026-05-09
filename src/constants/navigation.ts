@@ -15,11 +15,11 @@ export const brand = {
 // ---------------------------------------------------------------------------
 
 export const navLinks: NavLink[] = [
-  { name: "Overview", href: "/" },
+  { name: "Home", href: "/" },
   { name: "Movies", href: "/movies" },
-  { name: "TV Shows", href: "/tv-shows" },
+  { name: "Series", href: "/tv-shows" },
+  { name: "People", href: "/actor" },
   { name: "News", href: "/news" },
-  { name: "Film Info", href: "/film-info" },
 ];
 
 // ---------------------------------------------------------------------------

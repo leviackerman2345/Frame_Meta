@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { Navbar } from "@/components/sections/Navbar";
 import { Footer } from "@/components/sections/Footer";
+import { InitialLoader } from "@/components/ui/InitialLoader";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -26,7 +27,8 @@ export default function RootLayout({
       lang="en"
       className={`${inter.variable} ${inter.className} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col bg-black" suppressHydrationWarning>
+      <body className="min-h-full flex flex-col bg-black overflow-x-hidden" suppressHydrationWarning>
+        <InitialLoader />
         <Navbar />
         {children}
         {modal}

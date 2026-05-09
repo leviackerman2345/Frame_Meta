@@ -38,13 +38,18 @@ export function Navbar() {
               <Link
                 key={link.name}
                 href={link.href}
-                className={`relative px-5 py-1.5 text-sm font-medium transition-all duration-300 tracking-wide rounded-full ${
-                  isActive
-                    ? "bg-white text-black shadow-[0_2px_10px_rgba(255,255,255,0.2)]"
-                    : "text-zinc-400 hover:text-white hover:bg-white/5"
+                className={`relative px-5 py-1.5 text-sm font-medium transition-colors duration-300 tracking-wide rounded-full ${
+                  isActive ? "text-black" : "text-zinc-400 hover:text-white hover:bg-white/5"
                 }`}
               >
-                {link.name}
+                {isActive && (
+                  <motion.div
+                    layoutId="activeNav"
+                    className="absolute inset-0 bg-white rounded-full shadow-[0_2px_10px_rgba(255,255,255,0.2)]"
+                    transition={{ type: "spring", stiffness: 350, damping: 30 }}
+                  />
+                )}
+                <span className="relative z-10">{link.name}</span>
               </Link>
             );
           })}
@@ -98,13 +103,18 @@ export function Navbar() {
                     key={link.name}
                     href={link.href}
                     onClick={() => setIsOpen(false)}
-                    className={`px-6 py-4 text-lg font-medium transition-all duration-300 rounded-2xl ${
-                      isActive
-                        ? "bg-white text-black shadow-lg"
-                        : "text-zinc-400 hover:text-white hover:bg-white/5"
+                    className={`relative px-6 py-4 text-lg font-medium transition-colors duration-300 rounded-2xl ${
+                      isActive ? "text-black" : "text-zinc-400 hover:text-white hover:bg-white/5"
                     }`}
                   >
-                    {link.name}
+                    {isActive && (
+                      <motion.div
+                        layoutId="activeNavMobile"
+                        className="absolute inset-0 bg-white rounded-2xl shadow-lg"
+                        transition={{ type: "spring", stiffness: 350, damping: 30 }}
+                      />
+                    )}
+                    <span className="relative z-10">{link.name}</span>
                   </Link>
                 );
               })}

@@ -20,12 +20,12 @@ export function NewsCard({ item }: NewsCardProps) {
   return (
     <article className="w-full h-full flex flex-col cursor-pointer" style={{ fontFamily: "var(--font-inter), sans-serif" }}>
       <Link href={item.url || "#"} className="h-full flex flex-col" target="_blank" rel="noopener noreferrer">
-        <div className="relative flex flex-col h-full bg-zinc-900/40 backdrop-blur-3xl border border-white/5 rounded-[2.5rem] p-6 pb-8 shadow-2xl transition-all duration-500">
+        <div className="relative flex flex-col h-full bg-zinc-900/40 backdrop-blur-3xl shadow-2xl border border-zinc-800 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.1)] outline outline-1 outline-transparent [transform:translateZ(0)] rounded-[2.5rem] p-6 pb-8 transition-all duration-500">
           
-          <div className="relative aspect-16/10 w-full rounded-[1.8rem] overflow-hidden bg-zinc-950 mb-8 border border-white/5 shadow-inner">
+          <div className="relative aspect-16/10 w-full rounded-[1.8rem] overflow-hidden bg-zinc-950 mb-8 border border-zinc-800 shadow-inner shadow-[inset_0_0_0_1px_rgba(255,255,255,0.1)] outline outline-1 outline-transparent [transform:translateZ(0)]">
             {item.thumbnailUrl && (
               <>
-                <div className="absolute inset-0 z-0">
+                <div className="absolute top-0 inset-x-0 h-[calc(100%+1px)] z-0">
                   <Image
                     src={item.thumbnailUrl}
                     alt=""
@@ -37,7 +37,7 @@ export function NewsCard({ item }: NewsCardProps) {
                   src={item.thumbnailUrl}
                   alt={item.title}
                   fill
-                  className="relative z-10 object-contain p-4"
+                  className="relative z-10 object-cover"
                   sizes="(max-width: 1024px) 100vw, 450px"
                 />
               </>

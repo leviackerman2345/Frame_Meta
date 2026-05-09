@@ -31,9 +31,14 @@ export async function getLatestNews(limit: number = 10): Promise<NewsItem[]> {
       `&page=0` +
       `&api-key=${NYT_API_KEY}`;
 
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 4000); // 4s hard timeout
+
     const response = await fetch(url, {
-      next: { revalidate: 600 }, // Cache for 10 minutes (was 4 hours)
+      next: { revalidate: 3600 }, // Cache for 1 hour — news doesn't change that fast
+      signal: controller.signal,
     });
+    clearTimeout(timeout);
 
     if (!response.ok) {
       return newsContent.featured.items.slice(0, limit);
@@ -61,22 +66,34 @@ export async function getLatestNews(limit: number = 10): Promise<NewsItem[]> {
 
     const validArticles = sourceDocs
       .filter((article: any) => {
-        const hasImage = Array.isArray(article.multimedia) && article.multimedia.length > 0;
+        const multimedia = article.multimedia;
+        // Handle both Array and Object formats for multimedia
+        const hasImage = (Array.isArray(multimedia) && multimedia.length > 0) || 
+                        (multimedia && typeof multimedia === 'object' && (multimedia.url || multimedia.default?.url));
         return !!article.abstract && hasImage;
       })
       .slice(0, limit);
 
     return validArticles.map((article: any, index: number) => {
-      // Find the highest quality image available
       const multimedia = article.multimedia;
-      const isArr = Array.isArray(multimedia);
-      const bestImage = isArr ? (
-        multimedia.find((m: any) => m.subtype === "superJumbo") || 
-        multimedia.find((m: any) => m.subtype === "xlarge") || 
-        multimedia[0]
-      ) : null;
+      let imageUrl: string | undefined;
+
+      if (Array.isArray(multimedia)) {
+        const bestImage = multimedia.find((m: any) => m.subtype === "superJumbo") || 
+                         multimedia.find((m: any) => m.subtype === "xlarge") || 
+                         multimedia.find((m: any) => m.type === "image") ||
+                         multimedia[0];
+        if (bestImage?.url) {
+          imageUrl = bestImage.url.startsWith("http") ? bestImage.url : `https://static01.nyt.com/${bestImage.url}`;
+        }
+      } else if (multimedia && typeof multimedia === 'object') {
+        // Handle object format (sometimes used in specific NYT responses)
+        const url = multimedia.superJumbo?.url || multimedia.xlarge?.url || multimedia.default?.url || multimedia.url;
+        if (url) {
+          imageUrl = url.startsWith("http") ? url : `https://static01.nyt.com/${url}`;
+        }
+      }
       
-      const imageUrl = bestImage?.url ? `https://static01.nyt.com/${bestImage.url}` : undefined;
       const textToRead = (article.abstract || "") + (article.lead_paragraph || "");
       const wordCount = textToRead.split(/\s+/).length;
       const readTimeMinutes = Math.max(3, Math.ceil(wordCount / 200) + 2);
@@ -123,9 +140,14 @@ export async function getNewsByQuery(query: string, limit: number = 6): Promise<
       `&page=0` +
       `&api-key=${NYT_API_KEY}`;
 
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 4000); // 4s hard timeout
+
     const response = await fetch(url, {
-      next: { revalidate: 600 },
+      next: { revalidate: 3600 }, // Cache for 1 hour per artist query
+      signal: controller.signal,
     });
+    clearTimeout(timeout);
 
     if (!response.ok) return newsContent.featured.items.slice(0, limit);
 
@@ -136,21 +158,32 @@ export async function getNewsByQuery(query: string, limit: number = 6): Promise<
 
     const validArticles = docs
       .filter((article: any) => {
-        const hasImage = Array.isArray(article.multimedia) && article.multimedia.length > 0;
+        const multimedia = article.multimedia;
+        const hasImage = (Array.isArray(multimedia) && multimedia.length > 0) || 
+                        (multimedia && typeof multimedia === 'object' && (multimedia.url || multimedia.default?.url));
         return !!article.abstract && hasImage;
       })
       .slice(0, limit);
 
     return validArticles.map((article: any, index: number) => {
       const multimedia = article.multimedia;
-      const isArr = Array.isArray(multimedia);
-      const bestImage = isArr ? (
-        multimedia.find((m: any) => m.subtype === "superJumbo") || 
-        multimedia.find((m: any) => m.subtype === "xlarge") || 
-        multimedia[0]
-      ) : null;
+      let imageUrl: string | undefined;
+
+      if (Array.isArray(multimedia)) {
+        const bestImage = multimedia.find((m: any) => m.subtype === "superJumbo") || 
+                         multimedia.find((m: any) => m.subtype === "xlarge") || 
+                         multimedia.find((m: any) => m.type === "image") ||
+                         multimedia[0];
+        if (bestImage?.url) {
+          imageUrl = bestImage.url.startsWith("http") ? bestImage.url : `https://static01.nyt.com/${bestImage.url}`;
+        }
+      } else if (multimedia && typeof multimedia === 'object') {
+        const url = multimedia.superJumbo?.url || multimedia.xlarge?.url || multimedia.default?.url || multimedia.url;
+        if (url) {
+          imageUrl = url.startsWith("http") ? url : `https://static01.nyt.com/${url}`;
+        }
+      }
       
-      const imageUrl = bestImage?.url ? `https://static01.nyt.com/${bestImage.url}` : undefined;
       const author = (article.byline?.original || "").replace(/^By\s+/i, "").split(",")[0].trim() || "FrameMeta Editorial";
 
       return {
@@ -209,14 +242,23 @@ export async function getNewsBySlug(slug: string): Promise<NewsItem | null> {
     if (!article) return null;
 
     const multimedia = article.multimedia;
-    const isArr = Array.isArray(multimedia);
-    const bestImage = isArr ? (
-      multimedia.find((m: any) => m.subtype === "superJumbo") || 
-      multimedia.find((m: any) => m.subtype === "xlarge") || 
-      multimedia[0]
-    ) : null;
+    let imageUrl: string | undefined;
+
+    if (Array.isArray(multimedia)) {
+      const bestImage = multimedia.find((m: any) => m.subtype === "superJumbo") || 
+                       multimedia.find((m: any) => m.subtype === "xlarge") || 
+                       multimedia.find((m: any) => m.type === "image") ||
+                       multimedia[0];
+      if (bestImage?.url) {
+        imageUrl = bestImage.url.startsWith("http") ? bestImage.url : `https://static01.nyt.com/${bestImage.url}`;
+      }
+    } else if (multimedia && typeof multimedia === 'object') {
+      const url = multimedia.superJumbo?.url || multimedia.xlarge?.url || multimedia.default?.url || multimedia.url;
+      if (url) {
+        imageUrl = url.startsWith("http") ? url : `https://static01.nyt.com/${url}`;
+      }
+    }
     
-    const imageUrl = bestImage?.url ? `https://static01.nyt.com/${bestImage.url}` : undefined;
     const textToRead = (article.abstract || "") + (article.lead_paragraph || "");
     const wordCount = textToRead.split(/\s+/).length;
     const readTimeMinutes = Math.max(3, Math.ceil(wordCount / 200) + 2);

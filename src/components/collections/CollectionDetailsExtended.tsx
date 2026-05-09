@@ -19,7 +19,7 @@ export function CollectionDetailsExtended({ data }: CollectionDetailsExtendedPro
   return (
     <div className="flex flex-col bg-black min-h-screen">
       {/* 1st Section: Hero (Matched to Movie Modal Hero Design) */}
-      <div className="relative w-full overflow-hidden min-h-[85vh] md:min-h-screen flex flex-col">
+      <div className="relative w-full overflow-hidden min-h-screen md:min-h-screen flex flex-col">
         {/* Close Button - Matched to Movie Modal position */}
         <button
           onClick={() => router.back()}
@@ -44,9 +44,9 @@ export function CollectionDetailsExtended({ data }: CollectionDetailsExtendedPro
         </div>
 
         {/* Content Section */}
-        <div className="relative z-30 flex flex-col justify-end items-center text-center md:items-start md:text-left flex-1 p-6 sm:p-10 md:p-16 lg:p-24 w-full min-h-[85vh] md:min-h-screen">
+        <div className="relative z-30 flex flex-col justify-end items-center text-center md:items-start md:text-left flex-1 p-6 sm:p-10 md:p-16 lg:p-24 w-full min-h-screen md:min-h-screen">
           {/* Title */}
-          <h2 className="text-5xl sm:text-6xl md:text-8xl font-black tracking-tight subpixel-antialiased drop-shadow-[0_4px_16px_rgba(0,0,0,0.9)] text-white mb-8 md:mb-10">
+          <h2 className="text-4xl sm:text-6xl md:text-8xl font-black tracking-tight subpixel-antialiased drop-shadow-[0_4px_16px_rgba(0,0,0,0.9)] text-white mb-8 md:mb-10">
             {title}
           </h2>
 

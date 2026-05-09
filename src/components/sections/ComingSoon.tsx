@@ -18,15 +18,15 @@ export async function ComingSoon() {
         layout="split"
       />
 
-      <div className="flex gap-5 md:gap-6 overflow-x-auto pb-6 custom-scrollbar snap-x px-1 scroll-smooth">
+      <div className="flex gap-5 md:gap-6 overflow-x-auto pb-6 custom-scrollbar snap-x snap-mandatory px-1 scroll-smooth">
         {content.map((item) => (
           <div
             key={item.id}
-            className="min-w-40 md:min-w-50 aspect-2/3 bg-zinc-800/30 backdrop-blur-2xl border border-white/5 rounded-3xl shadow-xl snap-start relative group cursor-pointer transition-all duration-500 hover:scale-[1.03] hover:z-50 hover:shadow-2xl overflow-hidden"
+            className="w-[calc((100%-1.25rem)/2)] md:w-[calc((100%-6rem)/5)] shrink-0 aspect-2/3 bg-zinc-800/30 backdrop-blur-2xl shadow-xl shadow-[inset_0_0_0_1px_rgba(255,255,255,0.15)] outline outline-1 outline-transparent [transform:translateZ(0)] snap-start relative group cursor-pointer transition-all duration-500 hover:scale-[1.03] hover:z-50 hover:shadow-2xl overflow-hidden rounded-[2.5rem]"
           >
             {/* Poster Image */}
             {item.posterUrl && (
-              <div className="absolute inset-0 z-0">
+              <div className="absolute top-0 inset-x-0 h-[calc(100%+1px)] z-0">
                 <Image
                   src={item.posterUrl}
                   alt={item.title || "Poster"}
@@ -55,13 +55,14 @@ export async function ComingSoon() {
             </div>
 
             {/* Clean Content Overlay */}
-            <div className="absolute inset-0 transition-opacity flex flex-col justify-end p-5 items-center z-10 bg-gradient-to-t from-black/95 via-black/40 to-transparent text-center rounded-3xl">
+            <div className="absolute inset-0 transition-opacity flex flex-col justify-end p-5 items-center z-10 bg-gradient-to-t from-black/95 via-black/40 to-transparent text-center rounded-[2.5rem]">
               {/* Fixed-height container to lock label alignment */}
               <div className="h-[4.5rem] flex flex-col justify-center w-full">
                 <TitleLogo
                   id={item.id}
                   title={item.title || ""}
                   type={item.genre === "Series" ? "series" : "movie"}
+                  logoUrl={item.logoUrl}
                 />
 
                 {/* Metadata String */}
@@ -74,7 +75,7 @@ export async function ComingSoon() {
             </div>
             
             {/* Apple-style hover border illumination */}
-            <div className="absolute inset-0 border border-white/10 rounded-3xl pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+            <div className="absolute inset-0 border border-white/10 rounded-[2.5rem] pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
           </div>
         ))}
       </div>

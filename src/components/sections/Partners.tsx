@@ -9,7 +9,7 @@ export function Partners() {
   const scrollingPartners = createInfiniteScrollData<Partner>(items);
 
   return (
-    <section className="relative w-full max-w-[100vw] overflow-hidden mx-auto py-24 z-20">
+    <section className="relative w-full overflow-hidden mx-auto py-24 z-20">
       <div className="flex flex-col items-center text-center mb-16 px-6">
         <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-white mb-4 drop-shadow-lg leading-tight font-sans">
           {heading.title}

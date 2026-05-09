@@ -1089,7 +1089,7 @@ export function MovieDetailsExtended({
 
           <Link 
             href={`/collection/${collectionData.id}`}
-            className="group relative w-full aspect-[21/9] md:aspect-[21/7] rounded-[2.5rem] overflow-hidden border border-white/10 hover:border-white/20 transition-all duration-700 shadow-2xl block"
+            className="group relative w-full aspect-square sm:aspect-[21/9] md:aspect-[21/7] rounded-[2.5rem] overflow-hidden border border-white/10 hover:border-white/20 transition-all duration-700 shadow-2xl block"
           >
             {/* Backdrop */}
             <Image
@@ -1101,13 +1101,13 @@ export function MovieDetailsExtended({
             />
             
             {/* Content Overlay */}
-            <div className="absolute inset-0 p-8 md:p-12 flex flex-col justify-center items-start gap-4">
+            <div className="absolute inset-0 p-8 sm:p-10 md:p-12 flex flex-col justify-end items-start gap-4 md:gap-5">
               <span className="px-4 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-[10px] md:text-xs font-black tracking-widest text-white uppercase">
                 {collectionData.parts?.length || 0} MOVIES IN COLLECTION
               </span>
               
               <div className="flex flex-col gap-2">
-                <h4 className="text-4xl md:text-6xl font-black tracking-tighter text-white drop-shadow-2xl">
+                <h4 className="text-2xl sm:text-4xl md:text-6xl font-black tracking-tighter text-white drop-shadow-2xl leading-tight">
                   {collectionData.title}
                 </h4>
                 <p className="text-zinc-300 text-sm md:text-lg max-w-2xl font-medium line-clamp-2 md:line-clamp-3">

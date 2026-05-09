@@ -20,7 +20,7 @@ export function MovieDetailsHero({
   const title = details.title || details.name || "Title";
 
   return (
-    <div className="relative w-full overflow-hidden min-h-[85vh] md:min-h-screen flex flex-col">
+    <div className="relative w-full overflow-hidden min-h-screen md:min-h-screen flex flex-col">
       {/* Hero Image Section (Absolute to fill section) */}
       <div className="absolute inset-0 z-0 w-full h-full">
         <Image
@@ -37,7 +37,7 @@ export function MovieDetailsHero({
       </div>
 
       {/* Content Section */}
-      <div className="relative z-30 flex flex-col justify-end items-center text-center md:items-start md:text-left flex-1 p-6 sm:p-10 md:p-16 lg:p-24 w-full min-h-[85vh] md:min-h-screen">
+      <div className="relative z-30 flex flex-col justify-end items-center text-center md:items-start md:text-left flex-1 p-6 sm:p-10 md:p-16 lg:p-24 w-full min-h-screen md:min-h-screen">
         {/* Title Logo or Fallback */}
         <div className="mb-10 md:mb-12 w-full flex justify-center md:justify-start">
           {logoUrl ? (

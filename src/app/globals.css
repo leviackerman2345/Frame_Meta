@@ -142,10 +142,14 @@
 
   body {
     @apply bg-background text-foreground;
+    overflow-x: hidden;
+    max-width: 100%;
   }
 
   html {
     @apply font-sans;
+    overflow-x: hidden;
+    max-width: 100%;
   }
 }
 

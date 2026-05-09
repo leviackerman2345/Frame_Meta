@@ -40,11 +40,11 @@ export function MediaCard({
   return (
     <Component
       href={href}
-      className={`relative block aspect-[2/3] bg-zinc-800/30 backdrop-blur-2xl border border-white/5 rounded-3xl shadow-xl overflow-hidden group cursor-pointer transition-all duration-500 hover:border-white hover:ring-2 hover:ring-white/10 ${container === "grid" ? "w-full" : "min-w-[160px] md:min-w-[200px] snap-start shrink-0"
+      className={`relative block aspect-[2/3] bg-zinc-800/30 backdrop-blur-2xl shadow-xl shadow-[inset_0_0_0_1px_rgba(255,255,255,0.1)] outline outline-1 outline-transparent [transform:translateZ(0)] rounded-[2.5rem] overflow-hidden group cursor-pointer transition-all duration-500 hover:border-white hover:ring-2 hover:ring-white/10 ${container === "grid" ? "w-full" : "w-[calc((100%-1.25rem)/2)] md:w-[calc((100%-6rem)/5)] snap-start shrink-0"
         }`}
     >
       {/* Poster Image */}
-      <div className="absolute inset-0 z-0">
+      <div className="absolute top-0 inset-x-0 h-[calc(100%+1px)] z-0">
         <Image
           src={posterUrl && !posterUrl.includes('placeholder') ? posterUrl : `https://images.unsplash.com/photo-1626814026160-2237a95fc5a0?q=80&w=2070&auto=format&fit=crop`}
           alt={title || ""}

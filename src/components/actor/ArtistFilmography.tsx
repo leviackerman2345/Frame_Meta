@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useRef } from "react";
+import { useState, useMemo, useRef, useEffect } from "react";
 import { motion, AnimatePresence, Variants } from "framer-motion";
 import { MediaCard } from "@/components/ui/MediaCard";
 import { Credit, MovieCard } from "@/types/types";
@@ -14,6 +14,7 @@ type FilmographyFilter = "movies" | "tv" | "director" | "writer" | "producer" | 
 
 export function ArtistFilmography({ movieCredits, tvCredits }: ArtistFilmographyProps) {
   const [filterState, setFilterState] = useState<{ index: number; direction: number }>({ index: 0, direction: 0 });
+  const [visibleCount, setVisibleCount] = useState(24);
 
   const { movieCast, movieCrew, tvCast, tvCrew } = useMemo(() => {
     return {
@@ -57,6 +58,11 @@ export function ArtistFilmography({ movieCredits, tvCredits }: ArtistFilmography
   // Safe bounds check just in case
   const fIndex = Math.min(filterState.index, filters.length - 1 < 0 ? 0 : filters.length - 1);
   const activeFilter = filters[fIndex]?.value || "movies";
+
+  // Reset visible count when filter changes
+  useEffect(() => {
+    setVisibleCount(24);
+  }, [activeFilter]);
 
   const changeFilter = (newIndex: number) => {
     setFilterState({
@@ -230,25 +236,42 @@ export function ArtistFilmography({ movieCredits, tvCredits }: ArtistFilmography
       <div className="min-h-100 relative overflow-hidden">
         <AnimatePresence mode="popLayout" custom={filterState.direction}>
           {filteredCredits.length > 0 ? (
-            <motion.div
-              key={activeFilter}
-              custom={filterState.direction}
-              variants={slideVariants}
-              initial="enter"
-              animate="center"
-              exit="exit"
-              className="flex md:grid md:grid-cols-4 lg:grid-cols-6 gap-4 md:gap-6 w-full overflow-x-auto md:overflow-visible pb-6 snap-x snap-mandatory scrollbar-hide"
-            >
-              {filteredCredits.map((credit, idx) => (
-                <motion.div key={`${activeFilter}-${credit.id}-${idx}`} variants={cardVariants} className="w-40 sm:w-50 md:w-full shrink-0 snap-start">
-                  <MediaCard 
-                    data={mapToMovieCard(credit, activeFilter === "tv" ? "tv" : undefined)} 
-                    variant="catalog" 
-                    container="grid"
-                  />
+            <div className="flex flex-col gap-12">
+              <motion.div
+                key={activeFilter}
+                custom={filterState.direction}
+                variants={slideVariants}
+                initial="enter"
+                animate="center"
+                exit="exit"
+                className="flex md:grid md:grid-cols-4 lg:grid-cols-6 gap-4 md:gap-6 w-full overflow-x-auto md:overflow-visible pb-6 snap-x snap-mandatory scrollbar-hide"
+              >
+                {filteredCredits.slice(0, visibleCount).map((credit, idx) => (
+                  <motion.div key={`${activeFilter}-${credit.id}-${idx}`} variants={cardVariants} className="w-40 sm:w-50 md:w-full shrink-0 snap-start">
+                    <MediaCard 
+                      data={mapToMovieCard(credit, activeFilter === "tv" ? "tv" : undefined)} 
+                      variant="catalog" 
+                      container="grid"
+                    />
+                  </motion.div>
+                ))}
+              </motion.div>
+
+              {visibleCount < filteredCredits.length && (
+                <motion.div 
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="flex justify-center"
+                >
+                  <button
+                    onClick={() => setVisibleCount(prev => prev + 24)}
+                    className="px-12 py-4 rounded-full bg-white/5 border border-white/10 text-white text-xs font-bold uppercase tracking-[0.3em] hover:bg-white hover:text-black transition-all duration-300"
+                  >
+                    View All {filteredCredits.length} Credits
+                  </button>
                 </motion.div>
-              ))}
-            </motion.div>
+              )}
+            </div>
           ) : (
             <motion.div
               key="empty"

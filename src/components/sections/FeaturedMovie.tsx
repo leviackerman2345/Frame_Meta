@@ -17,7 +17,7 @@ export async function FeaturedMovie() {
         subtitle={titlesContent.featuredMovies.heading.subtitle}
       />
 
-      <div className="flex gap-5 md:gap-6 overflow-x-auto pb-6 custom-scrollbar snap-x px-1 scroll-smooth">
+      <div className="flex gap-5 md:gap-6 overflow-x-auto pb-6 custom-scrollbar snap-x snap-mandatory px-1 scroll-smooth">
         {movies.map((movie) => (
           <MediaCard
             key={movie.id}
