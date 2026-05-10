@@ -1,8 +1,35 @@
+// FIX 1 — server-only guard.
+// This import causes a hard build error if any "use client" module (or anything
+// transitively imported by one) tries to import this file.  Without it the
+// NYT_API_KEY, base-URL, and Lucene query structure would be silently bundled
+// into the client JavaScript when a developer adds the import by mistake.
+import "server-only";
+
 import { NewsItem } from "@/types/types";
-import { newsContent } from "@/constants/news";
+// FIX 3 — import isFallbackStale so we can warn developers when stale fallback
+// data is being served and annotate returned articles with isArchived: true.
+import { newsContent, isFallbackStale } from "@/constants/news";
 
 const NYT_API_KEY = process.env.NYT_API_KEY;
 const NYT_BASE_URL = "https://api.nytimes.com/svc";
+
+// ---------------------------------------------------------------------------
+// FIX 2 — Slug sanitization.
+// The slug arrives from an untrusted URL parameter and was previously embedded
+// raw inside a Lucene fq= filter string:
+//   fq=_id:("${nytId}")
+// A crafted slug such as  article--")(injected:*  can break out of the quoted
+// Lucene term and alter the query sent to the NYT API (Lucene injection).
+// This function strips every character that is not alphanumeric, a hyphen, or
+// an underscore before the slug is used in any URL construction.
+// ---------------------------------------------------------------------------
+function sanitizeSlug(slug: string): string {
+  // Only allow alphanumeric, hyphens, underscores — everything else is stripped.
+  const cleaned = slug.replace(/[^a-zA-Z0-9\-_]/g, "");
+  if (!cleaned) throw new Error("Invalid slug: empty after sanitization");
+  if (cleaned.length > 200) throw new Error("Invalid slug: exceeds maximum length");
+  return cleaned;
+}
 
 /**
  * Helper to slugify a string or generate a stable ID from NYT _id
@@ -13,13 +40,54 @@ function getSlugFromId(nytId: string): string {
   return nytId.replace("nyt://", "").replace(/\//g, "--");
 }
 
+// ---------------------------------------------------------------------------
+// FIX 3 — fetchWithTimeout.
+// Every raw fetch() call in this file is replaced with fetchWithTimeout() so
+// that a slow or hung NYT API connection cannot stall the Next.js server
+// indefinitely.  The AbortController timer is always cleared in .finally() to
+// prevent the timer from holding references and leaking memory in long-lived
+// server processes.
+// ---------------------------------------------------------------------------
+async function fetchWithTimeout(
+  url: string,
+  options: RequestInit & { next?: NextFetchRequestConfig } = {},
+  timeoutMs: number = 5000
+): Promise<Response> {
+  const controller = new AbortController();
+  // Start the deadline timer.
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+
+  try {
+    const response = await fetch(url, {
+      ...options,
+      signal: controller.signal,
+    });
+    return response;
+  } finally {
+    // Always clear the timer — prevents memory leaks if the request resolves
+    // before the deadline.
+    clearTimeout(timer);
+  }
+}
+
 /**
  * Fetch latest movie and cinema news from the New York Times Article Search API.
  */
 export async function getLatestNews(limit: number = 10): Promise<NewsItem[]> {
   if (!NYT_API_KEY) {
     console.warn("[News] NYT_API_KEY is not defined in environment variables. Falling back to local data.");
-    return newsContent.featured.items.slice(0, limit);
+    // FIX 3 — Staleness warning: if the fallback articles are older than
+    // FALLBACK_MAX_AGE_DAYS, log a developer alert so this is visible in
+    // build logs and monitoring dashboards. isArchived is set on every
+    // item so the UI can render the "From our archive" banner.
+    if (isFallbackStale()) {
+      console.warn("[FrameMeta] Fallback news data is stale (>30 days old). Update src/constants/news.ts");
+    }
+    return newsContent.featured.items.slice(0, limit).map(item => ({
+      ...item,
+      // Only mark as archived when the fallback is actually stale.
+      isArchived: isFallbackStale() ? true : item.isArchived,
+    }));
   }
 
   try {
@@ -31,14 +99,10 @@ export async function getLatestNews(limit: number = 10): Promise<NewsItem[]> {
       `&page=0` +
       `&api-key=${NYT_API_KEY}`;
 
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 4000); // 4s hard timeout
-
-    const response = await fetch(url, {
+    // FIX 3 — replaced raw fetch() with fetchWithTimeout() (5 s deadline).
+    const response = await fetchWithTimeout(url, {
       next: { revalidate: 3600 }, // Cache for 1 hour — news doesn't change that fast
-      signal: controller.signal,
     });
-    clearTimeout(timeout);
 
     if (!response.ok) {
       return newsContent.featured.items.slice(0, limit);
@@ -68,8 +132,8 @@ export async function getLatestNews(limit: number = 10): Promise<NewsItem[]> {
       .filter((article: any) => {
         const multimedia = article.multimedia;
         // Handle both Array and Object formats for multimedia
-        const hasImage = (Array.isArray(multimedia) && multimedia.length > 0) || 
-                        (multimedia && typeof multimedia === 'object' && (multimedia.url || multimedia.default?.url));
+        const hasImage = (Array.isArray(multimedia) && multimedia.length > 0) ||
+                        (multimedia && typeof multimedia === "object" && (multimedia.url || multimedia.default?.url));
         return !!article.abstract && hasImage;
       })
       .slice(0, limit);
@@ -79,21 +143,21 @@ export async function getLatestNews(limit: number = 10): Promise<NewsItem[]> {
       let imageUrl: string | undefined;
 
       if (Array.isArray(multimedia)) {
-        const bestImage = multimedia.find((m: any) => m.subtype === "superJumbo") || 
-                         multimedia.find((m: any) => m.subtype === "xlarge") || 
+        const bestImage = multimedia.find((m: any) => m.subtype === "superJumbo") ||
+                         multimedia.find((m: any) => m.subtype === "xlarge") ||
                          multimedia.find((m: any) => m.type === "image") ||
                          multimedia[0];
         if (bestImage?.url) {
           imageUrl = bestImage.url.startsWith("http") ? bestImage.url : `https://static01.nyt.com/${bestImage.url}`;
         }
-      } else if (multimedia && typeof multimedia === 'object') {
+      } else if (multimedia && typeof multimedia === "object") {
         // Handle object format (sometimes used in specific NYT responses)
         const url = multimedia.superJumbo?.url || multimedia.xlarge?.url || multimedia.default?.url || multimedia.url;
         if (url) {
           imageUrl = url.startsWith("http") ? url : `https://static01.nyt.com/${url}`;
         }
       }
-      
+
       const textToRead = (article.abstract || "") + (article.lead_paragraph || "");
       const wordCount = textToRead.split(/\s+/).length;
       const readTimeMinutes = Math.max(3, Math.ceil(wordCount / 200) + 2);
@@ -113,7 +177,6 @@ export async function getLatestNews(limit: number = 10): Promise<NewsItem[]> {
         readTime: `${readTimeMinutes} min read`,
         imageUrl,
         author,
-        authorAvatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(author)}&background=random&color=fff`,
         description: article.abstract,
         content: article.lead_paragraph || article.abstract,
         url: article.web_url,
@@ -121,7 +184,14 @@ export async function getLatestNews(limit: number = 10): Promise<NewsItem[]> {
     });
   } catch (error) {
     console.error("[News] Error fetching news:", error);
-    return newsContent.featured.items.slice(0, limit);
+    // FIX 3 — Staleness warning on catch path (API call failed at runtime).
+    if (isFallbackStale()) {
+      console.warn("[FrameMeta] Fallback news data is stale (>30 days old). Update src/constants/news.ts");
+    }
+    return newsContent.featured.items.slice(0, limit).map(item => ({
+      ...item,
+      isArchived: isFallbackStale() ? true : item.isArchived,
+    }));
   }
 }
 
@@ -129,7 +199,16 @@ export async function getLatestNews(limit: number = 10): Promise<NewsItem[]> {
  * Fetch news articles based on a specific query (e.g., artist name).
  */
 export async function getNewsByQuery(query: string, limit: number = 6): Promise<NewsItem[]> {
-  if (!NYT_API_KEY) return newsContent.featured.items.slice(0, limit);
+  if (!NYT_API_KEY) {
+    // FIX 3 — Staleness warning on the no-API-key path for getNewsByQuery.
+    if (isFallbackStale()) {
+      console.warn("[FrameMeta] Fallback news data is stale (>30 days old). Update src/constants/news.ts");
+    }
+    return newsContent.featured.items.slice(0, limit).map(item => ({
+      ...item,
+      isArchived: isFallbackStale() ? true : item.isArchived,
+    }));
+  }
 
   try {
     const q = encodeURIComponent(`"${query}" OR ${query}`);
@@ -140,14 +219,10 @@ export async function getNewsByQuery(query: string, limit: number = 6): Promise<
       `&page=0` +
       `&api-key=${NYT_API_KEY}`;
 
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 4000); // 4s hard timeout
-
-    const response = await fetch(url, {
+    // FIX 3 — replaced raw fetch() with fetchWithTimeout() (5 s deadline).
+    const response = await fetchWithTimeout(url, {
       next: { revalidate: 3600 }, // Cache for 1 hour per artist query
-      signal: controller.signal,
     });
-    clearTimeout(timeout);
 
     if (!response.ok) return newsContent.featured.items.slice(0, limit);
 
@@ -159,8 +234,8 @@ export async function getNewsByQuery(query: string, limit: number = 6): Promise<
     const validArticles = docs
       .filter((article: any) => {
         const multimedia = article.multimedia;
-        const hasImage = (Array.isArray(multimedia) && multimedia.length > 0) || 
-                        (multimedia && typeof multimedia === 'object' && (multimedia.url || multimedia.default?.url));
+        const hasImage = (Array.isArray(multimedia) && multimedia.length > 0) ||
+                        (multimedia && typeof multimedia === "object" && (multimedia.url || multimedia.default?.url));
         return !!article.abstract && hasImage;
       })
       .slice(0, limit);
@@ -170,20 +245,20 @@ export async function getNewsByQuery(query: string, limit: number = 6): Promise<
       let imageUrl: string | undefined;
 
       if (Array.isArray(multimedia)) {
-        const bestImage = multimedia.find((m: any) => m.subtype === "superJumbo") || 
-                         multimedia.find((m: any) => m.subtype === "xlarge") || 
+        const bestImage = multimedia.find((m: any) => m.subtype === "superJumbo") ||
+                         multimedia.find((m: any) => m.subtype === "xlarge") ||
                          multimedia.find((m: any) => m.type === "image") ||
                          multimedia[0];
         if (bestImage?.url) {
           imageUrl = bestImage.url.startsWith("http") ? bestImage.url : `https://static01.nyt.com/${bestImage.url}`;
         }
-      } else if (multimedia && typeof multimedia === 'object') {
+      } else if (multimedia && typeof multimedia === "object") {
         const url = multimedia.superJumbo?.url || multimedia.xlarge?.url || multimedia.default?.url || multimedia.url;
         if (url) {
           imageUrl = url.startsWith("http") ? url : `https://static01.nyt.com/${url}`;
         }
       }
-      
+
       const author = (article.byline?.original || "").replace(/^By\s+/i, "").split(",")[0].trim() || "FrameMeta Editorial";
 
       return {
@@ -207,7 +282,14 @@ export async function getNewsByQuery(query: string, limit: number = 6): Promise<
     });
   } catch (error) {
     console.error("[News] Error fetching query news:", error);
-    return newsContent.featured.items.slice(0, limit);
+    // FIX 3 — Staleness warning on catch path for getNewsByQuery.
+    if (isFallbackStale()) {
+      console.warn("[FrameMeta] Fallback news data is stale (>30 days old). Update src/constants/news.ts");
+    }
+    return newsContent.featured.items.slice(0, limit).map(item => ({
+      ...item,
+      isArchived: isFallbackStale() ? true : item.isArchived,
+    }));
   }
 }
 
@@ -222,18 +304,24 @@ export async function getNewsBySlug(slug: string): Promise<NewsItem | null> {
   if (!NYT_API_KEY) return null;
 
   try {
-    // Search by the specific NYT ID
+    // FIX 2 — sanitize the slug before using it in any URL construction.
+    // Without this, a crafted slug can inject arbitrary characters into the
+    // Lucene fq= query string and manipulate which NYT documents are returned.
+    const safeSlug = sanitizeSlug(slug);
+
     // Reconstruct the full NYT ID from the slug (e.g., article--uuid -> nyt://article/uuid)
-    let nytId = slug;
-    if (slug.includes("--")) {
-      nytId = "nyt://" + slug.replace(/--/g, "/");
+    let nytId = safeSlug;
+    if (safeSlug.includes("--")) {
+      nytId = "nyt://" + safeSlug.replace(/--/g, "/");
     } else {
-      nytId = `nyt://article/${slug}`;
+      nytId = `nyt://article/${safeSlug}`;
     }
 
+    // FIX 2 — nytId is now built from the sanitized slug, safe to embed in fq=.
     const url = `${NYT_BASE_URL}/search/v2/articlesearch.json?fq=_id:("${nytId}")&api-key=${NYT_API_KEY}`;
 
-    const response = await fetch(url, { next: { revalidate: 600 } });
+    // FIX 3 — replaced raw fetch() with fetchWithTimeout() (5 s deadline).
+    const response = await fetchWithTimeout(url, { next: { revalidate: 600 } });
     if (!response.ok) return null;
 
     const data = await response.json();
@@ -245,20 +333,20 @@ export async function getNewsBySlug(slug: string): Promise<NewsItem | null> {
     let imageUrl: string | undefined;
 
     if (Array.isArray(multimedia)) {
-      const bestImage = multimedia.find((m: any) => m.subtype === "superJumbo") || 
-                       multimedia.find((m: any) => m.subtype === "xlarge") || 
+      const bestImage = multimedia.find((m: any) => m.subtype === "superJumbo") ||
+                       multimedia.find((m: any) => m.subtype === "xlarge") ||
                        multimedia.find((m: any) => m.type === "image") ||
                        multimedia[0];
       if (bestImage?.url) {
         imageUrl = bestImage.url.startsWith("http") ? bestImage.url : `https://static01.nyt.com/${bestImage.url}`;
       }
-    } else if (multimedia && typeof multimedia === 'object') {
+    } else if (multimedia && typeof multimedia === "object") {
       const url = multimedia.superJumbo?.url || multimedia.xlarge?.url || multimedia.default?.url || multimedia.url;
       if (url) {
         imageUrl = url.startsWith("http") ? url : `https://static01.nyt.com/${url}`;
       }
     }
-    
+
     const textToRead = (article.abstract || "") + (article.lead_paragraph || "");
     const wordCount = textToRead.split(/\s+/).length;
     const readTimeMinutes = Math.max(3, Math.ceil(wordCount / 200) + 2);

@@ -208,6 +208,11 @@ export interface NewsItem {
   content?: string;     // Full text content if available
   slug?: string;        // URL-friendly ID for internal routing
   url?: string;        // Link to the full article
+  // FIX 3 (Phase 5) — Staleness guard: true when this article comes from the
+  // hardcoded fallback list and that list is older than FALLBACK_MAX_AGE_DAYS.
+  // The UI uses this flag to render a subtle "From our archive" banner so users
+  // are never misled into thinking a 6-month-old article is breaking news.
+  isArchived?: boolean;
 }
 
 /** A single FAQ item */
@@ -270,4 +275,6 @@ export interface NewsArticle {
   source: string;
   publishedAt: string;
   thumbnailUrl: string;
+  author?: string;
+  authorAvatar?: string;
 }

@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { MediaCard } from "@/components/ui/MediaCard";
 import { CastSection } from "@/components/sections/CastSection";
 import { MediaSpecs } from "@/components/ui/MediaSpecs";
+import { RelatedNewsSection } from "@/components/sections/RelatedNewsSection";
 import type { CollectionData } from "@/types/types";
 
 interface CollectionDetailsExtendedProps {
@@ -214,6 +215,13 @@ export function CollectionDetailsExtended({ data }: CollectionDetailsExtendedPro
             cast={data.crew as any}
           />
         )}
+
+        {/* Related News Section */}
+        <RelatedNewsSection 
+          query={title} 
+          title={`Latest News: ${title}`}
+          description={`Stay informed with the latest updates and editorial features about the ${title}.`}
+        />
       </div>
     </div>
   );

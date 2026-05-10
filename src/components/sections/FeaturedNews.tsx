@@ -14,7 +14,7 @@ export async function FeaturedNews() {
     id: item.id.toString(),
     title: item.title,
     excerpt: item.description || "",
-    url: item.slug ? `/news/${item.slug}` : (("url" in item ? (item as any).url : "") || "#"),
+    url: item.slug ? `/news/${item.slug}` : ((item as any).url || "#"),
     source: item.source,
     publishedAt: item.date,
     thumbnailUrl: item.imageUrl || "",

@@ -8,6 +8,7 @@ import { Ticket, Play, MoreHorizontal, Check, Download, Share2, Pause, X, Volume
 import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
 import { MediaCard } from "@/components/ui/MediaCard";
 import { CastSection } from "@/components/sections/CastSection";
+import { RelatedNewsSection } from "@/components/sections/RelatedNewsSection";
 import { getTMDBImageUrl } from "@/lib/tmdb";
 import type {
   MovieCard,
@@ -1073,6 +1074,12 @@ export function MovieDetailsExtended({
             subtitle="The creative team and visionaries working behind the scenes"
             cast={crew as any}
           />
+
+          <RelatedNewsSection 
+            query={title} 
+            title={`Latest News: ${title}`}
+            description={`Stay informed with the latest updates and editorial features about ${title}.`}
+          />
         </div>
 
       {/* Part of a Collection Section */}
@@ -1100,8 +1107,11 @@ export function MovieDetailsExtended({
               unoptimized
             />
             
+            {/* Glassmorphism Hover Overlay - Positioned behind text but above image */}
+            <div className="absolute inset-0 opacity-0 group-hover:opacity-100 backdrop-blur-md bg-black/40 transition-all duration-700 pointer-events-none z-10" />
+            
             {/* Content Overlay */}
-            <div className="absolute inset-0 p-8 sm:p-10 md:p-12 flex flex-col justify-end items-start gap-4 md:gap-5">
+            <div className="absolute inset-0 p-8 sm:p-10 md:p-12 flex flex-col justify-end items-start gap-4 md:gap-5 z-20">
               <span className="px-4 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-[10px] md:text-xs font-black tracking-widest text-white uppercase">
                 {collectionData.parts?.length || 0} MOVIES IN COLLECTION
               </span>
@@ -1121,8 +1131,6 @@ export function MovieDetailsExtended({
               </div>
             </div>
             
-            {/* Glassmorphism Hover Overlay */}
-            <div className="absolute inset-0 opacity-0 group-hover:opacity-100 backdrop-blur-md bg-black/20 transition-opacity duration-700 pointer-events-none" />
           </Link>
         </div>
       )}
@@ -1462,7 +1470,6 @@ export function MovieDetailsExtended({
           </div>
         </div>
       )}
-
 
     </div>
   );

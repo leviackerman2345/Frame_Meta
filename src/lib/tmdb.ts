@@ -520,7 +520,10 @@ export function isTitleAvailable(item: MovieCard): boolean {
 
     // If it's a full ISO date, we can compare directly
     if (item.releaseDate.includes('-') && item.releaseDate.length >= 10) {
-      if (item.releaseDate > today) return false;
+      // RELAXED: Allow unreleased titles to show up in search results 
+      // but maybe mark them as "Coming Soon" or similar.
+      // For now, let's just return true to fix the "invalid" issue for exact matches.
+      return true;
     }
     // If it's a "Coming Soon" style date like "Nov 22", we should probably 
     // consider it unavailable if it's in the comingSoonData

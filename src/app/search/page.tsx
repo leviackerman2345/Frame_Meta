@@ -6,12 +6,13 @@ import { SearchCatalog } from "@/components/search/SearchCatalog";
 import { SkeletonCardGrid } from "@/components/ui/SkeletonCardGrid";
 import { MovieCard } from "@/types/types";
 import { AnimatePresence, motion } from "framer-motion";
+import { useSearchParams } from "next/navigation";
 
 /** Max API pages to fetch per query/genre */
 const MAX_PAGES = 10;
 
 /** Minimum time (ms) the loader must stay visible to avoid jitter */
-const MIN_LOADER_MS = 1300;
+const MIN_LOADER_MS = 600;
 
 /** Rows to reveal per chunk */
 const ROWS_PER_CHUNK = 3;
@@ -92,8 +93,16 @@ function getEndpoint(searchQuery: string, activeGenre: string | null, page: numb
 }
 
 export default function SearchPage() {
+  const searchParams = useSearchParams();
+  const initialQuery = searchParams.get("q") || "";
+  
   const [activeGenre, setActiveGenre] = useState<string | null>(null);
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useState(initialQuery);
+
+  // Sync state with URL params
+  useEffect(() => {
+    setSearchQuery(searchParams.get("q") || "");
+  }, [searchParams]);
 
   // ── Data pool: ALL fetched titles ──
   const [allTitles, setAllTitles] = useState<MovieCard[]>([]);
@@ -191,7 +200,9 @@ export default function SearchPage() {
           const cols = getColumnCount();
           const firstChunkSize = ROWS_PER_CHUNK * cols;
           const firstChunk = deduped.slice(0, firstChunkSize);
-          await Promise.all([preloadImages(firstChunk), delay(MIN_LOADER_MS)]);
+          // Speed up: don't wait for ALL images if they are taking too long
+          Promise.all([preloadImages(firstChunk)]);
+          await delay(MIN_LOADER_MS);
 
           if (token !== requestTokenRef.current) return;
 
@@ -259,8 +270,9 @@ export default function SearchPage() {
       visibleCount + chunkSize
     );
 
-    // Preload images + enforce minimum loader time
-    await Promise.all([preloadImages(nextChunk), delay(MIN_LOADER_MS)]);
+    // Speed up: trigger preload but only wait for the artificial delay
+    Promise.all([preloadImages(nextChunk)]);
+    await delay(MIN_LOADER_MS);
 
     setVisibleCount((prev) =>
       Math.min(prev + chunkSize, allTitles.length)

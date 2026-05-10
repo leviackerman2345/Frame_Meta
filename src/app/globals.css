@@ -273,3 +273,66 @@ body.modal-open nav {
   }
 }
 
+/* ─── Initial Loader: zero-flash prevention ──────────────────────────────────
+ * A blocking inline <script> in layout.tsx stamps data-loading="true" on
+ * <html> (document.documentElement) synchronously during HTML parsing — before
+ * the browser has painted a single pixel. This rule immediately hides every
+ * child of <body> (Navbar, page content, Footer) from frame zero, with zero
+ * flash. useEffect-based approaches always fire after the first paint and
+ * cannot prevent the ~50ms flash window.
+ *
+ * The .initial-loader exemption keeps the splash screen itself visible.
+ * InitialLoader.tsx removes the attribute from document.documentElement
+ * (not document.body) atomically alongside setLoading(false).
+ * ─────────────────────────────────────────────────────────────────────────── */
+
+/* Hide all layout chrome while the splash loader is active */
+html[data-loading="true"] body > * {
+  visibility: hidden;
+}
+
+/* Keep the loader itself fully visible */
+html[data-loading="true"] .initial-loader {
+  visibility: visible;
+}
+
+/* Liquid Fill Hover Animation */
+.liquid-fill {
+  position: relative;
+  overflow: hidden;
+  z-index: 1;
+}
+
+.liquid-fill::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: -200%; /* Move it much further down so the top edge doesn't peak in */
+  width: 200%;
+  height: 200%;
+  transform: translateX(-50%);
+  border-radius: 42%;
+  z-index: -1;
+  transition: bottom 0.8s cubic-bezier(0.4, 0, 0.2, 1), transform 0.8s ease;
+}
+
+.liquid-fill:hover::before {
+  bottom: -20%;
+  transform: translateX(-50%) rotate(360deg);
+}
+
+.liquid-facebook::before {
+  background: linear-gradient(45deg, #0062E0, #1877F2);
+}
+
+.liquid-x::before {
+  background: linear-gradient(45deg, #000000, #222222);
+}
+
+.liquid-share::before {
+  background: linear-gradient(45deg, #4f46e5, #8b5cf6);
+}
+
+.liquid-copy::before {
+  background: linear-gradient(45deg, #3f3f46, #71717a);
+}
