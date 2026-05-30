@@ -17,7 +17,7 @@ interface CastCardProps {
 }
 
 export function CastCard({ actor, index }: CastCardProps) {
-  const targetHref = `/actor/${actor.id}`;
+  const targetHref = `/people/${actor.id}`;
 
   const actorPhoto = actor.profile_path
     ? `https://image.tmdb.org/t/p/original${actor.profile_path}`
@@ -38,7 +38,7 @@ export function CastCard({ actor, index }: CastCardProps) {
   // By the time the user clicks, the ISR cache is already hot — reducing
   // the background fetch time on click to near zero.
   const handleMouseEnter = () => {
-    fetch(`/api/prefetch-actor?id=${actor.id}`, { priority: "low" } as RequestInit).catch(
+    fetch(`/api/people/${actor.id}`, { priority: "low" } as RequestInit).catch(
       () => {} // Fire-and-forget — errors are silently ignored
     );
   };

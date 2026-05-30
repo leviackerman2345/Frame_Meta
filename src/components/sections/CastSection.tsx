@@ -2,6 +2,7 @@
 
 import { useRef } from "react";
 import { CastCard } from "@/components/ui/CastCard";
+import { SectionHeader } from "@/components/sections/SectionHeader";
 
 interface CastSectionProps {
   title?: string;
@@ -48,15 +49,11 @@ export function CastSection({
   if (!cast || cast.length === 0) return null;
 
   return (
-    <div className="max-w-[1224px] w-full mx-auto flex flex-col gap-8 text-left">
-      <div>
-        <h3 className="text-3xl md:text-4xl font-bold tracking-tight text-white mb-2">
-          {title}
-        </h3>
-        <p className="text-zinc-200 text-sm md:text-base font-medium">
-          {subtitle}
-        </p>
-      </div>
+    <div className="max-w-7xl w-full mx-auto px-4 md:px-12 flex flex-col text-left">
+      <SectionHeader
+        title={title}
+        subtitle={subtitle}
+      />
 
       <div
         ref={scrollRef}

@@ -9,7 +9,9 @@ import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
 import { MediaCard } from "@/components/ui/MediaCard";
 import { CastSection } from "@/components/sections/CastSection";
 import { RelatedNewsSection } from "@/components/sections/RelatedNewsSection";
+import { SectionHeader } from "@/components/sections/SectionHeader";
 import { getTMDBImageUrl } from "@/lib/tmdb";
+import { safeExternalUrl } from "@/lib/utils";
 import type {
   MovieCard,
   OMDbRating,
@@ -54,6 +56,7 @@ export function MovieDetailsExtended({
 }: MovieDetailsExtendedProps) {
   const title = details.title || details.name;
   const overview = details.overview || "No overview available.";
+  const safeWatchLink = safeExternalUrl(watchLink);
   const trailers = useMemo(() => (details.videos?.results || [])
     .filter(
       (v: TMDBVideo) =>
@@ -335,7 +338,7 @@ export function MovieDetailsExtended({
   }, [crew]);
 
   return (
-    <div className="relative z-30 w-full px-6 sm:px-10 md:px-16 lg:px-24 py-20 md:py-28 flex flex-col gap-16 md:gap-24">
+    <div className="relative z-30 w-full py-20 md:py-28 flex flex-col gap-16 md:gap-24">
       {/* Background Image with Glassmorphism (Restored with optimized shade+blur) */}
       {(details.backdrop_path || details.poster_path) && (
         <div className="absolute inset-0 z-[-1] pointer-events-none animate-in fade-in duration-700">
@@ -376,22 +379,18 @@ export function MovieDetailsExtended({
       </div>
 
       {/* Synopsis */}
-      <div className="max-w-[1224px] text-left w-full mx-auto flex flex-col gap-4">
-        <h3 className="text-4xl md:text-5xl font-bold tracking-tight text-white">
-          Synopsis
-        </h3>
-        {details.tagline && (
-          <p className="text-zinc-100 text-lg md:text-xl font-semibold italic leading-relaxed">
-            "{details.tagline}"
-          </p>
-        )}
-        <p className="text-zinc-200 text-base md:text-lg leading-relaxed font-medium">
+      <div className="max-w-7xl mx-auto px-4 md:px-12 text-left w-full flex flex-col">
+        <SectionHeader 
+          title="Synopsis" 
+          subtitle={details.tagline ? `"${details.tagline}"` : undefined} 
+        />
+        <p className="text-zinc-200 text-base md:text-lg leading-relaxed font-medium -mt-2">
           {overview}
         </p>
       </div>
 
       {/* Metadata Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-x-16 gap-y-5 max-w-[1224px] text-left w-full mx-auto pt-12 border-t border-white/10">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-x-16 gap-y-5 max-w-7xl mx-auto px-4 md:px-12 text-left w-full pt-12 border-t border-white/10">
         {/* Left Metadata Column */}
         <div className="flex flex-col gap-4">
           {details.genres && details.genres.length > 0 && (
@@ -520,15 +519,11 @@ export function MovieDetailsExtended({
 
       {/* Episode Guide for TV Shows */}
       {type === "tv" && availableSeasons.length > 0 && (
-        <div className="max-w-[1224px] w-full mx-auto border-t border-white/10 pt-12 flex flex-col gap-8 text-left">
-          <div>
-            <h3 className="text-3xl md:text-4xl font-bold tracking-tight text-white mb-2">
-              Episode Guide
-            </h3>
-            <p className="text-zinc-200 text-sm md:text-base font-medium">
-              Browse through seasons and episodes
-            </p>
-          </div>
+        <div className="max-w-7xl mx-auto px-4 md:px-12 w-full border-t border-white/10 pt-12 flex flex-col text-left">
+          <SectionHeader
+            title="Episode Guide"
+            subtitle="Browse through seasons and episodes"
+          />
 
           {/* Season Toggle Tabs */}
           <div className="flex gap-3 overflow-x-auto pb-4 scrollbar-none snap-x snap-mandatory">
@@ -673,15 +668,11 @@ export function MovieDetailsExtended({
 
       {/* Trailers Section for TV */}
       {type === "tv" && trailers.length > 0 && (
-        <div className="max-w-[1224px] w-full mx-auto border-t border-white/10 pt-12 flex flex-col gap-8 text-left">
-          <div>
-            <h3 className="text-3xl md:text-4xl font-bold tracking-tight text-white mb-2">
-              Trailers & Clips
-            </h3>
-            <p className="text-zinc-200 text-sm md:text-base font-medium">
-              Watch official trailers and exclusive clips
-            </p>
-          </div>
+        <div className="max-w-7xl mx-auto px-4 md:px-12 w-full border-t border-white/10 pt-12 flex flex-col text-left">
+          <SectionHeader
+            title="Trailers & Clips"
+            subtitle="Watch official trailers and exclusive clips"
+          />
 
           <div className="flex gap-6 overflow-x-auto snap-x snap-mandatory pt-6 pb-8 scrollbar-none">
             {trailers.map((video: any) => (
@@ -721,15 +712,11 @@ export function MovieDetailsExtended({
 
       {/* Ways to Watch */}
       {providers && providers.length > 0 ? (
-        <div className="max-w-[1224px] w-full mx-auto flex flex-col gap-8 border-t border-white/10 pt-12 text-left">
-          <div>
-            <h3 className="text-3xl md:text-4xl font-bold tracking-tight text-white mb-2">
-              Ways to Watch
-            </h3>
-            <p className="text-zinc-200 text-sm md:text-base font-medium">
-              Stream, rent, or buy from supported platforms
-            </p>
-          </div>
+        <div className="max-w-7xl mx-auto px-4 md:px-12 w-full flex flex-col border-t border-white/10 pt-12 text-left">
+          <SectionHeader
+            title="Ways to Watch"
+            subtitle="Stream, rent, or buy from supported platforms"
+          />
 
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
             {providers.map((provider: any) => {
@@ -740,7 +727,7 @@ export function MovieDetailsExtended({
               return (
                 <a
                   key={provider.provider_id}
-                  href={watchLink || "#"}
+                  href={safeWatchLink || "#"}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center gap-4 p-3 rounded-2xl bg-zinc-900/60 backdrop-blur-md border border-white/10 hover:bg-zinc-800/60 hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 shadow-lg cursor-pointer"
@@ -769,7 +756,7 @@ export function MovieDetailsExtended({
           </div>
         </div>
       ) : inCinema && (
-        <div className="max-w-[1224px] w-full mx-auto border-t border-white/10 pt-12 text-left">
+        <div className="max-w-7xl mx-auto px-4 md:px-12 w-full border-t border-white/10 pt-12 text-left">
           <div className="relative w-full rounded-3xl bg-gradient-to-br from-zinc-900/50 via-zinc-900/30 to-black/50 backdrop-blur-xl border border-white/10 p-10 md:p-14 flex flex-col md:flex-row items-center justify-between gap-8 md:gap-12 overflow-hidden shadow-2xl">
             <div className="absolute top-0 right-0 -mr-16 -mt-16 w-64 h-64 bg-white/5 rounded-full blur-3xl pointer-events-none" />
             
@@ -782,13 +769,13 @@ export function MovieDetailsExtended({
                   Exclusively in Theaters
                 </h3>
                 <p className="text-zinc-400 text-sm md:text-base leading-relaxed max-w-xl">
-                  This title hasn't arrived on digital storefronts yet. Grab some popcorn and catch it on the big screen!
+                  This title hasn&apos;t arrived on digital storefronts yet. Grab some popcorn and catch it on the big screen!
                 </p>
               </div>
             </div>
 
             <a 
-              href={watchLink || `https://www.themoviedb.org/movie/${details.id}`}
+              href={safeWatchLink || `https://www.themoviedb.org/movie/${details.id}`}
               target="_blank"
               rel="noopener noreferrer"
               className="px-6 py-3 rounded-xl bg-white text-black hover:bg-zinc-200 active:scale-95 text-sm md:text-base font-semibold tracking-wide transition-all duration-300 shadow-lg flex-shrink-0"
@@ -801,15 +788,11 @@ export function MovieDetailsExtended({
 
       {/* Trailers Section for Movies */}
       {type === "movie" && trailers.length > 0 && (
-        <div className="max-w-[1224px] w-full mx-auto border-t border-white/10 pt-12 flex flex-col gap-8 text-left">
-          <div>
-            <h3 className="text-3xl md:text-4xl font-bold tracking-tight text-white mb-2">
-              Trailers & Clips
-            </h3>
-            <p className="text-zinc-200 text-sm md:text-base font-medium">
-              Watch official trailers and exclusive clips
-            </p>
-          </div>
+        <div className="max-w-7xl mx-auto px-4 md:px-12 w-full border-t border-white/10 pt-12 flex flex-col text-left">
+          <SectionHeader
+            title="Trailers & Clips"
+            subtitle="Watch official trailers and exclusive clips"
+          />
 
           <div className="flex gap-6 overflow-x-auto snap-x snap-mandatory pt-6 pb-8 scrollbar-none">
             {trailers.map((video: any) => (
@@ -848,15 +831,11 @@ export function MovieDetailsExtended({
       )}
 
       {/* Rotten Tomatoes & Audience Score Gauges */}
-      <div className="max-w-[1224px] w-full mx-auto border-t border-white/10 pt-12 flex flex-col gap-10 text-left">
-        <div>
-          <h3 className="text-3xl md:text-4xl font-bold tracking-tight text-white mb-2">
-            What Critics Are Saying
-          </h3>
-          <p className="text-zinc-200 text-sm md:text-base font-medium">
-            Aggregated performance metrics compiled from verified cinematic reviews.
-          </p>
-        </div>
+      <div className="max-w-7xl mx-auto px-4 md:px-12 w-full border-t border-white/10 pt-12 flex flex-col text-left">
+        <SectionHeader
+          title="What Critics Are Saying"
+          subtitle="Aggregated performance metrics compiled from verified cinematic reviews."
+        />
 
         {(() => {
           const getRawRating = (source: string) => (omdbRatings as any[])?.find((x: any) => x.Source === source)?.Value;
@@ -892,9 +871,11 @@ export function MovieDetailsExtended({
               {/* Rotten Tomatoes Circular Gauges */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8 justify-items-center max-w-2xl mx-auto w-full">
                 {/* Tomatometer Card */}
-                <div className="bg-zinc-900/80 backdrop-blur-3xl border border-zinc-700/40 rounded-[32px] p-8 flex flex-col items-center text-center w-full max-w-xs shadow-2xl transition-all duration-300 hover:border-white/20 hover:scale-[1.02]">
-                  <span className="text-zinc-400 uppercase tracking-widest text-[11px] font-black mb-4">Tomatometer</span>
-                  <div className="relative w-36 h-36 flex items-center justify-center mb-4">
+                <div className="group relative overflow-hidden rounded-[2rem] border border-white/10 bg-zinc-950/70 p-8 flex flex-col items-center text-center w-full max-w-xs shadow-[0_20px_60px_rgba(0,0,0,0.35)] transition-all duration-500 hover:-translate-y-1 hover:border-white/20">
+                  <div className="absolute inset-0 bg-gradient-to-br from-rose-500/20 via-pink-500/5 to-transparent pointer-events-none" />
+                  <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.08),transparent_35%)] opacity-70 pointer-events-none" />
+                  <span className="relative z-10 text-zinc-400 uppercase tracking-widest text-[11px] font-black mb-4">Tomatometer</span>
+                  <div className="relative z-10 w-36 h-36 flex items-center justify-center mb-4">
                     <svg className="absolute inset-0 w-full h-full transform -rotate-90">
                       <circle cx="72" cy="72" r="60" stroke="#1A1A1A" strokeWidth="12" fill="none" />
                       <circle cx="72" cy="72" r="60" stroke="#FF2D55" strokeWidth="12" fill="none" strokeDasharray={2 * Math.PI * 60} strokeDashoffset={2 * Math.PI * 60 - (2 * Math.PI * 60 * tomatometer) / 100} strokeLinecap="round" className="transition-all duration-1000 ease-out" />
@@ -908,14 +889,16 @@ export function MovieDetailsExtended({
                       />
                     </div>
                   </div>
-                  <span className="text-4xl font-bold text-white mb-1">{tomatometer}%</span>
-                  <span className="text-red-400 text-sm font-semibold tracking-wide">{tomatometer >= 60 ? "Certified Fresh" : "Rotten"}</span>
+                  <span className="relative z-10 text-4xl font-bold text-white mb-1">{tomatometer}%</span>
+                  <span className="relative z-10 text-red-400 text-sm font-semibold tracking-wide">{tomatometer >= 60 ? "Certified Fresh" : "Rotten"}</span>
                 </div>
 
                 {/* Popcornmeter Card */}
-                <div className="bg-zinc-900/80 backdrop-blur-3xl border border-zinc-700/40 rounded-[32px] p-8 flex flex-col items-center text-center w-full max-w-xs shadow-2xl transition-all duration-300 hover:border-white/20 hover:scale-[1.02]">
-                  <span className="text-zinc-400 uppercase tracking-widest text-[11px] font-black mb-4">Popcornmeter</span>
-                  <div className="relative w-36 h-36 flex items-center justify-center mb-4">
+                <div className="group relative overflow-hidden rounded-[2rem] border border-white/10 bg-zinc-950/70 p-8 flex flex-col items-center text-center w-full max-w-xs shadow-[0_20px_60px_rgba(0,0,0,0.35)] transition-all duration-500 hover:-translate-y-1 hover:border-white/20">
+                  <div className="absolute inset-0 bg-gradient-to-br from-amber-500/20 via-orange-500/5 to-transparent pointer-events-none" />
+                  <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.08),transparent_35%)] opacity-70 pointer-events-none" />
+                  <span className="relative z-10 text-zinc-400 uppercase tracking-widest text-[11px] font-black mb-4">Popcornmeter</span>
+                  <div className="relative z-10 w-36 h-36 flex items-center justify-center mb-4">
                     <svg className="absolute inset-0 w-full h-full transform -rotate-90">
                       <circle cx="72" cy="72" r="60" stroke="#1A1A1A" strokeWidth="12" fill="none" />
                       <circle cx="72" cy="72" r="60" stroke="#FF9500" strokeWidth="12" fill="none" strokeDasharray={2 * Math.PI * 60} strokeDashoffset={2 * Math.PI * 60 - (2 * Math.PI * 60 * popcornmeter) / 100} strokeLinecap="round" className="transition-all duration-1000 ease-out" />
@@ -929,8 +912,8 @@ export function MovieDetailsExtended({
                       />
                     </div>
                   </div>
-                  <span className="text-4xl font-bold text-white mb-1">{popcornmeter}%</span>
-                  <span className="text-yellow-500 text-sm font-semibold tracking-wide">{popcornmeter >= 60 ? "Fresh Popcorn" : "Stale Popcorn"}</span>
+                  <span className="relative z-10 text-4xl font-bold text-white mb-1">{popcornmeter}%</span>
+                  <span className="relative z-10 text-yellow-500 text-sm font-semibold tracking-wide">{popcornmeter >= 60 ? "Fresh Popcorn" : "Stale Popcorn"}</span>
                 </div>
               </div>
 
@@ -997,15 +980,11 @@ export function MovieDetailsExtended({
 
       {/* Review Articles / What Critics Are Saying */}
       {reviews && reviews.length > 0 && (
-        <div className="max-w-[1224px] w-full mx-auto border-t border-white/10 pt-12 flex flex-col gap-8 mb-10">
-          <div>
-            <h3 className="text-3xl md:text-4xl font-bold tracking-tight text-white mb-2">
-              What Critics are Saying
-            </h3>
-            <p className="text-zinc-200 text-sm md:text-base font-medium">
-              A curated look into professional cinematic breakdowns and editorial insights.
-            </p>
-          </div>
+        <div className="max-w-7xl mx-auto px-4 md:px-12 w-full border-t border-white/10 pt-12 flex flex-col mb-10">
+          <SectionHeader
+            title="Critical Reviews"
+            subtitle="A curated look into professional cinematic breakdowns and editorial insights."
+          />
 
           <div className="flex gap-6 overflow-x-auto snap-x snap-mandatory pt-10 pb-12 scrollbar-none">
             {(() => {
@@ -1076,7 +1055,7 @@ export function MovieDetailsExtended({
           />
 
           <RelatedNewsSection 
-            query={title} 
+            query={title || ""} 
             title={`Latest News: ${title}`}
             description={`Stay informed with the latest updates and editorial features about ${title}.`}
           />
@@ -1084,15 +1063,11 @@ export function MovieDetailsExtended({
 
       {/* Part of a Collection Section */}
       {collectionData && (
-        <div className="max-w-[1224px] w-full mx-auto flex flex-col gap-8 border-t border-white/10 pt-12 text-left">
-          <div>
-            <h3 className="text-3xl md:text-4xl font-bold tracking-tight text-white mb-2">
-              Part of a Collection
-            </h3>
-            <p className="text-zinc-200 text-sm md:text-base font-medium">
-              Explore all movies in the {collectionData.title}
-            </p>
-          </div>
+        <div className="max-w-7xl mx-auto px-4 md:px-12 w-full flex flex-col border-t border-white/10 pt-12 text-left">
+          <SectionHeader
+            title="Part of a Collection"
+            subtitle={`Explore all movies in the ${collectionData.title}`}
+          />
 
           <Link 
             href={`/collection/${collectionData.id}`}
@@ -1137,15 +1112,11 @@ export function MovieDetailsExtended({
 
       {/* Recommendations */}
       {recommendations && recommendations.length > 0 && (
-        <div className="max-w-[1224px] w-full mx-auto flex flex-col gap-8">
-          <div>
-            <h3 className="text-3xl md:text-4xl font-bold tracking-tight text-white mb-2">
-              More Like This
-            </h3>
-            <p className="text-zinc-200 text-sm md:text-base font-medium">
-              Explore similar titles curated just for you
-            </p>
-          </div>
+        <div className="max-w-7xl mx-auto px-4 md:px-12 w-full flex flex-col border-t border-white/10 pt-12 text-left">
+          <SectionHeader
+            title="More Like This"
+            subtitle="Explore similar titles curated just for you"
+          />
 
           <div 
             ref={scrollRef}

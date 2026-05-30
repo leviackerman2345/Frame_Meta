@@ -9,9 +9,7 @@ export function Footer() {
   const pathname = usePathname();
   const currentYear = new Date().getFullYear();
 
-  if (pathname.startsWith("/titles/") || pathname.startsWith("/collection/")) {
-    return null;
-  }
+
 
   return (
     <footer

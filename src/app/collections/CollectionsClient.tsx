@@ -60,10 +60,10 @@ export function CollectionsClient({ initialCollections }: CollectionsClientProps
     return () => observer.disconnect();
   }, [isLoadingMore, visibleCount, filteredCollections.length]);
 
-  // Reset scroll when genre changes
-  useEffect(() => {
+  const selectGenre = (genre: string) => {
+    setSelectedGenre(genre);
     setVisibleCount(24);
-  }, [selectedGenre]);
+  };
 
   const displayedCollections = filteredCollections.slice(0, visibleCount);
 
@@ -75,7 +75,7 @@ export function CollectionsClient({ initialCollections }: CollectionsClientProps
         {genres.map((genre) => (
           <button
             key={genre}
-            onClick={() => setSelectedGenre(genre)}
+            onClick={() => selectGenre(genre)}
             className={`px-5 py-2.5 rounded-full text-xs md:text-sm font-semibold transition-all duration-500 whitespace-nowrap ${
               selectedGenre === genre
                 ? "bg-white text-black shadow-xl scale-105"
@@ -120,7 +120,7 @@ export function CollectionsClient({ initialCollections }: CollectionsClientProps
         <div className="py-20 text-center">
           <p className="text-zinc-500 text-lg">No collections found in this category.</p>
           <button 
-            onClick={() => setSelectedGenre("All")}
+            onClick={() => selectGenre("All")}
             className="mt-4 text-white hover:underline font-semibold"
           >
             View all collections

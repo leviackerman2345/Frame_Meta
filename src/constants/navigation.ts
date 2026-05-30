@@ -17,8 +17,9 @@ export const brand = {
 export const navLinks: NavLink[] = [
   { name: "Home", href: "/" },
   { name: "Movies", href: "/movies" },
-  { name: "Series", href: "/tv-shows" },
-  { name: "People", href: "/actor" },
+  { name: "Series", href: "/series" },
+  { name: "Clips", href: "/clips" },
+  { name: "People", href: "/people" },
   { name: "News", href: "/news" },
 ];
 
@@ -31,7 +32,7 @@ export const footerLinkGroups = [
     heading: "Explore",
     links: [
       { name: "Movies", href: "/movies" },
-      { name: "TV Shows", href: "/tv-shows" },
+      { name: "TV Shows", href: "/series" },
       { name: "Collections", href: "/collections" },
       { name: "Coming Soon", href: "/coming-soon" },
     ] satisfies NavLink[],

@@ -1,4 +1,4 @@
-import type { MovieCard, OMDbRating, TMDBTitleDetails, CollectionData, TMDBCastMember, TMDBCrewMember } from "@/types/types";
+import type { MovieCard, OMDbRating, TMDBTitleDetails, CollectionData, TMDBCastMember, TMDBCrewMember, TMDBVideo, ClipSource, TMDBProvider } from "@/types/types";
 
 interface TMDBItem {
   id: number;
@@ -81,6 +81,80 @@ export async function fetchWithTimeout(
 // In-memory cache to prevent N+1 API call limits and improve initial SSR load performance
 const textlessPosterCache = new Map<string, string | null>();
 const titleLogoCache = new Map<string, string | null>();
+const certificationCache = new Map<string, string | null>();
+const homeDiscoveryMetaCache = new Map<
+  string,
+  { data: { runtime?: number; providerNames: string[] }; expiresAt: number }
+>();
+const HOME_DISCOVERY_META_TTL_MS = 30 * 60 * 1000;
+
+function normalizeProviderName(name?: string): string | null {
+  if (!name) return null;
+  const trimmed = name.trim();
+
+  if (/^netflix$/i.test(trimmed)) return "Netflix";
+  if (/disney/i.test(trimmed)) return "Disney+";
+  if (/viu/i.test(trimmed)) return "Viu";
+  if (/hbo|max/i.test(trimmed)) return "HBO Go";
+
+  return trimmed;
+}
+
+export async function getTitleHomeMeta(
+  id: number,
+  type: "movie" | "tv" = "movie"
+): Promise<{ runtime?: number; providerNames: string[] }> {
+  const cacheKey = `home-meta-${type}-${id}`;
+  const cached = homeDiscoveryMetaCache.get(cacheKey);
+  if (cached && Date.now() < cached.expiresAt) return cached.data;
+
+  try {
+    const details = await getTitleFullDetails(id, type);
+    const runtime =
+      type === "tv"
+        ? details.episode_run_time?.[0] || details.runtime || undefined
+        : details.runtime || details.episode_run_time?.[0] || undefined;
+
+    const results = details["watch/providers"]?.results || {};
+    const preferredProviders =
+      results.US ||
+      results.PH ||
+      Object.values(results).find(
+        (entry: any) => entry?.flatrate || entry?.rent || entry?.buy
+      ) ||
+      {};
+
+    const rawProviders = [
+      ...(preferredProviders.flatrate || []),
+      ...(preferredProviders.rent || []),
+      ...(preferredProviders.buy || []),
+    ];
+
+    const providerNames = Array.from(
+      new Set(
+        rawProviders
+          .map((provider: TMDBProvider) =>
+            normalizeProviderName(provider.provider_name)
+          )
+          .filter((name): name is string => !!name)
+      )
+    );
+
+    const data = { runtime, providerNames };
+    homeDiscoveryMetaCache.set(cacheKey, {
+      data,
+      expiresAt: Date.now() + HOME_DISCOVERY_META_TTL_MS,
+    });
+    return data;
+  } catch {
+    const data = { providerNames: [] as string[] };
+    homeDiscoveryMetaCache.set(cacheKey, {
+      data,
+      expiresAt: Date.now() + HOME_DISCOVERY_META_TTL_MS,
+    });
+    return data;
+  }
+}
 
 // Module-level result cache for getDiscoverableCollections (expensive pipeline)
 interface CollectionsCache {
@@ -92,7 +166,12 @@ const COLLECTIONS_CACHE_TTL_MS = 10 * 60 * 1000; // 10 minutes
 
 
 
-export const fetchFromTMDB = async (endpoint: string, options: RequestInit = {}) => {
+interface TMDBFetchOptions extends RequestInit {
+  next?: { revalidate?: number };
+  softFailOnTimeout?: boolean;
+}
+
+export const fetchFromTMDB = async (endpoint: string, options: TMDBFetchOptions = {}) => {
   const token = getAccessToken();
   if (!token) {
     console.error(`TMDB API error: No access token provided for ${endpoint}. Check your .env.local file.`);
@@ -101,17 +180,20 @@ export const fetchFromTMDB = async (endpoint: string, options: RequestInit = {})
 
   const url = `${TMDB_BASE_URL}${endpoint}`;
 
+  const { softFailOnTimeout = false, ...fetchOptions } = options;
+
   const headers = {
     accept: "application/json",
     Authorization: `Bearer ${token}`,
-    ...options.headers,
+    ...fetchOptions.headers,
   };
 
-  const nextOptions = (options as { next?: { revalidate?: number } }).next || {
+  const nextOptions = fetchOptions.next || {
     revalidate: DEFAULT_REVALIDATE_SECONDS,
   };
 
-  const existing = inFlightRequests.get(url);
+  const requestKey = `${url}::softFailOnTimeout=${softFailOnTimeout ? "1" : "0"}`;
+  const existing = inFlightRequests.get(requestKey);
   if (existing) return existing;
 
   const requestPromise = (async () => {
@@ -126,7 +208,7 @@ export const fetchFromTMDB = async (endpoint: string, options: RequestInit = {})
       try {
         const startTime = Date.now();
         const response = await fetch(url, {
-          ...options,
+          ...fetchOptions,
           headers,
           next: nextOptions,
           signal: controller.signal,
@@ -162,6 +244,21 @@ export const fetchFromTMDB = async (endpoint: string, options: RequestInit = {})
           // FIX: Log before throwing — the error propagates up to SectionErrorBoundary.
           //      Previously this returned {} which silently starved components of data,
           //      leaving the <Suspense> skeleton frozen with no error UI shown.
+          const isNonCriticalImageEndpoint =
+            endpoint.includes("/images") ||
+            endpoint.includes("include_image_language");
+          if (isNonCriticalImageEndpoint) {
+            console.warn(
+              `[TMDB] Soft timeout after ${DEFAULT_FETCH_TIMEOUT_MS}ms at ${endpoint}. Falling back to default artwork.`
+            );
+            return { results: [], parts: [], posters: [], logos: [], backdrops: [] };
+          }
+          if (softFailOnTimeout) {
+            console.warn(
+              `[TMDB] Soft timeout after ${DEFAULT_FETCH_TIMEOUT_MS}ms at ${endpoint}. Returning empty data.`
+            );
+            return { results: [], parts: [] };
+          }
           console.error(`[TMDB] Timeout after ${DEFAULT_FETCH_TIMEOUT_MS}ms at ${endpoint}. Max retries reached.`);
           // Throw AFTER the finally block clears the timer (execution resumes after finally).
           throw new Error(`TMDB request timed out after ${DEFAULT_FETCH_TIMEOUT_MS}ms (${endpoint}). Please try again.`);
@@ -180,11 +277,11 @@ export const fetchFromTMDB = async (endpoint: string, options: RequestInit = {})
     return { results: [], parts: [] };
   })();
 
-  inFlightRequests.set(url, requestPromise);
-  
+  inFlightRequests.set(requestKey, requestPromise);
+
   // Ensure we remove from in-flight requests when the final promise settles
   requestPromise.finally(() => {
-    inFlightRequests.delete(url);
+    inFlightRequests.delete(requestKey);
   });
 
   return requestPromise;
@@ -421,7 +518,11 @@ export async function getTrendingAll(
  * Fetch details for a specific movie.
  */
 export async function getMovieDetails(movieId: number) {
-  return fetchFromTMDB(`/movie/${movieId}?language=en-US`);
+  // Used by bulk collection discovery on the home page.
+  // A single timeout should not throw and poison the whole discovery pass.
+  return fetchFromTMDB(`/movie/${movieId}?language=en-US`, {
+    softFailOnTimeout: true,
+  });
 }
 
 /**
@@ -430,6 +531,52 @@ export async function getMovieDetails(movieId: number) {
 export async function getTitleFullDetails(id: number, type: "movie" | "tv" = "movie") {
   const endpoint = `/${type}/${id}?language=en-US&append_to_response=release_dates,content_ratings,watch/providers,videos,credits,external_ids`;
   return fetchFromTMDB(endpoint);
+}
+
+/**
+ * Fetch the US age rating (certification) for a title.
+ * US certification is used as the standard because it provides the most universally
+ * recognized content rating framework (PG-13, R, TV-MA, etc.) for English-speaking audiences.
+ */
+export async function getTitleCertification(
+  id: number,
+  mediaType: 'movie' | 'tv'
+): Promise<string | null> {
+  const cacheKey = `cert_${mediaType}_${id}`;
+  if (certificationCache.has(cacheKey)) {
+    return certificationCache.get(cacheKey)!;
+  }
+
+  try {
+    if (mediaType === 'movie') {
+      const data = await fetchFromTMDB(`/movie/${id}/release_dates`, {
+        softFailOnTimeout: true,
+      });
+      const results = data.results || [];
+      const usRelease = results.find((r: any) => r.iso_3166_1 === 'US');
+      if (usRelease && usRelease.release_dates && usRelease.release_dates.length > 0) {
+        // Find the first valid certification or default to null
+        const cert = usRelease.release_dates.find((d: any) => d.certification)?.certification || null;
+        certificationCache.set(cacheKey, cert || null);
+        return cert || null;
+      }
+    } else if (mediaType === 'tv') {
+      const data = await fetchFromTMDB(`/tv/${id}/content_ratings`, {
+        softFailOnTimeout: true,
+      });
+      const results = data.results || [];
+      const usRating = results.find((r: any) => r.iso_3166_1 === 'US');
+      if (usRating && usRating.rating) {
+        certificationCache.set(cacheKey, usRating.rating);
+        return usRating.rating;
+      }
+    }
+  } catch (error) {
+    console.error(`Failed to fetch certification for ${mediaType} ${id}:`, error);
+  }
+
+  certificationCache.set(cacheKey, null);
+  return null;
 }
 
 /**
@@ -546,10 +693,16 @@ export function formatBadgeDate(dateString: string | undefined) {
 /**
  * Fetch top rated movies and format them as MovieCards.
  */
-export async function getTopRatedMovies(): Promise<MovieCard[]> {
+export async function getTopRatedMovies(
+  limit: number = 10,
+  includeLogos: boolean = false
+): Promise<MovieCard[]> {
   const data = await fetchFromTMDB("/movie/top_rated?language=en-US&page=1");
-  const items = data.results.slice(0, 10).map((movie: TMDBItem, index: number) => formatTMDBData(movie, index));
-  return enrichWithTextlessPosters(items);
+  const items = ((data.results || []) as TMDBItem[])
+    .slice(0, limit)
+    .map((movie: TMDBItem, index: number) => formatTMDBData(movie, index));
+  const posters = await enrichWithTextlessPosters(items);
+  return includeLogos ? enrichWithLogos(posters) : posters;
 }
 
 /**
@@ -560,6 +713,25 @@ export async function getPopularMovies(
   includeLogos: boolean = false
 ): Promise<MovieCard[]> {
   const data = await fetchFromTMDB("/movie/popular?language=en-US&page=1");
+  const items = ((data.results || []) as TMDBItem[])
+    .slice(0, limit)
+    .map((movie: TMDBItem, index: number) => formatTMDBData(movie, index));
+  const posters = await enrichWithTextlessPosters(items);
+  return includeLogos ? enrichWithLogos(posters) : posters;
+}
+
+/**
+ * Fetch popular movies for a specific region and format them as MovieCards.
+ */
+export async function getRegionalPopularMovies(
+  region: string,
+  limit: number = 20,
+  includeLogos: boolean = false
+): Promise<MovieCard[]> {
+  const safeRegion = /^[A-Z]{2}$/.test(region) ? region : "PH";
+  const data = await fetchFromTMDB(
+    `/discover/movie?language=en-US&region=${safeRegion}&sort_by=popularity.desc&page=1&include_adult=false`
+  );
   const items = ((data.results || []) as TMDBItem[])
     .slice(0, limit)
     .map((movie: TMDBItem, index: number) => formatTMDBData(movie, index));
@@ -613,6 +785,88 @@ export async function getOnTheAirTVSeries(
 }
 
 /**
+ * Fetch trending TV series (day or week).
+ */
+export async function getTrendingTVSeries(
+  timeWindow: "day" | "week" = "day",
+  includeLogos: boolean = false
+): Promise<MovieCard[]> {
+  const data = await fetchFromTMDB(`/trending/tv/${timeWindow}?language=en-US`);
+  const items = ((data.results || []) as TMDBItem[]).map((tv: TMDBItem) => formatTMDBData(tv));
+  const posters = await enrichWithTextlessPosters(items);
+  return includeLogos ? enrichWithLogos(posters) : posters;
+}
+
+/**
+ * Fetch top-rated TV series.
+ */
+export async function getTopRatedTVSeries(
+  limit: number = 20,
+  includeLogos: boolean = false
+): Promise<MovieCard[]> {
+  const data = await fetchFromTMDB("/tv/top_rated?language=en-US&page=1");
+  const items = ((data.results || []) as TMDBItem[])
+    .slice(0, limit)
+    .map((tv: TMDBItem, index: number) => formatTMDBData(tv, index));
+  const posters = await enrichWithTextlessPosters(items);
+  return includeLogos ? enrichWithLogos(posters) : posters;
+}
+
+/**
+ * Fetch TV anime (Japanese-origin animated TV).
+ */
+export async function getTVAnime(
+  limit: number = 20,
+  includeLogos: boolean = false
+): Promise<MovieCard[]> {
+  const data = await fetchFromTMDB(
+    "/discover/tv?with_origin_country=JP&with_genres=16&sort_by=popularity.desc&language=en-US&page=1"
+  );
+  const items = ((data.results || []) as TMDBItem[])
+    .slice(0, limit)
+    .map((tv: TMDBItem) => formatTMDBData(tv));
+  const posters = await enrichWithTextlessPosters(items);
+  return includeLogos ? enrichWithLogos(posters) : posters;
+}
+
+/**
+ * Fetch popular TV series for a specific region.
+ */
+export async function getRegionalPopularTVSeries(
+  region: string,
+  limit: number = 20,
+  includeLogos: boolean = false
+): Promise<MovieCard[]> {
+  const safeRegion = /^[A-Z]{2}$/.test(region) ? region : "PH";
+  const data = await fetchFromTMDB(
+    `/discover/tv?with_origin_country=${safeRegion}&sort_by=popularity.desc&language=en-US&page=1`
+  );
+  const items = ((data.results || []) as TMDBItem[])
+    .slice(0, limit)
+    .map((tv: TMDBItem) => formatTMDBData(tv));
+  const posters = await enrichWithTextlessPosters(items);
+  return includeLogos ? enrichWithLogos(posters) : posters;
+}
+
+/**
+ * Fetch TV series by TMDB genre ID.
+ */
+export async function getTVByGenre(
+  genreId: number,
+  limit: number = 20,
+  includeLogos: boolean = false
+): Promise<MovieCard[]> {
+  const data = await fetchFromTMDB(
+    `/discover/tv?with_genres=${genreId}&sort_by=popularity.desc&language=en-US&page=1`
+  );
+  const items = ((data.results || []) as TMDBItem[])
+    .slice(0, limit)
+    .map((tv: TMDBItem) => formatTMDBData(tv));
+  const posters = await enrichWithTextlessPosters(items);
+  return includeLogos ? enrichWithLogos(posters) : posters;
+}
+
+/**
  * Fetch "Upcoming" movies for the Coming Soon section.
  */
 export async function getUpcomingMovies(
@@ -655,8 +909,14 @@ export async function getComingSoon(
 
   // Fetch most popular Hollywood movies and series for 2026 to "skip low, mid" content
   const [movieData, tvData] = await Promise.all([
-    fetchFromTMDB(`/discover/movie?language=en-US&primary_release_date.gte=${startDate}&primary_release_date.lte=${endDate}&with_origin_country=US&with_original_language=en&sort_by=popularity.desc&page=1`),
-    fetchFromTMDB(`/discover/tv?language=en-US&first_air_date.gte=${startDate}&first_air_date.lte=${endDate}&with_origin_country=US&with_original_language=en&sort_by=popularity.desc&page=1`)
+    fetchFromTMDB(
+      `/discover/movie?language=en-US&primary_release_date.gte=${startDate}&primary_release_date.lte=${endDate}&with_origin_country=US&with_original_language=en&sort_by=popularity.desc&page=1`,
+      { softFailOnTimeout: true }
+    ),
+    fetchFromTMDB(
+      `/discover/tv?language=en-US&first_air_date.gte=${startDate}&first_air_date.lte=${endDate}&with_origin_country=US&with_original_language=en&sort_by=popularity.desc&page=1`,
+      { softFailOnTimeout: true }
+    )
   ]);
 
   const allContent = [
@@ -688,7 +948,7 @@ export async function getComingSoon(
  * Fetch content from specific Asian regions (KR, JP, CN, TH).
  */
 export async function getAsianSpotlight(
-  region: "KR" | "JP" | "CN" | "TH",
+  region: "KR" | "JP" | "CN" | "TH" | "PH",
   limit: number = 20,
   includeLogos: boolean = false
 ): Promise<MovieCard[]> {
@@ -705,6 +965,9 @@ export async function getAsianSpotlight(
       break;
     case "TH":
       endpoint = "/discover/tv?with_origin_country=TH&sort_by=popularity.desc";
+      break;
+    case "PH":
+      endpoint = "/discover/movie?with_origin_country=PH&sort_by=popularity.desc";
       break;
   }
   const data = await fetchFromTMDB(`${endpoint}&language=en-US&page=1`);
@@ -1097,7 +1360,7 @@ export async function getCollectionOrUniverseDetails(id: string): Promise<Collec
   if (!rawData || !rawData.parts) return null;
 
   const today = new Date().toISOString().split("T")[0];
-  
+
   // Format parts to MovieCards
   const partsItems = rawData.parts
     .filter((p: any) => (p.release_date || p.first_air_date) && (p.release_date || p.first_air_date) <= today)
@@ -1126,22 +1389,22 @@ export async function getCollectionOrUniverseDetails(id: string): Promise<Collec
       formatted.badge = formatBadgeDate(p.release_date || p.first_air_date);
       return formatted;
     });
-  
+
   const enrichedComingSoon = await enrichWithTextlessPosters(upcomingPartsRaw);
 
   // Calculate stats
   const averageRating = rawData.parts.reduce((acc: number, p: any) => acc + (p.vote_average || 0), 0) / (rawData.parts.length || 1);
   const rating = Math.round(averageRating * 10) / 10;
-  
+
   const sortedDates = enrichedParts
     .map(p => p.year)
     .filter((y): y is number => y !== undefined)
     .sort((a, b) => a - b);
-  
-  const yearSpan = sortedDates.length > 0 
-    ? (sortedDates[0] === sortedDates[sortedDates.length - 1] 
-        ? `${sortedDates[0]}` 
-        : `${sortedDates[0]} - ${sortedDates[sortedDates.length - 1]}`)
+
+  const yearSpan = sortedDates.length > 0
+    ? (sortedDates[0] === sortedDates[sortedDates.length - 1]
+      ? `${sortedDates[0]}`
+      : `${sortedDates[0]} - ${sortedDates[sortedDates.length - 1]}`)
     : "";
 
   const uniqueGenres = Array.from(new Set(enrichedParts.map(p => p.genre).filter(Boolean))) as string[];
@@ -1170,14 +1433,14 @@ export async function getCollectionOrUniverseDetails(id: string): Promise<Collec
   const minutes = totalRuntimeMin % 60;
   const totalRuntime = hours > 0 ? `${hours}h ${minutes}m` : `${minutes}m`;
 
-  const totalRevenue = totalRevenueVal > 0 
-    ? `$${(totalRevenueVal / 1000000000).toFixed(1)}B` 
+  const totalRevenue = totalRevenueVal > 0
+    ? `$${(totalRevenueVal / 1000000000).toFixed(1)}B`
     : "N/A";
 
   // Aggregate Cast
-  const castMap = new Map<number, { 
-    person: TMDBCastMember; 
-    count: number; 
+  const castMap = new Map<number, {
+    person: TMDBCastMember;
+    count: number;
     characters: Set<string>;
     popularity: number;
   }>();
@@ -1220,9 +1483,9 @@ export async function getCollectionOrUniverseDetails(id: string): Promise<Collec
     .slice(0, 40); // Cap at 40 for UI performance
 
   // Aggregate Crew - High Fidelity Creative Team logic
-  const crewMap = new Map<number, { 
-    person: TMDBCrewMember; 
-    count: number; 
+  const crewMap = new Map<number, {
+    person: TMDBCrewMember;
+    count: number;
     jobs: Set<string>;
     popularity: number;
   }>();
@@ -1338,3 +1601,266 @@ export async function getPersonDetails(personId: string | number) {
   const endpoint = `/person/${personId}?language=en-US&append_to_response=movie_credits,tv_credits,external_ids,images`;
   return fetchFromTMDB(endpoint);
 }
+
+// In-memory cache for videos
+const videoCache = new Map<string, { data: TMDBVideo[], expiresAt: number }>();
+const VIDEO_CACHE_TTL_MS = 60 * 60 * 1000; // 1 hour
+
+const FEED_VIDEO_TYPE_PRIORITY: Record<TMDBVideo["type"], number> = {
+  Clip: 5,
+  Trailer: 4,
+  Teaser: 3,
+  Featurette: 2,
+  "Behind the Scenes": 1,
+  Bloopers: 0,
+};
+
+const FEED_ALLOWED_VIDEO_TYPES = new Set<TMDBVideo["type"]>([
+  "Clip",
+  "Trailer",
+  "Teaser",
+  "Featurette",
+  "Behind the Scenes",
+]);
+
+type RankedClipSource = ClipSource & {
+  sourceKind: "trending" | "popular";
+  sourceRank: number;
+  sourceScore: number;
+};
+
+function scoreFeedVideo(video: TMDBVideo): number {
+  let score = FEED_VIDEO_TYPE_PRIORITY[video.type] || 0;
+
+  if (video.official) score += 1.5;
+  if (video.size >= 1080) score += 1;
+  else if (video.size >= 720) score += 0.6;
+  if (video.name.toLowerCase().includes("official")) score += 0.5;
+  if (video.name.toLowerCase().includes("trailer")) score += 0.25;
+
+  if (video.published_at) {
+    const published = Date.parse(video.published_at);
+    if (!Number.isNaN(published)) {
+      const ageDays = Math.max(0, (Date.now() - published) / 86_400_000);
+      score += Math.max(0, 2 - Math.min(2, ageDays / 180));
+    }
+  }
+
+  return score;
+}
+
+function scoreClipSource(source: RankedClipSource): number {
+  const popularityScore = Math.log1p(Math.max(source.popularity || 0, 0)) * 18;
+  const sourceBoost = source.sourceKind === "trending" ? 42 : 18;
+  const rankBoost = Math.max(0, 20 - source.sourceRank) * (source.sourceKind === "trending" ? 2.2 : 1.2);
+  const recencyBoost =
+    source.year >= new Date().getFullYear() - 1 ? 28 :
+    source.year >= new Date().getFullYear() - 3 ? 14 :
+    source.year >= new Date().getFullYear() - 6 ? 6 :
+    0;
+
+  return popularityScore + sourceBoost + rankBoost + recencyBoost;
+}
+
+/**
+ * Validates the aspect ratio of a YouTube video using the oEmbed API.
+ * Standard 16:9 content should have a ratio of ~1.77.
+ * Vertical videos (~0.56) and square videos (~1.0) are excluded.
+ * 
+ * Why TMDB size field alone is not sufficient — it represents height not ratio.
+ * Why oEmbed is used instead of YouTube Data API — no API key required, free, cacheable.
+ * Why failed validation defaults to false (exclude) — this feed should only show confirmed landscape clips.
+ * Why 5% tolerance — accounts for slight encoding variations in 16:9 content.
+ * Why revalidate: 86400 — aspect ratio never changes, 24hr cache prevents redundant fetches.
+ */
+async function validateAspectRatio(youtubeId: string): Promise<boolean> {
+  try {
+    const response = await fetch(
+      `https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${youtubeId}&format=json`,
+      { next: { revalidate: 86400 } } // cache for 24 hours
+    );
+    if (!response.ok) return false;
+    const data = await response.json();
+    const ratio = data.width / data.height;
+    const target = 16 / 9; // 1.7778
+    const tolerance = 0.05; // 5% tolerance
+    const isWidescreen = Math.abs(ratio - target) <= tolerance;
+    
+    // vertical videos have ratio ~0.56, square ~1.0 — both excluded
+    return isWidescreen;
+  } catch {
+    return false;
+  }
+}
+
+export async function getTitleVideos(
+  id: number,
+  mediaType: 'movie' | 'tv'
+): Promise<TMDBVideo[]> {
+  const cacheKey = `video_${mediaType}_${id}`;
+  const cached = videoCache.get(cacheKey);
+  if (cached && Date.now() < cached.expiresAt) return cached.data;
+
+  // Video previews are non-critical for page render; degrade gracefully on timeout.
+  const data = await fetchFromTMDB(`/${mediaType}/${id}/videos?language=en-US`, {
+    softFailOnTimeout: true,
+  });
+  const videos: TMDBVideo[] = data.results || [];
+
+  // Primary filter — standard 16:9 heights only
+  // size field from TMDB represents video height
+  // Standard 16:9 heights only — filters out non-standard aspect ratios
+  const filteredVideos = videos.filter(video =>
+    video.site === 'YouTube' &&
+    FEED_ALLOWED_VIDEO_TYPES.has(video.type) &&
+    Boolean(video.key) &&
+    [360, 480, 720, 1080, 1440, 2160].includes(video.size)
+  );
+
+  // Secondary filter — YouTube thumbnail dimension check
+  // Validate aspect ratios in parallel — one fetch per clip, all concurrent
+  // Run this AFTER the TMDB filter, BEFORE returning results
+  // Only validates clips that passed the size filter
+  const validationResults = await Promise.all(
+    filteredVideos.map(video => validateAspectRatio(video.key))
+  );
+
+  // Keep only clips that passed aspect ratio validation
+  const validVideos = filteredVideos.filter((_, index) => validationResults[index]);
+
+  validVideos.sort((a, b) => {
+    const scoreA = scoreFeedVideo(a);
+    const scoreB = scoreFeedVideo(b);
+    if (scoreA !== scoreB) return scoreB - scoreA;
+    return b.size - a.size;
+  });
+
+  videoCache.set(cacheKey, { data: validVideos, expiresAt: Date.now() + VIDEO_CACHE_TTL_MS });
+  return validVideos;
+}
+
+// In-memory cache for popular titles used as clip sources
+const popularClipsCache = new Map<string, { data: ClipSource[], expiresAt: number }>();
+const POPULAR_CLIPS_CACHE_TTL_MS = 10 * 60 * 1000; // 10 minutes
+
+export async function getPopularTitlesForClips(
+  options: {
+    page?: number;
+    limit?: number;
+  } = {}
+): Promise<ClipSource[]> {
+  const page = options.page ?? 1;
+  const limit = options.limit ?? 40;
+  const cacheKey = `popular_clips_${page}_${limit}`;
+  const cached = popularClipsCache.get(cacheKey);
+  if (cached && Date.now() < cached.expiresAt) return cached.data;
+
+  const [trendingRes, moviesRes, tvRes] = await Promise.all([
+    fetchFromTMDB(`/trending/all/day?language=en-US&page=${page}`),
+    fetchFromTMDB(`/movie/popular?language=en-US&page=${page}`),
+    fetchFromTMDB(`/tv/popular?language=en-US&page=${page}`)
+  ]);
+
+  const sources: RankedClipSource[] = [];
+  const trendingItems = (trendingRes.results || []) as TMDBItem[];
+  const movieItems = (moviesRes.results || []) as TMDBItem[];
+  const tvItems = (tvRes.results || []) as TMDBItem[];
+
+  trendingItems.forEach((item, index: number) => {
+    if (item.media_type !== "movie" && item.media_type !== "tv") return;
+    const mediaType = item.media_type as "movie" | "tv";
+    sources.push({
+      tmdbId: item.id,
+      mediaType,
+      title: item.title || item.name || "",
+      popularity: item.popularity || 0,
+      year: item.release_date ? new Date(item.release_date).getFullYear() : item.first_air_date ? new Date(item.first_air_date).getFullYear() : 0,
+      posterPath: item.poster_path || null,
+      backdropPath: item.backdrop_path || null,
+      genreIds: item.genre_ids || [],
+      sourceKind: "trending",
+      sourceRank: index,
+      sourceScore: 0,
+    });
+  });
+
+  movieItems.forEach((item, index: number) => {
+    sources.push({
+      tmdbId: item.id,
+      mediaType: "movie",
+      title: item.title || item.name || "",
+      popularity: item.popularity || 0,
+      year: item.release_date ? new Date(item.release_date).getFullYear() : 0,
+      posterPath: item.poster_path || null,
+      backdropPath: item.backdrop_path || null,
+      genreIds: item.genre_ids || [],
+      sourceKind: "popular",
+      sourceRank: index,
+      sourceScore: 0,
+    });
+  });
+
+  tvItems.forEach((item, index: number) => {
+    sources.push({
+      tmdbId: item.id,
+      mediaType: "tv",
+      title: item.title || item.name || "",
+      popularity: item.popularity || 0,
+      year: item.first_air_date ? new Date(item.first_air_date).getFullYear() : 0,
+      posterPath: item.poster_path || null,
+      backdropPath: item.backdrop_path || null,
+      genreIds: item.genre_ids || [],
+      sourceKind: "popular",
+      sourceRank: index,
+      sourceScore: 0,
+    });
+  });
+
+  const uniqueSources = Array.from(
+    new Map(
+      sources.map((source) => {
+        const scored = { ...source, sourceScore: scoreClipSource(source) };
+        return [`${scored.mediaType}:${scored.tmdbId}`, scored] as const;
+      })
+    ).values()
+  );
+
+  uniqueSources.sort((a, b) => {
+    if (b.sourceScore !== a.sourceScore) return b.sourceScore - a.sourceScore;
+    if (a.sourceKind !== b.sourceKind) return a.sourceKind === "trending" ? -1 : 1;
+    if (a.sourceRank !== b.sourceRank) return a.sourceRank - b.sourceRank;
+    return b.popularity - a.popularity;
+  });
+
+  const rankedSources = uniqueSources.slice(0, limit);
+  popularClipsCache.set(cacheKey, { data: rankedSources, expiresAt: Date.now() + POPULAR_CLIPS_CACHE_TTL_MS });
+  return rankedSources;
+}
+
+/**
+ * Fetch trending people from TMDB.
+ */
+export async function getTrendingPeople(limit: number = 20): Promise<any[]> {
+  try {
+    const data = await fetchFromTMDB(`/trending/person/day?language=en-US`);
+    return (data.results || []).slice(0, limit);
+  } catch (error) {
+    console.error("Failed to fetch trending people:", error);
+    return [];
+  }
+}
+
+/**
+ * Fetch popular people from TMDB, optionally filtered by department.
+ */
+export async function getPopularPeople(limit: number = 20): Promise<any[]> {
+  try {
+    const data = await fetchFromTMDB(`/person/popular?language=en-US&page=1`);
+    return (data.results || []).slice(0, limit);
+  } catch (error) {
+    console.error("Failed to fetch popular people:", error);
+    return [];
+  }
+}
+
+

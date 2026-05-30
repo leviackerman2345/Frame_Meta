@@ -63,6 +63,10 @@ const nextConfig: NextConfig = {
         protocol: "https",
         hostname: "cdn-icons-png.magnific.com",
       },
+      {
+        protocol: "https",
+        hostname: "img.youtube.com",
+      },
     ],
   },
 };

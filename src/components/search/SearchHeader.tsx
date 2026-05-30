@@ -88,10 +88,6 @@ export function SearchHeader({ onSearch, onGenreSelect, activeGenre, genres }: S
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  useEffect(() => {
-    setActiveIndex(-1);
-  }, [suggestions, showSuggestions]);
-
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "ArrowDown") {
       if (!showSuggestions && suggestions.length > 0) {

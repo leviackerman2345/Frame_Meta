@@ -14,6 +14,7 @@
 "use client";
 
 import React from "react";
+import Link from "next/link";
 
 interface ErrorProps {
   error: Error & { digest?: string };
@@ -22,7 +23,7 @@ interface ErrorProps {
 
 export default function NewsArticleError({ error, reset }: ErrorProps) {
   return (
-    <main className="min-h-screen bg-black text-white flex items-center justify-center px-6" style={{ fontFamily: "'Inter', sans-serif" }}>
+    <main className="min-h-screen bg-black text-white flex items-center justify-center px-6" style={{ fontFamily: "'Inters', 'Inter', sans-serif" }}>
       <div className="max-w-lg w-full text-center space-y-10">
 
         {/* Icon */}
@@ -73,14 +74,15 @@ export default function NewsArticleError({ error, reset }: ErrorProps) {
           </button>
 
           {/* Fallback navigation */}
-          <a
+          <Link
             href="/news"
             className="px-8 py-3.5 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/5 text-zinc-400 hover:text-white text-sm font-black uppercase tracking-widest transition-all active:scale-95"
           >
             Back to News
-          </a>
+          </Link>
         </div>
       </div>
     </main>
   );
 }
+

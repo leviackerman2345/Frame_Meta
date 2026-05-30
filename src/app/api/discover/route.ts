@@ -1,16 +1,23 @@
 import { NextResponse } from "next/server";
 import { discoverByGenre } from "@/lib/tmdb";
+import { enforceRateLimit, sanitizePage, sanitizeQuery } from "@/lib/api-guard";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 300;
 
 export async function GET(request: Request) {
+  const rateLimited = enforceRateLimit(request, "api:discover", 45, 60_000);
+  if (rateLimited) return rateLimited;
+
   const { searchParams } = new URL(request.url);
-  const genre = searchParams.get("genre") || "";
-  const page = Math.max(1, parseInt(searchParams.get("page") || "1", 10) || 1);
+  const genre = sanitizeQuery(searchParams.get("genre"), 40) || "";
+  const page = sanitizePage(searchParams.get("page"));
 
   if (!genre) {
-    return NextResponse.json([]);
+    return NextResponse.json(
+      { error: "Invalid or empty genre." },
+      { status: 400 }
+    );
   }
 
   try {

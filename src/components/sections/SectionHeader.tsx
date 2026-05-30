@@ -15,19 +15,19 @@ export function SectionHeader({
 }: SectionHeaderProps) {
   const wrapperClassName =
     layout === "split"
-      ? "flex flex-col md:flex-row md:items-end justify-between mb-8 gap-5"
-      : "mb-8";
+      ? "flex flex-col md:flex-row md:items-end justify-between mb-8 md:mb-10 gap-4"
+      : "mb-8 md:mb-10";
 
   return (
     <div className={wrapperClassName}>
       {layout === "split" ? (
         <>
           <div>
-            <h2 className="text-2xl font-semibold text-white tracking-tight drop-shadow-sm">
+            <h2 className="text-xl md:text-2xl font-semibold text-white tracking-tight">
               {title}
             </h2>
             {subtitle && (
-              <p className="text-sm text-zinc-400/90 mt-1.5 font-medium">
+              <p className="text-sm text-zinc-500 mt-1.5">
                 {subtitle}
               </p>
             )}
@@ -36,11 +36,11 @@ export function SectionHeader({
         </>
       ) : (
         <>
-          <h2 className="text-2xl font-semibold text-white tracking-tight drop-shadow-sm">
+          <h2 className="text-xl md:text-2xl font-semibold text-white tracking-tight">
             {title}
           </h2>
           {subtitle && (
-            <p className="text-sm text-zinc-400/90 mt-1.5 font-medium">
+            <p className="text-sm text-zinc-500 mt-1.5">
               {subtitle}
             </p>
           )}

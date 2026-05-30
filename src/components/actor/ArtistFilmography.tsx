@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useRef, useEffect } from "react";
+import { useState, useMemo, useRef } from "react";
 import { motion, AnimatePresence, Variants } from "framer-motion";
 import { MediaCard } from "@/components/ui/MediaCard";
 import { Credit, MovieCard } from "@/types/types";
@@ -59,16 +59,12 @@ export function ArtistFilmography({ movieCredits, tvCredits }: ArtistFilmography
   const fIndex = Math.min(filterState.index, filters.length - 1 < 0 ? 0 : filters.length - 1);
   const activeFilter = filters[fIndex]?.value || "movies";
 
-  // Reset visible count when filter changes
-  useEffect(() => {
-    setVisibleCount(24);
-  }, [activeFilter]);
-
   const changeFilter = (newIndex: number) => {
     setFilterState({
       index: newIndex,
       direction: newIndex > fIndex ? 1 : -1,
     });
+    setVisibleCount(24);
   };
 
   // Filter and Sort Logic for main grid

@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 import { NewsCard } from "@/components/ui/NewsCard";
 import { NewsItem, NewsArticle } from "@/types/types";
 import { motion } from "framer-motion";
+import { SectionHeader } from "@/components/sections/SectionHeader";
 
 interface RelatedNewsSectionProps {
   query: string;
@@ -43,15 +44,11 @@ export function RelatedNewsSection({
   if (!loading && news.length === 0) return null;
 
   return (
-    <section className="w-full max-w-[1224px] mx-auto border-t border-white/10 pt-12 flex flex-col gap-8 text-left">
-      <div>
-        <h3 className="text-3xl md:text-4xl font-bold tracking-tight text-white mb-2">
-          {title}
-        </h3>
-        <p className="text-zinc-200 text-sm md:text-base font-medium">
-          {description}
-        </p>
-      </div>
+    <section className="w-full max-w-7xl mx-auto px-4 md:px-12 border-t border-white/10 pt-12 flex flex-col text-left">
+      <SectionHeader
+        title={title}
+        subtitle={description}
+      />
 
       {loading ? (
         <div className="flex gap-6 overflow-hidden">

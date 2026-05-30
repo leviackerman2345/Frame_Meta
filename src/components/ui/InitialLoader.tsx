@@ -9,11 +9,9 @@ import { LoadingScreen } from "./LoadingScreen";
  * Shows the premium LoadingScreen on hard reloads and first visits.
  */
 export function InitialLoader() {
-  // ✅ Both server and client start as false — no hydration mismatch.
-  // sessionStorage was removed because reading it inside useState() causes a
-  // server/client mismatch: the server always returns false (no window), while
-  // the browser returns true on first visit, triggering a React hydration error.
-  const [loading, setLoading] = useState(false);
+  // Start visible so users never see a blank screen while html[data-loading]
+  // temporarily hides the page before this client component hydrates.
+  const [loading, setLoading] = useState(true);
 
   // PerformanceNavigationTiming is used instead of sessionStorage because it
   // runs exclusively in the browser after hydration (inside useEffect), so
@@ -37,21 +35,21 @@ export function InitialLoader() {
     const isHardNavigation = navEntry?.type === 'navigate' || navEntry?.type === 'reload';
 
     if (isHardNavigation) {
-      setLoading(true);
-
-      // Show loader for at least 1.5 seconds for a premium "splash" feel
+      // Keep loader briefly on hard loads for a smooth handoff.
       const timer = setTimeout(() => {
         setLoading(false);
         // Remove from <html> to reveal page content — matches where the
         // blocking inline script set it (document.documentElement)
         document.documentElement.removeAttribute('data-loading');
-      }, 1500);
+      }, 650);
 
       return () => clearTimeout(timer);
     } else {
       // Soft navigation or back/forward — ensure the attribute is cleaned up
       // in case it was left over from a previous hard load
+      const clear = setTimeout(() => setLoading(false), 0);
       document.documentElement.removeAttribute('data-loading');
+      return () => clearTimeout(clear);
     }
   }, []);
 

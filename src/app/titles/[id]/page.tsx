@@ -24,6 +24,7 @@ export default async function TitlePage({ params, searchParams }: TitlePageProps
 
   return (
     <MovieDetailsModal
+      isModal={false}
       type={type}
       details={data.details}
       logoUrl={data.logoUrl}

@@ -7,7 +7,7 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-sans);
+  --font-sans: var(--font-inters);
   --font-mono: var(--font-geist-mono);
   --font-heading: var(--font-sans);
   --color-sidebar-ring: var(--sidebar-ring);
@@ -67,6 +67,7 @@
 }
 
 :root {
+  --font-inters: "Inters", "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
   --card: oklch(1 0 0);
@@ -142,6 +143,7 @@
 
   body {
     @apply bg-background text-foreground;
+    font-family: var(--font-inters);
     overflow-x: hidden;
     max-width: 100%;
   }
@@ -240,8 +242,9 @@
   scrollbar-color: rgba(255, 255, 255, 0.2) transparent !important;
 }
 
-/* Hide navbar when modal is open */
-body.modal-open nav {
+/* Hide navbar and footer when modal is open */
+body.modal-open nav,
+body.modal-open footer {
   display: none !important;
 }
 

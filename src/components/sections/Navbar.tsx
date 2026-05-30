@@ -8,10 +8,12 @@ import { Search, Menu, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { brand, navLinks } from "@/constants/navigation";
 import { MovieCard } from "@/types/types";
+import { useAuth } from "@/contexts/AuthContext";
 
 export function Navbar() {
   const pathname = usePathname();
   const router = useRouter();
+  const { openLoginModal } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const [isSearchActive, setIsSearchActive] = useState(false);
   const [searchValue, setSearchValue] = useState("");
@@ -23,9 +25,7 @@ export function Navbar() {
 
   const toggleMenu = () => setIsOpen(!isOpen);
 
-  if (pathname.startsWith("/titles/") || pathname.startsWith("/collection/")) {
-    return null;
-  }
+
 
   const toggleSearch = () => {
     setIsSearchActive(true);
@@ -100,11 +100,14 @@ export function Navbar() {
 
   // Sync search state with URL
   useEffect(() => {
-    setIsSearchActive(pathname === "/search");
-    const q = searchParams.get("q");
-    if (pathname === "/search" && q) {
-      setSearchValue(q);
-    }
+    const timer = setTimeout(() => {
+      setIsSearchActive(pathname === "/search");
+      const q = searchParams.get("q");
+      if (pathname === "/search" && q) {
+        setSearchValue(q);
+      }
+    }, 0);
+    return () => clearTimeout(timer);
   }, [pathname, searchParams]);
 
   useEffect(() => {
@@ -112,6 +115,8 @@ export function Navbar() {
       inputRef.current?.focus();
     }
   }, [isSearchActive]);
+
+
 
   return (
     <nav className="fixed top-6 left-1/2 z-[100] w-full max-w-6xl -translate-x-1/2 px-4">
@@ -128,7 +133,7 @@ export function Navbar() {
               transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
               className="pl-6 flex items-center"
             >
-              <Link href={brand.href} className="text-2xl tracking-tight text-white drop-shadow-md flex items-center">
+              <Link prefetch href={brand.href} className="text-2xl tracking-tight text-white drop-shadow-md flex items-center">
                 <span className="font-medium">{brand.nameStart}</span>
                 <span className="font-bold">{brand.nameEnd}</span>
               </Link>
@@ -154,6 +159,7 @@ export function Navbar() {
                     <Link
                       key={link.name}
                       href={link.href}
+                      prefetch
                       className={`relative px-5 py-1.5 text-sm font-medium transition-colors duration-300 tracking-wide rounded-full ${
                         isActive ? "text-black" : "text-zinc-400 hover:text-white"
                       }`}
@@ -269,9 +275,12 @@ export function Navbar() {
               >
                 <Search className="h-5 w-5" />
               </button>
-              <button className="hidden sm:block h-10 md:h-11 rounded-full bg-black px-5 md:px-7 text-xs md:text-sm font-semibold text-white border border-white/10 hover:bg-zinc-900 transition-colors shadow-md">
+              <Link
+                href="/login"
+                className="hidden sm:flex h-10 md:h-11 items-center rounded-full bg-black px-5 md:px-7 text-xs md:text-sm font-semibold text-white border border-white/10 hover:bg-zinc-900 transition-colors shadow-md cursor-pointer"
+              >
                 Login
-              </button>
+              </Link>
             </motion.div>
           )}
           
@@ -306,6 +315,7 @@ export function Navbar() {
                   <Link
                     key={link.name}
                     href={link.href}
+                    prefetch
                     onClick={() => setIsOpen(false)}
                     className={`relative px-6 py-4 text-lg font-medium transition-colors duration-300 rounded-2xl ${
                       isActive ? "text-black" : "text-zinc-400 hover:text-white hover:bg-white/5"
@@ -325,9 +335,13 @@ export function Navbar() {
               
               {/* Extra Mobile Actions */}
               <div className="pt-4 mt-2 border-t border-white/5 sm:hidden">
-                <button className="w-full py-4 rounded-2xl bg-black text-white font-semibold border border-white/10 hover:bg-zinc-800 transition-colors">
+                <Link
+                  href="/login"
+                  onClick={() => setIsOpen(false)}
+                  className="block w-full py-4 rounded-2xl bg-black text-white font-semibold text-center border border-white/10 hover:bg-zinc-800 transition-colors cursor-pointer"
+                >
                   Login
-                </button>
+                </Link>
               </div>
             </div>
           </motion.div>

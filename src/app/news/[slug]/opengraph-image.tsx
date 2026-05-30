@@ -76,13 +76,12 @@ export default async function OGImage({ params }: OGImageProps) {
           background: "#09090b", // zinc-950 — matches site dark theme
           position: "relative",
           overflow: "hidden",
-          fontFamily: "Inter, system-ui, sans-serif",
+          fontFamily: "Inters, Inter, system-ui, sans-serif",
         }}
       >
         {/* Full-bleed article background image with dark overlay */}
         {imageUrl && (
           <>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={imageUrl}
               alt=""
@@ -252,3 +251,4 @@ export default async function OGImage({ params }: OGImageProps) {
     }
   );
 }
+

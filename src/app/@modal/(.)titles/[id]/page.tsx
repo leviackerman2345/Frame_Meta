@@ -24,6 +24,7 @@ export default async function InterceptedTitlePage({ params, searchParams }: Int
 
   return (
     <MovieDetailsModal
+      isModal={true}
       type={type}
       details={data.details}
       logoUrl={data.logoUrl}

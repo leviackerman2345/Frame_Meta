@@ -1,12 +1,16 @@
 import { NextResponse } from "next/server";
 import { getTrendingAll } from "@/lib/tmdb";
+import { enforceRateLimit, sanitizePage } from "@/lib/api-guard";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 300;
 
 export async function GET(request: Request) {
+  const rateLimited = enforceRateLimit(request, "api:trending", 60, 60_000);
+  if (rateLimited) return rateLimited;
+
   const { searchParams } = new URL(request.url);
-  const page = Math.max(1, parseInt(searchParams.get("page") || "1", 10) || 1);
+  const page = sanitizePage(searchParams.get("page"));
 
   try {
     const data = await getTrendingAll("day", page);

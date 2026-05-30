@@ -40,7 +40,7 @@ export function MediaCard({
   return (
     <Component
       href={href}
-      className={`relative block aspect-[2/3] bg-zinc-800/30 backdrop-blur-2xl shadow-xl shadow-[inset_0_0_0_1px_rgba(255,255,255,0.1)] outline outline-1 outline-transparent [transform:translateZ(0)] rounded-[2.5rem] overflow-hidden group cursor-pointer transition-all duration-500 hover:border-white hover:ring-2 hover:ring-white/10 ${container === "grid" ? "w-full" : "w-[calc((100%-1.25rem)/2)] md:w-[calc((100%-6rem)/5)] snap-start shrink-0"
+      className={`relative block aspect-[2/3] bg-zinc-900/40 shadow-lg shadow-black/30 outline outline-1 outline-transparent [transform:translateZ(0)] rounded-[1.75rem] overflow-hidden group cursor-pointer transition-all duration-500 hover:shadow-xl hover:shadow-black/40 hover:ring-1 hover:ring-white/10 ${container === "grid" ? "w-full" : "w-[calc((100%-1rem)/2)] sm:w-[calc((100%-2*1rem)/3)] md:w-[calc((100%-4*1.25rem)/5)] snap-start shrink-0"
         }`}
     >
       {/* Poster Image */}
@@ -52,7 +52,7 @@ export function MediaCard({
           className="object-cover group-hover:scale-105 transition-transform duration-700 ease-out contrast-[1.1] saturate-[1.1]"
           sizes="(max-width: 768px) 160px, 200px"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent opacity-80" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent opacity-80" />
       </div>
 
       {/* Elegant Ranking Number */}

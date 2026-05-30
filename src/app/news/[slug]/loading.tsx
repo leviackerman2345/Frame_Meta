@@ -18,7 +18,7 @@ export default function NewsArticleLoading() {
   return (
     <main
       className="min-h-screen bg-black text-white animate-pulse"
-      style={{ fontFamily: "'Inter', sans-serif" }}
+      style={{ fontFamily: "'Inters', 'Inter', sans-serif" }}
     >
       {/* Navbar placeholder */}
       <div className="h-16 w-full bg-white/5" />
@@ -73,3 +73,4 @@ export default function NewsArticleLoading() {
     </main>
   );
 }
+

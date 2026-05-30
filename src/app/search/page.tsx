@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo, useRef, useCallback } from "react";
+import { Suspense, useState, useEffect, useMemo, useRef, useCallback } from "react";
 import { SearchHeader } from "@/components/search/SearchHeader";
 import { SearchCatalog } from "@/components/search/SearchCatalog";
 import { SkeletonCardGrid } from "@/components/ui/SkeletonCardGrid";
@@ -92,16 +92,18 @@ function getEndpoint(searchQuery: string, activeGenre: string | null, page: numb
   return `/api/trending?page=${page}`;
 }
 
-export default function SearchPage() {
+function SearchPageContent() {
   const searchParams = useSearchParams();
   const initialQuery = searchParams.get("q") || "";
+  const initialGenre = searchParams.get("genre");
   
-  const [activeGenre, setActiveGenre] = useState<string | null>(null);
+  const [activeGenre, setActiveGenre] = useState<string | null>(initialGenre);
   const [searchQuery, setSearchQuery] = useState(initialQuery);
 
   // Sync state with URL params
   useEffect(() => {
     setSearchQuery(searchParams.get("q") || "");
+    setActiveGenre(searchParams.get("genre"));
   }, [searchParams]);
 
   // ── Data pool: ALL fetched titles ──
@@ -420,5 +422,13 @@ export default function SearchPage() {
         </div>
       </div>
     </main>
+  );
+}
+
+export default function SearchPage() {
+  return (
+    <Suspense fallback={<main className="min-h-screen bg-black" />}>
+      <SearchPageContent />
+    </Suspense>
   );
 }

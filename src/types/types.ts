@@ -34,6 +34,8 @@ export interface MovieCard {
   rank?: number;         // e.g., 1 for Top 10
   badge?: string;        // e.g., "NEW"
   releaseDate?: string;  // e.g., "12/24/2026"
+  runtime?: number;      // runtime in minutes when available
+  providerNames?: string[]; // normalized streaming providers for filtering
   rating?: number;       // e.g., 4.5
   year?: number;         // e.g., 2026
   description?: string;  // e.g., "A long time ago..."
@@ -47,14 +49,6 @@ export interface MovieCard {
 export interface TMDBGenre {
   id: number;
   name: string;
-}
-
-export interface TMDBVideo {
-  site?: string;
-  type?: string;
-  key?: string;
-  name?: string;
-  published_at?: string;
 }
 
 export interface TMDBCastMember {
@@ -277,4 +271,56 @@ export interface NewsArticle {
   thumbnailUrl: string;
   author?: string;
   authorAvatar?: string;
+}
+
+// --- TMDB Data Layer & Algorithm Interfaces ---
+// These interfaces define the pipeline for fetching, scoring, and normalizing clips.
+
+// 1. TMDBVideo: The raw video object returned by TMDB's /videos endpoint.
+// It contains the YouTube key and metadata like size (resolution) and type (Trailer, Clip, etc.).
+export interface TMDBVideo {
+  id: string;
+  key: string;            // YouTube video ID
+  name: string;           // e.g. "Official Trailer", "Clip: Opening Scene"
+  type: 'Trailer' | 'Clip' | 'Teaser' | 'Featurette' | 'Behind the Scenes' | 'Bloopers';
+  site: 'YouTube' | 'Vimeo';
+  size: number;           // quality: 360, 480, 720, 1080
+  official: boolean;
+  published_at: string;
+}
+
+// 2. ClipSource: The parent media (movie/series) that owns the clip.
+// We use its popularity, release year, and genres to calculate the clip's final engagement score.
+export interface ClipSource {
+  tmdbId: number;
+  mediaType: 'movie' | 'tv';
+  title: string;
+  popularity: number;
+  year: number;
+  posterPath: string | null;
+  backdropPath: string | null;
+  genreIds: number[];
+  sourceKind?: 'trending' | 'popular';
+  sourceRank?: number;
+  sourceScore?: number;
+}
+
+// 3. Clip: The fully normalized object sent to the frontend.
+// It merges the raw video data (TMDBVideo) with its parent context (ClipSource)
+// and computes a final 'popularity' score used for sorting the infinite scroll feed.
+export interface Clip {
+  id: string;
+  tmdbId: number;  // TMDB title ID — used to open the title modal on click
+  title: string;
+  description: string;
+  youtubeId: string;
+  thumbnailUrl: string;
+  category: 'action' | 'drama' | 'comedy' | 'horror' | 'thriller' | 'animation' | 'scifi';
+  mediaType: 'movie' | 'tv';
+  year: number;
+  popularity: number;
+  tags: string[];
+  duration: number;
+  posterPath: string | null;
+  certification: string | null;  // e.g. 'PG-13', 'R', 'TV-MA' — null if unavailable
 }
