@@ -97,8 +97,13 @@ export function TitleLogo({
     };
   }, [cacheKey, id, apiType, providedLogoUrl]);
 
+  const hasJustify = className.includes("justify-");
+  const alignmentClass = hasJustify ? "" : "justify-center";
+  const isLeftAligned = className.includes("justify-start");
+  const objectPositionClass = isLeftAligned ? "object-left" : "object-center";
+
   return (
-    <div className={`relative w-full flex items-center justify-center ${className}`}>
+    <div className={`relative w-full flex items-center ${alignmentClass} ${className}`}>
       <AnimatePresence mode="wait">
         {isLoading ? (
           /* Shimmer placeholder while fetching */
@@ -123,7 +128,7 @@ export function TitleLogo({
               src={displayLogoUrl}
               alt={title}
               fill
-              className="object-contain drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]"
+              className={`object-contain ${objectPositionClass} drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]`}
               sizes={sizes}
               unoptimized
             />

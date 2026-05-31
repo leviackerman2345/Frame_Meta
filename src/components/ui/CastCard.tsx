@@ -110,9 +110,7 @@ export function CastCard({ actor, index }: CastCardProps) {
             src={actorPhoto}
             alt={actor.name || "Actor"}
             fill
-            quality={100}
             className="object-cover object-center contrast-[1.05] saturate-[1.1] transition-transform duration-700 ease-out group-hover:scale-105"
-            unoptimized
           />
         ) : (
           <div className={`w-full h-full bg-linear-to-br ${bgColor} flex items-center justify-center relative`}>
@@ -127,7 +125,7 @@ export function CastCard({ actor, index }: CastCardProps) {
 
       {/* Bottom Blurred Panel */}
       <div
-        className="absolute -inset-x-6 -bottom-6 h-[45%] backdrop-blur-3xl bg-black/35 z-10"
+        className="absolute -inset-x-6 -bottom-6 h-[45%] bg-black/60 z-10"
         style={{
           WebkitMaskImage: 'linear-gradient(to bottom, transparent 0%, black 40%, black 100%), radial-gradient(circle, black 100%, black 100%)',
           maskImage: 'linear-gradient(to bottom, transparent 0%, black 40%, black 100%), radial-gradient(circle, black 100%, black 100%)',

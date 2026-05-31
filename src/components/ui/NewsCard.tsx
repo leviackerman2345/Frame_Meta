@@ -35,7 +35,7 @@ export function NewsCard({ item, articleUrl }: NewsCardProps) {
       onKeyDown={handleKeyDown}
     >
       <Link href={item.url || "#"} className="h-full flex flex-col">
-        <div className="relative flex flex-col h-full rounded-[2rem] border border-white/8 bg-zinc-950/50 backdrop-blur-3xl overflow-hidden transition-all duration-500 hover:border-white/15">
+        <div className="relative flex flex-col h-full rounded-[2rem] border border-white/8 bg-zinc-950/80 overflow-hidden transition-all duration-500 hover:border-white/15">
           {/* Thumbnail */}
           <div className="relative aspect-[16/10] overflow-hidden bg-zinc-900">
             {item.thumbnailUrl && (

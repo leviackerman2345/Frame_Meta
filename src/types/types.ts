@@ -44,6 +44,7 @@ export interface MovieCard {
   isAnticipated?: boolean; // e.g., true for collections with upcoming releases
   type?: 'movie' | 'series';
   popularity?: number;     // e.g., TMDB popularity score
+  numberOfSeasons?: number; // for TV series
 }
 
 export interface TMDBGenre {

@@ -1,11 +1,11 @@
 "use client";
 
 import { useRef, useState, useMemo, useEffect } from "react";
-
+import { createPortal } from "react-dom";
 import Image from "next/image";
 import Link from "next/link";
 import { Ticket, Play, MoreHorizontal, Check, Download, Share2, Pause, X, Volume2, VolumeX, Maximize, Minimize, Settings } from "lucide-react";
-import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
+import { motion } from "framer-motion";
 import { MediaCard } from "@/components/ui/MediaCard";
 import { CastSection } from "@/components/sections/CastSection";
 import { RelatedNewsSection } from "@/components/sections/RelatedNewsSection";
@@ -25,7 +25,20 @@ import type {
   TMDBVideo,
 } from "@/types/types";
 
-
+interface YouTubePlayer {
+  destroy(): void;
+  getCurrentTime(): number;
+  getDuration(): number;
+  seekTo(seconds: number, allowSeekAhead: boolean): void;
+  playVideo(): void;
+  pauseVideo(): void;
+  mute(): void;
+  unMute(): void;
+  setPlaybackQuality(quality: string): void;
+  getPlaybackQuality(): string;
+  getAvailableQualityLevels(): string[];
+  loadVideoById(opts: { videoId: string; startSeconds?: number; suggestedQuality?: string }): void;
+}
 
 interface MovieDetailsExtendedProps {
   type?: "movie" | "tv";
@@ -39,6 +52,7 @@ interface MovieDetailsExtendedProps {
   crew?: TMDBCrewMember[];
   omdbRatings?: OMDbRating[];
   reviews?: TMDBReview[];
+  onEpisodeClick?: (episode: TMDBEpisode) => void;
 }
 
 export function MovieDetailsExtended({
@@ -53,6 +67,7 @@ export function MovieDetailsExtended({
   crew = [],
   omdbRatings = [],
   reviews = [],
+  onEpisodeClick,
 }: MovieDetailsExtendedProps) {
   const title = details.title || details.name;
   const overview = details.overview || "No overview available.";
@@ -90,7 +105,7 @@ export function MovieDetailsExtended({
   const [selectedSeason, setSelectedSeason] = useState<number>(defaultSeasonNumber);
   const [episodes, setEpisodes] = useState<TMDBEpisode[]>([]);
   const [loadingEpisodes, setLoadingEpisodes] = useState<boolean>(false);
-  const [collectionData, setCollectionData] = useState<any>(null);
+  const [collectionData, setCollectionData] = useState<import("@/types/types").CollectionData | null>(null);
   const [openMenuEpisodeId, setOpenMenuEpisodeId] = useState<number | null>(null);
   const [activeVideoKey, setActiveVideoKey] = useState<string | null>(null);
 
@@ -113,7 +128,7 @@ export function MovieDetailsExtended({
     fetchCollection();
   }, [details.belongs_to_collection?.id, type]);
 
-  const [player, setPlayer] = useState<any>(null);
+  const [player, setPlayer] = useState<YouTubePlayer | null>(null);
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
   const [currentTime, setCurrentTime] = useState<number>(0);
   const [duration, setDuration] = useState<number>(0);
@@ -206,7 +221,7 @@ export function MovieDetailsExtended({
               try {
                 setAvailableQualities(event.target.getAvailableQualityLevels() || []);
                 setPlaybackQuality(event.target.getPlaybackQuality() || 'auto');
-              } catch (e) {}
+              } catch (_e) {}
             } else if (event.data === (window as any).YT.PlayerState.PAUSED) {
               setIsPlaying(false);
             } else if (event.data === (window as any).YT.PlayerState.ENDED) {
@@ -231,7 +246,7 @@ export function MovieDetailsExtended({
       if (player) {
         try {
           player.destroy();
-        } catch (e) {}
+        } catch (_e) {}
       }
     };
   }, [activeVideoKey]);
@@ -242,7 +257,7 @@ export function MovieDetailsExtended({
       interval = setInterval(() => {
         try {
           setCurrentTime(player.getCurrentTime());
-        } catch (e) {}
+        } catch (_e) {}
       }, 500);
     }
     return () => clearInterval(interval);
@@ -277,65 +292,24 @@ export function MovieDetailsExtended({
 
   const scrollRef = useRef<HTMLDivElement>(null);
   const [scrollProgress, setScrollProgress] = useState(0);
+  const rafRef = useRef<number>(0);
 
   const handleScroll = () => {
-    if (!scrollRef.current) return;
-    const { scrollLeft, scrollWidth, clientWidth } = scrollRef.current;
-    const totalScroll = scrollWidth - clientWidth;
-    if (totalScroll <= 0) return;
-    const progress = (scrollLeft / totalScroll) * 100;
-    setScrollProgress(progress);
+    cancelAnimationFrame(rafRef.current);
+    rafRef.current = requestAnimationFrame(() => {
+      if (!scrollRef.current) return;
+      const { scrollLeft, scrollWidth, clientWidth } = scrollRef.current;
+      const totalScroll = scrollWidth - clientWidth;
+      if (totalScroll <= 0) return;
+      const progress = (scrollLeft / totalScroll) * 100;
+      setScrollProgress(progress);
+    });
   };
 
 
 
 
 
-
-  const filteredCrew = useMemo(() => {
-    if (!crew || crew.length === 0) return [];
-    
-    const targetJobs = [
-      { role: "Director", match: ["Director"] },
-      { role: "Writer • Screenplay", match: ["Writer", "Screenplay", "Story", "Teleplay"] },
-      { role: "Cinematographer (DP)", match: ["Director of Photography", "Cinematographer"] },
-      { role: "Composer", match: ["Original Music Composer", "Composer", "Music"] },
-      { role: "Editor", match: ["Editor"] },
-      { role: "Production Designer", match: ["Production Design", "Production Designer"] },
-      { role: "Executive Producer", match: ["Executive Producer"] },
-    ];
-
-    type CrewMemberWithRole = TMDBCrewMember & { displayRole: string };
-    const result: CrewMemberWithRole[] = [];
-    const seenPersons = new Set<string>();
-
-    targetJobs.forEach(({ role, match }) => {
-      const found = crew.filter((member) => member.job && match.includes(member.job));
-      found.forEach((member) => {
-        const uniqueKey = `${member.id}-${role}`;
-        if (!seenPersons.has(uniqueKey)) {
-          seenPersons.add(uniqueKey);
-          result.push({
-            ...member,
-            displayRole: role,
-          });
-        }
-      });
-    });
-
-    crew.forEach((member) => {
-      const uniqueKey = `${member.id}-${member.job}`;
-      if (!seenPersons.has(uniqueKey)) {
-        seenPersons.add(uniqueKey);
-        result.push({
-          ...member,
-          displayRole: member.job || "Unknown Role",
-        });
-      }
-    });
-
-    return result;
-  }, [crew]);
 
   return (
     <div className="relative z-30 w-full py-20 md:py-28 flex flex-col gap-16 md:gap-24">
@@ -347,11 +321,11 @@ export function MovieDetailsExtended({
               src={getTMDBImageUrl(details.backdrop_path || details.poster_path || "", "original")}
               alt={title || "Background"}
               fill
-              className="object-cover brightness-[0.4] contrast-[1.1] saturate-[1.1]"
+              className="object-cover brightness-[0.7] contrast-[1.1] saturate-[1.1] blur-2xl scale-110"
               unoptimized
             />
             {/* Conditional blur: optimized intensity when player is active */}
-            <div className={`absolute inset-0 transition-all duration-500 ${activeVideoKey ? 'bg-black/10 backdrop-blur-xl' : 'bg-black/15 backdrop-blur-xl'}`} />
+            <div className={`absolute inset-0 transition-all duration-500 ${activeVideoKey ? 'bg-black/10' : 'bg-black/15'}`} />
           </div>
         </div>
       )}
@@ -558,7 +532,13 @@ export function MovieDetailsExtended({
                 >
                   {/* Clipped Container for Image and Content */}
                   <div 
-                    onClick={() => setSelectedEpisodeForModal(episode)}
+                    onClick={() => {
+                      if (onEpisodeClick) {
+                        onEpisodeClick(episode);
+                      } else {
+                        setSelectedEpisodeForModal(episode);
+                      }
+                    }}
                     className="absolute inset-0 rounded-[1.5rem] md:rounded-[2rem] overflow-hidden bg-zinc-900 border border-white/[0.05] hover:border-white/20 hover:scale-[1.02] transition-all duration-500 shadow-lg cursor-pointer"
                   >
                     {/* Episode Still */}
@@ -675,7 +655,7 @@ export function MovieDetailsExtended({
           />
 
           <div className="flex gap-6 overflow-x-auto snap-x snap-mandatory pt-6 pb-8 scrollbar-none">
-            {trailers.map((video: any) => (
+            {trailers.map((video) => (
               <div
                 key={video.id}
                 onClick={() => setActiveVideoKey(video.key)}
@@ -719,7 +699,7 @@ export function MovieDetailsExtended({
           />
 
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-            {providers.map((provider: any) => {
+            {providers.map((provider) => {
               const providerLogo = provider.logo_path
                 ? `https://image.tmdb.org/t/p/w92${provider.logo_path}`
                 : null;
@@ -736,19 +716,19 @@ export function MovieDetailsExtended({
                     {providerLogo ? (
                       <Image
                         src={providerLogo}
-                        alt={provider.provider_name}
+                        alt={provider.provider_name || "Provider"}
                         fill
                         className="object-cover"
                         unoptimized
                       />
                     ) : (
                       <div className="absolute inset-0 flex items-center justify-center text-xs font-bold text-zinc-500">
-                        {provider.provider_name.slice(0, 2)}
+                        {(provider.provider_name || "").slice(0, 2)}
                       </div>
                     )}
                   </div>
                   <span className="text-zinc-200 font-semibold text-sm md:text-base">
-                    {provider.provider_name}
+                    {provider.provider_name || "Provider"}
                   </span>
                 </a>
               );
@@ -757,7 +737,7 @@ export function MovieDetailsExtended({
         </div>
       ) : inCinema && (
         <div className="max-w-7xl mx-auto px-4 md:px-12 w-full border-t border-white/10 pt-12 text-left">
-          <div className="relative w-full rounded-3xl bg-gradient-to-br from-zinc-900/50 via-zinc-900/30 to-black/50 backdrop-blur-xl border border-white/10 p-10 md:p-14 flex flex-col md:flex-row items-center justify-between gap-8 md:gap-12 overflow-hidden shadow-2xl">
+          <div className="relative w-full rounded-3xl bg-gradient-to-br from-zinc-900/70 via-zinc-900/50 to-black/70 border border-white/10 p-10 md:p-14 flex flex-col md:flex-row items-center justify-between gap-8 md:gap-12 overflow-hidden shadow-2xl">
             <div className="absolute top-0 right-0 -mr-16 -mt-16 w-64 h-64 bg-white/5 rounded-full blur-3xl pointer-events-none" />
             
             <div className="flex items-center gap-6 md:gap-8 flex-col md:flex-row text-center md:text-left">
@@ -795,7 +775,7 @@ export function MovieDetailsExtended({
           />
 
           <div className="flex gap-6 overflow-x-auto snap-x snap-mandatory pt-6 pb-8 scrollbar-none">
-            {trailers.map((video: any) => (
+            {trailers.map((video) => (
               <div
                 key={video.id}
                 onClick={() => setActiveVideoKey(video.key)}
@@ -838,7 +818,7 @@ export function MovieDetailsExtended({
         />
 
         {(() => {
-          const getRawRating = (source: string) => (omdbRatings as any[])?.find((x: any) => x.Source === source)?.Value;
+          const getRawRating = (source: string) => omdbRatings?.find((x) => x.Source === source)?.Value;
           const rtValue = getRawRating("Rotten Tomatoes");
           const imdbValue = getRawRating("Internet Movie Database");
           const metaValue = getRawRating("Metacritic");
@@ -864,7 +844,6 @@ export function MovieDetailsExtended({
 
           // Circle circumference calculations
           const radius = 50;
-          const circumference = 2 * Math.PI * radius; // ~314
 
           return (
             <div className="flex flex-col gap-10 w-full">
@@ -920,7 +899,7 @@ export function MovieDetailsExtended({
               {/* Other Platforms Progress Rows Encapsulated in Stronger Glassmorphism */}
               <div className="max-w-2xl mx-auto w-full border-t border-white/5 pt-8 flex flex-col gap-4">
                 {/* IMDb Linear Bar */}
-                <div className="bg-zinc-900/80 backdrop-blur-3xl border border-zinc-700/30 rounded-2xl p-5 shadow-2xl flex flex-col gap-3 transition-all duration-300 hover:bg-zinc-800/60 hover:border-white/20">
+                <div className="bg-zinc-900/90 border border-zinc-700/30 rounded-2xl p-5 shadow-2xl flex flex-col gap-3 transition-all duration-300 hover:bg-zinc-800/80 hover:border-white/20">
                   <div className="flex justify-between items-end">
                     <span className="text-sm font-bold text-zinc-300 flex items-center gap-2">
                       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5 text-yellow-500 fill-yellow-500">
@@ -938,7 +917,7 @@ export function MovieDetailsExtended({
                 </div>
 
                 {/* Metacritic Linear Bar */}
-                <div className="bg-zinc-900/80 backdrop-blur-3xl border border-zinc-700/30 rounded-2xl p-5 shadow-2xl flex flex-col gap-3 transition-all duration-300 hover:bg-zinc-800/60 hover:border-white/20">
+                <div className="bg-zinc-900/90 border border-zinc-700/30 rounded-2xl p-5 shadow-2xl flex flex-col gap-3 transition-all duration-300 hover:bg-zinc-800/80 hover:border-white/20">
                   <div className="flex justify-between items-end">
                     <span className="text-sm font-bold text-zinc-300 flex items-center gap-2">
                       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5 text-green-400">
@@ -956,7 +935,7 @@ export function MovieDetailsExtended({
                 </div>
 
                 {/* TMDB Index Bar */}
-                <div className="bg-zinc-900/80 backdrop-blur-3xl border border-zinc-700/30 rounded-2xl p-5 shadow-2xl flex flex-col gap-3 transition-all duration-300 hover:bg-zinc-800/60 hover:border-white/20">
+                <div className="bg-zinc-900/90 border border-zinc-700/30 rounded-2xl p-5 shadow-2xl flex flex-col gap-3 transition-all duration-300 hover:bg-zinc-800/80 hover:border-white/20">
                   <div className="flex justify-between items-end">
                     <span className="text-sm font-bold text-zinc-300 flex items-center gap-2">
                       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5 text-intent-cyan">
@@ -997,7 +976,7 @@ export function MovieDetailsExtended({
                 { name: "Rolling Stone", critic: "David Fear", publication: "Rolling Stone" },
               ];
 
-              return reviews.slice(0, 5).map((review: any, idx: number) => {
+              return reviews.slice(0, 5).map((review, idx) => {
                 const pub = publications[idx % publications.length];
                 const accents = [
                   "from-orange-500/20 via-orange-600/5 to-transparent",
@@ -1011,14 +990,14 @@ export function MovieDetailsExtended({
                 return (
                   <div 
                     key={review.id || idx} 
-                    className="snap-center shrink-0 w-[300px] md:w-[380px] lg:w-[calc((100%-48px)/3)] bg-zinc-900/30 backdrop-blur-3xl border border-white/[0.05] rounded-[28px] p-8 flex flex-col justify-between min-h-[320px] shadow-xl relative overflow-hidden group transition-all duration-500 hover:border-white/10 hover:bg-zinc-900/50"
+                    className="snap-center shrink-0 w-[300px] md:w-[380px] lg:w-[calc((100%-48px)/3)] bg-zinc-900/60 border border-white/[0.05] rounded-[28px] p-8 flex flex-col justify-between min-h-[320px] shadow-xl relative overflow-hidden group transition-all duration-500 hover:border-white/10 hover:bg-zinc-900/80"
                   >
                     <div className={`absolute bottom-0 inset-x-0 h-[60%] bg-gradient-to-t ${accent} blur-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none`} />
 
                     <div className="relative z-10 flex flex-col gap-2">
                       <span className="text-4xl text-intent-cyan/40 font-bold select-none leading-none">“</span>
                       <p className="text-zinc-200 text-sm md:text-base font-semibold leading-relaxed tracking-wide mt-1 line-clamp-6">
-                        {review.content.replace(/<\/?[^>]+(>|$)/g, "")}
+                        {(review.content || "").replace(/<\/?[^>]+(>|$)/g, "")}
                       </p>
                     </div>
 
@@ -1052,6 +1031,7 @@ export function MovieDetailsExtended({
             title="Production Crew"
             subtitle="The creative team and visionaries working behind the scenes"
             cast={crew as any}
+            variant="crew"
           />
 
           <RelatedNewsSection 
@@ -1075,7 +1055,7 @@ export function MovieDetailsExtended({
           >
             {/* Backdrop */}
             <Image
-              src={collectionData.backdropUrl}
+              src={collectionData.backdropUrl || ""}
               alt={collectionData.title}
               fill
               className="object-cover group-hover:scale-105 transition-transform duration-1000 ease-out brightness-50"
@@ -1123,7 +1103,7 @@ export function MovieDetailsExtended({
             onScroll={handleScroll}
             className="flex gap-4 md:gap-6 overflow-x-auto pb-6 scrollbar-none snap-x snap-mandatory"
           >
-            {recommendations.map((item: any) => (
+            {recommendations.map((item) => (
               <div key={item.id} className="w-[180px] md:w-[200px] lg:w-[calc((100%-96px)/5)] shrink-0 snap-start">
                 <MediaCard 
                   data={item} 
@@ -1146,10 +1126,16 @@ export function MovieDetailsExtended({
           </div>
         </div>
       )}
-      {/* Episode Detail Modal */}
-      {selectedEpisodeForModal && (
-        <div className="fixed inset-0 z-[100] bg-black/90 backdrop-blur-2xl flex items-center justify-center p-4 md:p-12 animate-in fade-in duration-300">
-          <div className="relative max-w-2xl w-full bg-zinc-950/60 backdrop-blur-3xl border border-white/[0.08] rounded-[2.5rem] overflow-hidden shadow-[0_50px_100px_-20px_rgba(0,0,0,0.8)] flex flex-col max-h-[90vh] animate-in zoom-in-95 duration-300">
+      {/* Episode Detail Modal — portaled to body to escape motion.div stacking context */}
+      {selectedEpisodeForModal && createPortal(
+        <div
+          onClick={() => setSelectedEpisodeForModal(null)}
+          className="fixed inset-0 z-[100] bg-black/90 backdrop-blur-2xl flex items-center justify-center p-4 md:p-12 animate-in fade-in duration-300 cursor-pointer"
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="relative max-w-2xl w-full bg-zinc-950/60 backdrop-blur-3xl border border-white/[0.08] rounded-[2.5rem] overflow-hidden shadow-[0_50px_100px_-20px_rgba(0,0,0,0.8)] flex flex-col max-h-[90vh] animate-in zoom-in-95 duration-300 cursor-default"
+          >
             
             {/* Close Button */}
             <button 
@@ -1230,7 +1216,7 @@ export function MovieDetailsExtended({
                     Available to Stream
                   </span>
                   <div className="flex gap-2.5 overflow-x-auto pb-2 scrollbar-none">
-                    {providers.map((provider: any) => {
+                    {providers.map((provider) => {
                       const providerLogo = provider.logo_path
                         ? `https://image.tmdb.org/t/p/w92${provider.logo_path}`
                         : null;
@@ -1241,7 +1227,7 @@ export function MovieDetailsExtended({
                         >
                           {providerLogo && (
                             <div className="relative w-5 h-5 rounded-md overflow-hidden shadow-sm">
-                              <Image src={providerLogo} alt={provider.provider_name} fill className="object-cover" unoptimized />
+                              <Image src={providerLogo} alt={provider.provider_name || "Provider"} fill className="object-cover" unoptimized />
                             </div>
                           )}
                           <span className="text-white/90 text-xs font-medium">
@@ -1255,7 +1241,8 @@ export function MovieDetailsExtended({
               )}
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* Custom Video Player Modal */}
@@ -1315,7 +1302,7 @@ export function MovieDetailsExtended({
                     const time = parseFloat(e.target.value);
                     try {
                       player?.seekTo(time, true);
-                    } catch (err) {}
+                    } catch (_err) {}
                     setCurrentTime(time);
                   }}
                   className="w-full h-1 bg-white/20 rounded-lg appearance-none cursor-pointer accent-intent-cyan" 
@@ -1339,7 +1326,7 @@ export function MovieDetailsExtended({
                           player?.playVideo();
                           setIsPlaying(true);
                         }
-                      } catch (err) {}
+                      } catch (_err) {}
                     }}
                     className="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 flex items-center justify-center text-white transition-all duration-300 cursor-pointer"
                   >
@@ -1361,7 +1348,7 @@ export function MovieDetailsExtended({
                           player?.mute();
                           setIsMuted(true);
                         }
-                      } catch (err) {}
+                      } catch (_err) {}
                     }}
                     className="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 flex items-center justify-center text-white transition-all duration-300 cursor-pointer"
                   >
@@ -1425,7 +1412,7 @@ export function MovieDetailsExtended({
                           document.exitFullscreen();
                           setIsFullscreen(false);
                         }
-                      } catch (err) {}
+                      } catch (_err) {}
                     }}
                     className="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 flex items-center justify-center text-white transition-all duration-300 cursor-pointer"
                   >

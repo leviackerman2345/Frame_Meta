@@ -113,7 +113,7 @@ export function FAQ() {
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-200 h-150 bg-brand-accent/3 rounded-full blur-[180px] pointer-events-none" />
       <div className="absolute bottom-0 right-0 w-125 h-125 bg-[#e2ff00]/2 rounded-full blur-[150px] pointer-events-none" />
 
-      <div className="max-w-4xl mx-auto px-4 md:px-6">
+      <div className="max-w-4xl mx-auto px-6 md:px-12">
         {/* Centered Header */}
         <div className="text-center mb-16 md:mb-20">
           <motion.div

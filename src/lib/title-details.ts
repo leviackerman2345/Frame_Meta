@@ -38,9 +38,10 @@ export async function getTitleDetailsBundle(
   id: number,
   type: "movie" | "tv"
 ): Promise<TitleDetailsBundle | null> {
+  const detailsPromise = getTitleFullDetails(id, type);
   const [detailsResponse, logoUrl, recommendations, reviewsData] =
     await Promise.all([
-      getTitleFullDetails(id, type),
+      detailsPromise,
       getTitleLogo(id, type),
       getRecommendations(id, type),
       getMovieReviews(id, type),
@@ -52,7 +53,7 @@ export async function getTitleDetailsBundle(
   }
 
   const imdbId = details.imdb_id || details.external_ids?.imdb_id;
-  const omdbRatings = await getOMDbRatings(imdbId);
+  const omdbPromise = imdbId ? getOMDbRatings(imdbId) : Promise.resolve([]);
   const reviews = (reviewsData?.results || []) as TMDBReview[];
 
   const backdropUrl = details.backdrop_path
@@ -126,6 +127,8 @@ export async function getTitleDetailsBundle(
 
   const cast = (details.credits?.cast || []) as TMDBCastMember[];
   const crew = (details.credits?.crew || []) as TMDBCrewMember[];
+
+  const omdbRatings = await omdbPromise;
 
   return {
     details,

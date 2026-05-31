@@ -27,7 +27,7 @@ export async function Collections() {
       />
 
       {/* Horizontal Scrolling Cards */}
-      <div className="flex gap-6 overflow-x-auto pb-8 custom-scrollbar snap-x px-1 scroll-smooth">
+      <div className="flex gap-6 overflow-x-auto pb-8 custom-scrollbar snap-x px-1 scroll-smooth scrollbar-hide">
         {collections.map((collection, i) => (
           <CollectionCard key={collection.id} collection={collection} index={i} />
         ))}

@@ -4,15 +4,23 @@ import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowRight, Star, Camera } from "lucide-react";
+import { ArrowRight, Star } from "lucide-react";
 import { Navbar } from "@/components/sections/Navbar";
 import { Footer } from "@/components/sections/Footer";
 import type { CuratedPerson } from "@/constants/people";
 
+interface TMDBPerson {
+  id: number;
+  name: string;
+  known_for_department?: string;
+  profile_path?: string | null;
+  known_for?: Array<{ title?: string; name?: string }>;
+}
+
 interface PeopleIndexClientProps {
   curatedPeople: CuratedPerson[];
-  trendingPeople: any[];
-  popularPeople: any[] | undefined;
+  trendingPeople: TMDBPerson[];
+  popularPeople: TMDBPerson[] | undefined;
 }
 
 const FILTER_TABS = ["All", "Director", "Cinematographer", "Actor", "Screenwriter"] as const;
@@ -75,15 +83,15 @@ export function PeopleIndexClient({
       knownFor: p.signatureAesthetics.slice(0, 2),
     })),
     ...trendingPeople
-      .filter((tp: any) => !trendingIds.has(tp.id))
-      .map((tp: any) => ({
+      .filter((tp) => !trendingIds.has(tp.id))
+      .map((tp) => ({
         id: tp.id,
         name: tp.name,
         role: normalizeRole(tp.known_for_department),
         profilePath: tp.profile_path,
         knownFor:
           tp.known_for
-            ?.map((k: any) => k.title || k.name)
+            ?.map((k) => k.title || k.name)
             .filter(Boolean)
             .slice(0, 2) || [],
       })),
@@ -92,26 +100,30 @@ export function PeopleIndexClient({
   // Popular from TMDB (not in curated or trending)
   const existingIds = new Set([
     ...curatedPeople.map((p) => p.id),
-    ...trendingPeople.map((p: any) => p.id),
+    ...trendingPeople.map((p) => p.id),
   ]);
   const extraPeople = (popularPeople || [])
-    .filter((p: any) => !existingIds.has(p.id))
-    .map((p: any) => ({
+    .filter((p) => !existingIds.has(p.id))
+    .map((p) => ({
       id: p.id,
       name: p.name,
-      role: normalizeRole(p.known_for_department),
-      profilePath: p.profile_path,
+      role: normalizeRole(p.known_for_department) as CuratedPerson["role"],
+      profilePath: p.profile_path || "",
       signatureAesthetics:
-        p.known_for
-          ?.map((k: any) => k.title || k.name)
-          .filter(Boolean)
-          .slice(0, 2) || ["Cinema"],
+        (p.known_for
+            ?.map((k) => k.title || k.name)
+            .filter(Boolean)
+            .slice(0, 2) as string[]) || ["Cinema"],
       awardsBadge: "Popular",
       bio: "",
+      birthdate: "",
+      location: "",
+      youtubeLoopId: "",
+      frequentCollaborators: [],
     }));
 
   // Full grid: curated + extra popular
-  const allGridPeople = [
+  const allGridPeople: CuratedPerson[] = [
     ...curatedPeople,
     ...extraPeople.filter((ep) => !curatedPeople.some((cp) => cp.id === ep.id)),
   ];
@@ -273,7 +285,7 @@ export function PeopleIndexClient({
             </h2>
           </div>
 
-          <div className="flex gap-5 md:gap-6 overflow-x-auto pb-4 snap-x snap-mandatory px-1 scroll-smooth">
+          <div className="flex gap-5 md:gap-6 overflow-x-auto pb-4 snap-x snap-mandatory px-1 scroll-smooth scrollbar-hide">
             {combinedTrending.map((person) => (
               <Link
                 key={person.id}
@@ -318,40 +330,41 @@ export function PeopleIndexClient({
             </p>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5">
+          <div className="flex lg:grid lg:grid-cols-4 gap-4 md:gap-5 overflow-x-auto lg:overflow-visible pb-4 lg:pb-0 snap-x snap-mandatory scrollbar-hide -mx-4 px-4 lg:mx-0 lg:px-0">
             {academyWinners.slice(0, 4).map((winner) => (
-              <Link
-                key={winner.id}
-                href={`/people/${winner.id}`}
-                className="group relative aspect-[3/4] rounded-[2rem] overflow-hidden border border-white/8 bg-zinc-950/50 cursor-pointer block"
-              >
-                <Image
-                  src={getProfileUrl(winner.profilePath)}
-                  alt={winner.name}
-                  fill
-                  className="object-cover object-top grayscale contrast-[1.05] brightness-90 group-hover:grayscale-0 group-hover:scale-105 transition-all duration-700"
-                  unoptimized
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black via-black/30 to-transparent" />
+              <div key={winner.id} className="w-[75%] sm:w-[45%] lg:w-auto shrink-0 snap-center snap-always">
+                <Link
+                  href={`/people/${winner.id}`}
+                  className="group relative aspect-[3/4] rounded-[2rem] overflow-hidden border border-white/8 bg-zinc-950/50 cursor-pointer block"
+                >
+                  <Image
+                    src={getProfileUrl(winner.profilePath)}
+                    alt={winner.name}
+                    fill
+                    className="object-cover object-top grayscale contrast-[1.05] brightness-90 group-hover:grayscale-0 group-hover:scale-105 transition-all duration-700"
+                    unoptimized
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black via-black/30 to-transparent" />
 
-                {/* Award badge */}
-                <div className="absolute top-4 right-4 z-20 inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-amber-400/15 backdrop-blur-xl border border-amber-400/20 text-[9px] font-semibold text-amber-300/90 uppercase tracking-wider">
-                  <Star className="w-2.5 h-2.5 fill-amber-400/80" />
-                  Award Winner
-                </div>
+                  {/* Award badge */}
+                  <div className="absolute top-4 right-4 z-20 inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-amber-400/15 backdrop-blur-xl border border-amber-400/20 text-[9px] font-semibold text-amber-300/90 uppercase tracking-wider">
+                    <Star className="w-2.5 h-2.5 fill-amber-400/80" />
+                    Award Winner
+                  </div>
 
-                <div className="absolute inset-x-0 bottom-0 p-5 z-20">
-                  <span className="text-[10px] text-white/40 uppercase tracking-widest font-medium">
-                    {winner.role}
-                  </span>
-                  <h3 className="text-lg md:text-xl font-semibold text-white tracking-tight mt-1 group-hover:text-white/80 transition-colors">
-                    {winner.name}
-                  </h3>
-                  <p className="text-xs text-white/30 mt-1 line-clamp-2 leading-relaxed">
-                    {winner.awardsBadge}
-                  </p>
-                </div>
-              </Link>
+                  <div className="absolute inset-x-0 bottom-0 p-5 z-20">
+                    <span className="text-[10px] text-white/40 uppercase tracking-widest font-medium">
+                      {winner.role}
+                    </span>
+                    <h3 className="text-lg md:text-xl font-semibold text-white tracking-tight mt-1 group-hover:text-white/80 transition-colors">
+                      {winner.name}
+                    </h3>
+                    <p className="text-xs text-white/30 mt-1 line-clamp-2 leading-relaxed">
+                      {winner.awardsBadge}
+                    </p>
+                  </div>
+                </Link>
+              </div>
             ))}
           </div>
         </div>
@@ -398,8 +411,6 @@ export function PeopleIndexClient({
                 const isCurated = curatedPeople.some(
                   (cp) => cp.id === person.id
                 );
-                const p = person as any;
-
                 return (
                   <motion.div
                     layout
@@ -414,13 +425,13 @@ export function PeopleIndexClient({
                   >
                     <Link
                       href={`/people/${person.id}`}
-                      className="group flex gap-4 items-start rounded-[1.5rem] md:rounded-[2rem] border border-white/8 bg-zinc-950/50 backdrop-blur-3xl p-4 md:p-5 hover:border-white/15 transition-all duration-500 cursor-pointer block"
+                      className="group flex gap-4 items-start rounded-[1.5rem] md:rounded-[2rem] border border-white/8 bg-zinc-950/80 p-4 md:p-5 hover:border-white/15 transition-all duration-500 cursor-pointer block"
                     >
                       {/* Portrait */}
                       <div className="relative w-16 h-16 md:w-20 md:h-20 rounded-2xl overflow-hidden border border-white/10 shrink-0">
                         <Image
                           src={getProfileUrl(
-                            p.profilePath || p.profile_path
+                            person.profilePath
                           )}
                           alt={person.name}
                           fill
@@ -435,11 +446,11 @@ export function PeopleIndexClient({
                           <span className="text-[10px] text-white/30 uppercase tracking-wider font-medium">
                             {person.role}
                           </span>
-                          {isCurated && (person as any).awardsBadge && (
+                          {isCurated && person.awardsBadge && (
                             <>
                               <span className="text-zinc-700">&middot;</span>
                               <span className="text-[10px] text-amber-400/70 font-medium truncate">
-                                {(person as any).awardsBadge}
+                                {person.awardsBadge}
                               </span>
                             </>
                           )}
@@ -447,15 +458,15 @@ export function PeopleIndexClient({
                         <h3 className="text-base md:text-lg font-semibold text-white tracking-tight group-hover:text-white/80 transition-colors truncate">
                           {person.name}
                         </h3>
-                        {isCurated && (person as any).bio && (
+                        {isCurated && person.bio && (
                           <p className="text-xs text-white/30 line-clamp-2 leading-relaxed mt-1">
-                            {(person as any).bio}
+                            {person.bio}
                           </p>
                         )}
-                        {p.signatureAesthetics &&
-                          p.signatureAesthetics.length > 0 && (
+                        {person.signatureAesthetics &&
+                          person.signatureAesthetics.length > 0 && (
                             <div className="flex flex-wrap gap-1.5 mt-2">
-                              {p.signatureAesthetics
+                              {person.signatureAesthetics
                                 .slice(0, 2)
                                 .map((tag: string) => (
                                   <span

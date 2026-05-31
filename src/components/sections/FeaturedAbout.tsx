@@ -1,8 +1,9 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, useEffect } from "react";
 import Image from "next/image";
-import { motion, useInView } from "framer-motion";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
 import {
   Film,
   Sparkles,
@@ -11,6 +12,8 @@ import {
   Shield,
   Users,
 } from "lucide-react";
+
+gsap.registerPlugin(ScrollTrigger);
 
 /* ------------------------------------------------------------------ */
 /*  Content Data                                                       */
@@ -75,106 +78,136 @@ const features = [
 ];
 
 /* ------------------------------------------------------------------ */
-/*  Feature Card Component                                             */
-/* ------------------------------------------------------------------ */
-
-function FeatureCard({
-  feature,
-  index,
-}: {
-  feature: (typeof features)[number];
-  index: number;
-}) {
-  const cardRef = useRef<HTMLDivElement>(null);
-  const isInView = useInView(cardRef, { once: true, amount: 0.3 });
-  const Icon = feature.icon;
-
-  return (
-    <motion.div
-      ref={cardRef}
-      initial={{ opacity: 0, y: 40 }}
-      animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 40 }}
-      transition={{ duration: 0.6, delay: index * 0.08, ease: [0.16, 1, 0.3, 1] }}
-      className="group relative py-8 md:py-10 border-b border-white/[0.06] last:border-b-0"
-    >
-      {/* Number watermark */}
-      <span className="absolute top-6 right-0 text-[64px] md:text-[80px] font-black text-white/[0.03] leading-none select-none pointer-events-none group-hover:text-white/[0.06] transition-colors duration-500">
-        {feature.number}
-      </span>
-
-      {/* Icon + Title Row */}
-      <div className="flex items-start gap-4 mb-4 md:mb-5 relative z-10">
-        <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-white/[0.05] border border-white/[0.08] flex items-center justify-center shrink-0 group-hover:bg-white/[0.1] group-hover:border-white/[0.15] transition-all duration-500">
-          <Icon className="w-5 h-5 md:w-6 md:h-6 text-zinc-400 group-hover:text-white transition-colors duration-500" />
-        </div>
-        <div className="pt-1">
-          <h3 className="text-lg md:text-xl font-bold text-white tracking-tight leading-tight">
-            {feature.title}
-          </h3>
-        </div>
-      </div>
-
-      {/* Description */}
-      <p className="text-zinc-400 text-sm md:text-[15px] leading-[1.7] mb-5 md:mb-6 relative z-10 group-hover:text-zinc-300 transition-colors duration-500">
-        {feature.description}
-      </p>
-
-      {/* Tags */}
-      <div className="flex flex-wrap gap-2 relative z-10">
-        {feature.tags.map((tag) => (
-          <span
-            key={tag}
-            className="px-3 py-1 text-[10px] md:text-[11px] font-semibold uppercase tracking-[0.12em] text-zinc-500 border border-white/[0.06] rounded-full group-hover:text-zinc-300 group-hover:border-white/[0.1] transition-all duration-500"
-          >
-            {tag}
-          </span>
-        ))}
-      </div>
-    </motion.div>
-  );
-}
-
-/* ------------------------------------------------------------------ */
 /*  Main Section Component                                             */
 /* ------------------------------------------------------------------ */
 
 export function FeaturedAbout() {
   const sectionRef = useRef<HTMLElement>(null);
   const headerRef = useRef<HTMLDivElement>(null);
-  const headerInView = useInView(headerRef, { once: true, amount: 0.4 });
+  const leftColRef = useRef<HTMLDivElement>(null);
+  const rightColRef = useRef<HTMLDivElement>(null);
+  const cardRefs = useRef<HTMLDivElement[]>([]);
+  const progressRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const ctx = gsap.context(() => {
+      // ── Desktop only: pin left column while right column scrolls ──
+      ScrollTrigger.matchMedia({
+        "(min-width: 1024px)": () => {
+          if (!leftColRef.current || !rightColRef.current) return;
+
+          ScrollTrigger.create({
+            trigger: rightColRef.current,
+            start: "top top",
+            end: "bottom bottom",
+            pin: leftColRef.current,
+            pinSpacing: false,
+          });
+        },
+      });
+
+      // ── Header entrance (all breakpoints) ──
+      if (headerRef.current) {
+        gsap.from(headerRef.current, {
+          opacity: 0,
+          y: 30,
+          duration: 0.8,
+          ease: "power3.out",
+          scrollTrigger: {
+            trigger: headerRef.current,
+            start: "top 85%",
+            once: true,
+          },
+        });
+      }
+
+      // ── Card entrance animations (all breakpoints) ──
+      cardRefs.current.forEach((card, index) => {
+        if (!card) return;
+
+        const tl = gsap.timeline({
+          scrollTrigger: {
+            trigger: card,
+            start: "top 80%",
+            toggleActions: "play none none none",
+          },
+        });
+
+        tl.from(card, {
+          opacity: 0,
+          y: 50,
+          duration: 0.7,
+          ease: "power3.out",
+          delay: index * 0.05,
+        });
+
+        const iconContainer = card.querySelector(".card-icon");
+        if (iconContainer) {
+          tl.from(
+            iconContainer,
+            { scale: 0.8, opacity: 0, duration: 0.5, ease: "back.out(1.7)" },
+            "-=0.4"
+          );
+        }
+
+        const tags = card.querySelectorAll(".card-tag");
+        if (tags.length) {
+          tl.from(
+            tags,
+            { opacity: 0, x: -10, duration: 0.4, stagger: 0.06, ease: "power2.out" },
+            "-=0.2"
+          );
+        }
+      });
+
+      // ── Progress bar scrub (all breakpoints) ──
+      if (progressRef.current && rightColRef.current) {
+        gsap.to(progressRef.current, {
+          scaleX: 1,
+          ease: "none",
+          scrollTrigger: {
+            trigger: rightColRef.current,
+            start: "top center",
+            end: "bottom center",
+            scrub: 0.3,
+          },
+        });
+      }
+    }, sectionRef);
+
+    return () => ctx.revert();
+  }, []);
 
   return (
     <section
       ref={sectionRef}
       id="featured-about"
-      className="relative w-full bg-brand-black overflow-hidden"
+      className="relative w-full bg-brand-black"
     >
       {/* Decorative ambient glow */}
       <div className="absolute top-1/3 left-0 w-[500px] h-[500px] bg-brand-accent/[0.03] rounded-full blur-[150px] pointer-events-none" />
       <div className="absolute bottom-1/4 right-0 w-[400px] h-[400px] bg-yellow-400/[0.02] rounded-full blur-[120px] pointer-events-none" />
 
-      {/* Section Header — outside the pinned area */}
-      <div className="max-w-7xl mx-auto px-4 md:px-12 pt-16 md:pt-28 pb-8 md:pb-12">
-        <motion.div
-          ref={headerRef}
-          initial={{ opacity: 0, y: 20 }}
-          animate={headerInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
-          transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-        >
+      {/* Section Header — scrolls away normally */}
+      <div className="max-w-7xl mx-auto px-6 md:px-12 pt-16 md:pt-28 pb-8 md:pb-12">
+        <div ref={headerRef}>
           <span className="inline-block text-[10px] md:text-xs font-black uppercase tracking-[0.3em] text-zinc-500 mb-4 md:mb-6">
             {sectionHeading.label}
           </span>
           <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-white tracking-tight leading-[1.1] whitespace-pre-line">
             {sectionHeading.title}
           </h2>
-        </motion.div>
+        </div>
       </div>
 
-      {/* Two-Column Layout: Pinned Left + Scrollable Right */}
-      <div className="max-w-7xl mx-auto px-4 md:px-12 pb-16 md:pb-28">
-        <div className="flex flex-col lg:flex-row gap-8 md:gap-12 lg:gap-16 lg:h-[85vh]">
-          {/* Left Column — Pinned (no scroll) */}
-          <div className="lg:w-1/2 shrink-0 flex flex-col justify-center">
+      {/* Two-Column Scrollytelling */}
+      <div className="max-w-7xl mx-auto px-6 md:px-12 pb-16 md:pb-28">
+        <div className="flex flex-col lg:flex-row gap-8 md:gap-12 lg:gap-16">
+          {/* Left Column — GSAP pins this on desktop */}
+          <div
+            ref={leftColRef}
+            className="lg:w-1/2 shrink-0"
+          >
             {/* Image Container */}
             <div className="relative aspect-[4/5] md:aspect-[3/4] w-full rounded-2xl md:rounded-3xl overflow-hidden border border-white/[0.06] shadow-2xl mb-6 md:mb-8">
               <Image
@@ -199,33 +232,69 @@ export function FeaturedAbout() {
               </div>
             </div>
 
-            {/* Stats Row */}
-            <div className="grid grid-cols-3 gap-3 md:gap-4">
-              {[
-                { value: "200+", label: "Regions" },
-                { value: "4K HDR", label: "Quality" },
-                { value: "50M+", label: "Users" },
-              ].map((stat) => (
+            {/* Progress indicator */}
+            <div className="mt-6 md:mt-8">
+              <div className="h-px bg-white/[0.06] rounded-full overflow-hidden">
                 <div
-                  key={stat.label}
-                  className="bg-zinc-900/30 backdrop-blur-xl border border-white/[0.06] rounded-xl md:rounded-2xl p-3 md:p-4 text-center hover:border-white/[0.12] transition-all duration-500"
-                >
-                  <div className="text-lg md:text-2xl font-black text-white tracking-tight">
-                    {stat.value}
-                  </div>
-                  <div className="text-[10px] md:text-xs font-semibold text-zinc-500 uppercase tracking-[0.15em] mt-1">
-                    {stat.label}
-                  </div>
-                </div>
-              ))}
+                  ref={progressRef}
+                  className="h-full bg-white/20 origin-left"
+                  style={{ transform: "scaleX(0)" }}
+                />
+              </div>
             </div>
           </div>
 
-          {/* Right Column — Independent scrolling */}
-          <div className="lg:w-1/2 lg:overflow-y-auto lg:pr-2 flex flex-col gap-0">
-            {features.map((feature, index) => (
-              <FeatureCard key={feature.number} feature={feature} index={index} />
-            ))}
+          {/* Right Column — scrolls naturally, drives the pin duration */}
+          <div
+            ref={rightColRef}
+            className="lg:w-1/2 flex flex-col"
+          >
+            {features.map((feature, index) => {
+              const Icon = feature.icon;
+              return (
+                <div
+                  key={feature.number}
+                  ref={(el) => {
+                    if (el) cardRefs.current[index] = el;
+                  }}
+                  className="group relative py-8 md:py-10 border-b border-white/[0.06] last:border-b-0"
+                >
+                  {/* Number watermark */}
+                  <span className="absolute top-6 right-0 text-[64px] md:text-[80px] font-black text-white/[0.03] leading-none select-none pointer-events-none group-hover:text-white/[0.06] transition-colors duration-500">
+                    {feature.number}
+                  </span>
+
+                  {/* Icon + Title Row */}
+                  <div className="flex items-start gap-4 mb-4 md:mb-5 relative z-10">
+                    <div className="card-icon w-10 h-10 md:w-12 md:h-12 rounded-xl bg-white/[0.05] border border-white/[0.08] flex items-center justify-center shrink-0 group-hover:bg-white/[0.1] group-hover:border-white/[0.15] transition-all duration-500">
+                      <Icon className="w-5 h-5 md:w-6 md:h-6 text-zinc-400 group-hover:text-white transition-colors duration-500" />
+                    </div>
+                    <div className="pt-1">
+                      <h3 className="text-lg md:text-xl font-bold text-white tracking-tight leading-tight">
+                        {feature.title}
+                      </h3>
+                    </div>
+                  </div>
+
+                  {/* Description */}
+                  <p className="text-zinc-400 text-sm md:text-[15px] leading-[1.7] mb-5 md:mb-6 relative z-10 group-hover:text-zinc-300 transition-colors duration-500">
+                    {feature.description}
+                  </p>
+
+                  {/* Tags */}
+                  <div className="flex flex-wrap gap-2 relative z-10">
+                    {feature.tags.map((tag) => (
+                      <span
+                        key={tag}
+                        className="card-tag px-3 py-1 text-[10px] md:text-[11px] font-semibold uppercase tracking-[0.12em] text-zinc-500 border border-white/[0.06] rounded-full group-hover:text-zinc-300 group-hover:border-white/[0.1] transition-all duration-500"
+                      >
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
       </div>

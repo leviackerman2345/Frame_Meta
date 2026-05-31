@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import Image from "next/image";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { movieHomeContent } from "@/constants/movie-home";
@@ -20,6 +21,7 @@ export function MovieDiscoveryBar() {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const [brokenLogos, setBrokenLogos] = useState<Record<string, boolean>>({});
 
   const activePlatform = normalizeHomePlatform(searchParams.get("platform"));
   const activeDuration = normalizeHomeDuration(searchParams.get("budget"));
@@ -31,7 +33,7 @@ export function MovieDiscoveryBar() {
 
   return (
     <section className="w-full max-w-7xl mx-auto px-4 md:px-12 pt-6 md:pt-8 relative z-20">
-      <div className="rounded-[2rem] border border-white/8 bg-zinc-950/50 backdrop-blur-3xl shadow-[0_30px_80px_rgba(0,0,0,0.35)] px-4 py-4 md:px-6 md:py-5 space-y-4">
+      <div className="rounded-[2rem] border border-white/8 bg-zinc-950/80 shadow-[0_30px_80px_rgba(0,0,0,0.35)] px-4 py-4 md:px-6 md:py-5 space-y-4">
         <div>
           <p className="text-[10px] md:text-xs font-semibold tracking-[0.25em] text-white/35">
             Streamer access bar
@@ -48,34 +50,40 @@ export function MovieDiscoveryBar() {
           {movieHomeContent.filters.platforms.map((platform) => {
             const active = activePlatform === platform.key;
             const isAll = platform.key === "all";
+            const hasLogo = !isAll && platform.logo && !brokenLogos[platform.key];
 
             return (
               <button
                 key={platform.key}
                 onClick={() => go("platform", platform.key)}
-                className={`group flex shrink-0 items-center gap-3 rounded-full border px-3 py-2.5 transition-all duration-300 ${
+                className={`group flex shrink-0 items-center gap-3 rounded-full border px-3.5 py-2.5 transition-all duration-300 ${
                   active
                     ? "border-white/30 bg-white text-black shadow-lg"
                     : "border-white/8 bg-white/5 text-white/70 hover:bg-white/10 hover:text-white"
                 }`}
               >
-                <span className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-full bg-black/20">
-                  {isAll ? (
-                    <span className="text-[10px] font-black tracking-[0.25em] uppercase">
-                      All
-                    </span>
-                  ) : (
-                    <Image
-                      src={platform.logo}
-                      alt={platform.label}
-                      width={28}
-                      height={28}
-                      className="h-7 w-7 object-contain"
-                      unoptimized
-                    />
-                  )}
-                </span>
-                <span className="pr-1 text-xs font-semibold tracking-wide">
+                {(isAll || hasLogo) && (
+                  <span className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-full bg-black/20">
+                    {isAll ? (
+                      <span className="text-[10px] font-black tracking-[0.25em] uppercase">
+                        All
+                      </span>
+                    ) : (
+                      <Image
+                        src={platform.logo}
+                        alt={platform.label}
+                        width={28}
+                        height={28}
+                        className="h-7 w-7 object-contain"
+                        unoptimized
+                        onError={() => {
+                          setBrokenLogos((prev) => ({ ...prev, [platform.key]: true }));
+                        }}
+                      />
+                    )}
+                  </span>
+                )}
+                <span className={`${(isAll || hasLogo) ? "pr-1" : "px-2.5"} text-xs font-semibold tracking-wide`}>
                   {platform.label}
                 </span>
               </button>

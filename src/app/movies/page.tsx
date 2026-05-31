@@ -1,4 +1,5 @@
 
+import type { Metadata } from "next";
 import {
   MoviesAsianSpotlightSection,
   MoviesCarouselSection,
@@ -13,7 +14,18 @@ import {
 import { movieHomeContent } from "@/constants/movie-home";
 import type { MovieCard } from "@/types/types";
 import { headers } from "next/headers";
-import { Suspense } from "react";
+
+export const metadata: Metadata = {
+  title: "Movies",
+  description:
+    "Browse popular, trending, and top-rated movies. Filter by genre, region, and streaming platform on FrameMeta.",
+  openGraph: {
+    title: "Movies | FrameMeta",
+    description:
+      "Browse popular, trending, and top-rated movies. Filter by genre, region, and streaming platform on FrameMeta.",
+  },
+  alternates: { canonical: "/movies" },
+};
 import {
   getAsianSpotlight,
   getComingSoon,
@@ -23,7 +35,7 @@ import {
   getTopRatedMovies,
   getTrendingMovies,
 } from "@/lib/tmdb";
-import { getClipFeed } from "@/lib/clips";
+import { getClipFeedFast } from "@/lib/clips";
 import {
   HOME_PLATFORM_MATCHES,
   applyHomeFilters,
@@ -145,18 +157,24 @@ export default async function MoviesPage({
     withFallback("asian spotlight KR", getAsianSpotlight("KR", 12, true), []),
     withFallback("asian spotlight JP", getAsianSpotlight("JP", 12, true), []),
     withFallback("asian spotlight PH", getAsianSpotlight("PH", 12, true), []),
-    withFallback("clips feed", getClipFeed({ page: 0, limit: 12 }), []),
+    withFallback("clips feed", getClipFeedFast(3), []),
   ]);
 
-  const enrichedPopular = pseudoProviderCoverage(await enrichMovieCards(popular, "movie"));
-  const enrichedTrending = pseudoProviderCoverage(await enrichMovieCards(trendingDaily, "movie"));
-  const enrichedLocalTrending = pseudoProviderCoverage(await enrichMovieCards(localTrending, "movie"));
-  const enrichedNowPlaying = pseudoProviderCoverage(await enrichMovieCards(nowPlaying, "movie"));
-  const enrichedComingSoon = pseudoProviderCoverage(await enrichMovieCards(comingSoon, "movie"));
-  const enrichedTopRated = pseudoProviderCoverage(await enrichMovieCards(topRated, "movie"));
-  const enrichedKorean = pseudoProviderCoverage(await enrichMovieCards(korean, "tv"));
-  const enrichedJapanese = pseudoProviderCoverage(await enrichMovieCards(japanese, "movie"));
-  const enrichedFilipino = pseudoProviderCoverage(await enrichMovieCards(filipino, "movie"));
+  const [
+    enrichedPopular, enrichedTrending, enrichedLocalTrending,
+    enrichedNowPlaying, enrichedComingSoon, enrichedTopRated,
+    enrichedKorean, enrichedJapanese, enrichedFilipino,
+  ] = await Promise.all([
+    enrichMovieCards(popular, "movie"),
+    enrichMovieCards(trendingDaily, "movie"),
+    enrichMovieCards(localTrending, "movie"),
+    enrichMovieCards(nowPlaying, "movie"),
+    enrichMovieCards(comingSoon, "movie"),
+    enrichMovieCards(topRated, "movie"),
+    enrichMovieCards(korean, "tv"),
+    enrichMovieCards(japanese, "movie"),
+    enrichMovieCards(filipino, "movie"),
+  ].map((p) => p.then(pseudoProviderCoverage)));
 
   const topGlobal = withSequentialRank(applyHomeFilters(enrichedTrending, platform, duration).slice(0, 10));
   const topLocal = withSequentialRank(applyHomeFilters(enrichedLocalTrending, platform, duration).slice(0, 10));

@@ -135,6 +135,7 @@ export function FeaturedMoviesHero({ items }: FeaturedMoviesHeroProps) {
               className="object-cover object-center pointer-events-none"
               sizes="100vw"
               priority
+              unoptimized
             />
           </motion.div>
         </AnimatePresence>

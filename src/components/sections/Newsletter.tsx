@@ -11,7 +11,7 @@ export function Newsletter() {
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-150 h-150 bg-white/2 rounded-full blur-[150px] pointer-events-none" />
       <div className="absolute top-0 right-0 w-100 h-100 bg-zinc-800/10 rounded-full blur-[100px] pointer-events-none" />
 
-      <div className="max-w-6xl mx-auto px-4 md:px-6 relative z-10">
+      <div className="max-w-6xl mx-auto px-6 md:px-12 relative z-10">
         <div className="bg-zinc-900/40 backdrop-blur-2xl border border-white/8 rounded-[32px] md:rounded-[48px] p-8 md:p-16 lg:p-20 overflow-hidden relative">
           
           {/* Subtle inner glow */}

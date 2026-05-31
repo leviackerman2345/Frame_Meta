@@ -31,7 +31,7 @@ export function CollectionCard({ collection, index = 0 }: CollectionCardProps) {
       )}
 
       {/* Hover blur overlay */}
-      <div className="absolute inset-0 z-10 opacity-0 group-hover:opacity-100 backdrop-blur-2xl bg-black/20 transition-opacity duration-700 pointer-events-none" />
+      <div className="absolute inset-0 z-10 opacity-0 group-hover:opacity-100 bg-black/40 transition-opacity duration-700 pointer-events-none" />
 
       {/* Bottom gradient for title legibility */}
       <div className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-black/70 to-transparent z-10 pointer-events-none" />
@@ -44,7 +44,7 @@ export function CollectionCard({ collection, index = 0 }: CollectionCardProps) {
         >
           {/* Award badge */}
           {collection.badge && (
-            <span className="inline-block px-3 py-1 mb-3 text-[9px] md:text-[10px] font-bold tracking-[0.2em] text-white/80 bg-white/10 backdrop-blur-xl border border-white/10 rounded-full uppercase">
+            <span className="inline-block px-3 py-1 mb-3 text-[9px] md:text-[10px] font-bold tracking-[0.2em] text-white/80 bg-white/15 border border-white/10 rounded-full uppercase">
               {collection.badge}
             </span>
           )}

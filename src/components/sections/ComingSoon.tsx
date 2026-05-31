@@ -8,7 +8,7 @@ import { SectionHeader } from "@/components/sections/SectionHeader";
 
 
 export async function ComingSoon() {
-  const content = await getComingSoon(20, true);
+  const content = await getComingSoon(10, true);
 
   return (
     <section className="w-full max-w-7xl mx-auto px-6 md:px-12 py-10 relative z-20">
@@ -18,11 +18,11 @@ export async function ComingSoon() {
         layout="split"
       />
 
-      <div className="flex gap-5 md:gap-6 overflow-x-auto pb-6 custom-scrollbar snap-x snap-mandatory px-1 scroll-smooth">
+      <div className="flex gap-4 md:gap-5 overflow-x-auto pb-6 custom-scrollbar snap-x snap-mandatory px-px scroll-smooth scrollbar-hide">
         {content.map((item) => (
           <div
             key={item.id}
-            className="w-[calc((100%-1.25rem)/2)] md:w-[calc((100%-6rem)/5)] shrink-0 aspect-2/3 bg-zinc-800/30 backdrop-blur-2xl shadow-xl shadow-[inset_0_0_0_1px_rgba(255,255,255,0.15)] outline outline-1 outline-transparent [transform:translateZ(0)] snap-start relative group cursor-pointer transition-all duration-500 hover:scale-[1.03] hover:z-50 hover:shadow-2xl overflow-hidden rounded-[2.5rem]"
+            className="w-[calc((100%-1rem)/2)] sm:w-[calc((100%-2*1rem)/3)] md:w-[calc((100%-4*1.25rem)/5)] shrink-0 aspect-2/3 bg-zinc-900/80 shadow-xl shadow-[inset_0_0_0_1px_rgba(255,255,255,0.15)] outline outline-1 outline-transparent [transform:translateZ(0)] snap-start relative group cursor-pointer transition-all duration-500 hover:scale-[1.03] hover:z-50 hover:shadow-2xl overflow-hidden rounded-[2.5rem]"
           >
             {/* Poster Image */}
             {item.posterUrl && (
@@ -41,7 +41,7 @@ export async function ComingSoon() {
             {/* Elegant Calendar Badge */}
             {item.badge && (
               <div className="absolute top-4 left-4 z-20">
-                <span className="px-2.5 py-1 text-[8px] md:text-[9px] font-bold tracking-widest text-zinc-900 bg-white/90 backdrop-blur-md rounded-lg uppercase shadow-lg">
+                <span className="px-2.5 py-1 text-[8px] md:text-[9px] font-bold tracking-widest text-zinc-900 bg-white/95 rounded-lg uppercase shadow-lg">
                   {item.badge}
                 </span>
               </div>

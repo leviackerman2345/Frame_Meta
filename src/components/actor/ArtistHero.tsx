@@ -122,15 +122,16 @@ export function ArtistHero({
           {/* Header Line: Name + Badge */}
           <div className="flex flex-col md:flex-row md:items-center gap-4">
             <div className="flex items-center justify-center md:justify-start gap-4 flex-wrap">
-              <h1 className="text-5xl md:text-7xl lg:text-[80px] font-black tracking-tight subpixel-antialiased drop-shadow-2xl text-white leading-none whitespace-nowrap">
+              <h1 className="text-4xl sm:text-5xl md:text-7xl lg:text-[80px] font-black tracking-tight subpixel-antialiased drop-shadow-2xl text-white leading-none break-words max-w-full">
                 {name}
               </h1>
               <Image
-                src="https://cdn-icons-png.magnific.com/256/7641/7641727.png"
+                src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/e4/Twitter_Verified_Badge.svg/3840px-Twitter_Verified_Badge.svg.png"
                 alt="Verified"
-                width={32}
-                height={32}
-                className="shrink-0"
+                width={28}
+                height={28}
+                className="shrink-0 w-7 h-7"
+                unoptimized
               />
             </div>
           </div>

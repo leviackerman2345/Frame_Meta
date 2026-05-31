@@ -23,7 +23,7 @@ export function BingeTrackerSection() {
 
   return (
     <section className="w-full max-w-7xl mx-auto px-4 md:px-12 pt-4 md:pt-6 relative z-20">
-      <div className="rounded-[2rem] border border-white/8 bg-zinc-950/50 backdrop-blur-3xl shadow-[0_30px_80px_rgba(0,0,0,0.35)] px-4 py-4 md:px-6 md:py-5">
+      <div className="rounded-[2rem] border border-white/8 bg-zinc-950/80 shadow-[0_30px_80px_rgba(0,0,0,0.35)] px-4 py-4 md:px-6 md:py-5">
         <p className="text-[10px] md:text-xs font-semibold tracking-[0.25em] text-white/35">
           Smart sessions
         </p>

@@ -1,5 +1,6 @@
 import type { MovieCard } from "@/types/types";
 import { getTitleHomeMeta } from "@/lib/tmdb";
+import { mapWithConcurrency } from "@/lib/tmdb-enrichment";
 
 export type HomePlatformKey = "all" | "netflix" | "disney" | "viu" | "hbo";
 export type HomeDurationKey = "all" | "short" | "feature";
@@ -30,18 +31,16 @@ export async function enrichMovieCards(
   items: MovieCard[],
   type: "movie" | "tv" = "movie"
 ): Promise<MovieCard[]> {
-  return Promise.all(
-    items.map(async (item) => {
-      if (item.runtime && item.providerNames?.length) return item;
+  return mapWithConcurrency(items, 8, async (item) => {
+    if (item.runtime && item.providerNames?.length) return item;
 
-      const meta = await getTitleHomeMeta(item.id, type);
-      return {
-        ...item,
-        runtime: item.runtime ?? meta.runtime,
-        providerNames: item.providerNames ?? meta.providerNames,
-      };
-    })
-  );
+    const meta = await getTitleHomeMeta(item.id, type);
+    return {
+      ...item,
+      runtime: item.runtime ?? meta.runtime,
+      providerNames: item.providerNames ?? meta.providerNames,
+    };
+  });
 }
 
 export function filterBySubscription(

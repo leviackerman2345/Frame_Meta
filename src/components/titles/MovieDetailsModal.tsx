@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
@@ -9,6 +10,7 @@ import { motion } from "framer-motion";
 import { MovieDetailsHero } from "./MovieDetailsHero";
 import { MovieDetailsMeta } from "./MovieDetailsMeta";
 import { MovieDetailsExtended } from "./MovieDetailsExtended";
+import { getTMDBImageUrl } from "@/lib/tmdb";
 import type {
   MovieCard,
   OMDbRating,
@@ -17,6 +19,7 @@ import type {
   TMDBProvider,
   TMDBReview,
   TMDBTitleDetails,
+  TMDBEpisode,
 } from "@/types/types";
 
 interface MovieDetailsModalProps {
@@ -62,6 +65,7 @@ export function MovieDetailsModal({
   const overlayRef = useRef<HTMLDivElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const lastActiveElementRef = useRef<HTMLElement | null>(null);
+  const [selectedEpisode, setSelectedEpisode] = useState<TMDBEpisode | null>(null);
 
   // Close on ESC key and trap focus only when in modal mode
   useEffect(() => {
@@ -114,6 +118,126 @@ export function MovieDetailsModal({
     if (e.target === overlayRef.current) {
       router.back();
     }
+  };
+
+  const renderEpisodeModal = () => {
+    if (!selectedEpisode) return null;
+    return createPortal(
+      <div 
+        onClick={() => setSelectedEpisode(null)}
+        className="fixed inset-0 z-[100] bg-black/90 backdrop-blur-2xl flex items-center justify-center p-4 md:p-12 cursor-pointer"
+      >
+        <div 
+          onClick={(e) => e.stopPropagation()}
+          className="relative max-w-2xl w-full bg-zinc-950/60 backdrop-blur-3xl border border-white/[0.08] rounded-[2.5rem] overflow-hidden shadow-[0_50px_100px_-20px_rgba(0,0,0,0.8)] flex flex-col max-h-[90vh] cursor-default"
+        >
+          {/* Close Button */}
+          <button 
+            onClick={() => setSelectedEpisode(null)}
+            className="absolute top-5 right-5 z-30 w-9 h-9 rounded-full bg-zinc-950/50 backdrop-blur-xl border border-white/10 flex items-center justify-center text-white/60 hover:text-white hover:bg-zinc-950/80 transition-all duration-300 cursor-pointer"
+          >
+            <X className="w-4 h-4" />
+          </button>
+
+          {/* Row 1: Visual + Overlaid Text */}
+          <div className="relative w-full aspect-video overflow-hidden">
+            {selectedEpisode.still_path ? (
+              <Image
+                src={getTMDBImageUrl(selectedEpisode.still_path, "original")}
+                alt={selectedEpisode.name || "Episode"}
+                fill
+                className="object-cover"
+                unoptimized
+              />
+            ) : (
+              <div className="absolute inset-0 flex items-center justify-center text-xs font-medium text-white/40 bg-zinc-900">
+                No Preview Available
+              </div>
+            )}
+            
+            {/* Dark Gradient Overlay */}
+            <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/40 to-transparent z-10 pointer-events-none" />
+
+            {/* Overlaid Content (Title & Specs) */}
+            <div className="absolute inset-x-0 bottom-0 p-8 md:p-10 z-20 flex flex-col gap-3.5 text-left">
+              <div className="flex flex-col gap-1">
+                <span className="text-xs font-semibold text-intent-cyan uppercase tracking-widest">
+                  Episode {selectedEpisode.episode_number}
+                </span>
+                <h3 className="text-3xl md:text-4xl font-semibold text-white tracking-tight">
+                  {selectedEpisode.name || `Episode ${selectedEpisode.episode_number}`}
+                </h3>
+              </div>
+
+              {/* Tech Specs & Rating */}
+              <div className="flex items-center gap-2 flex-wrap">
+                {selectedEpisode.vote_average !== undefined && selectedEpisode.vote_average > 0 && (
+                  <div className="px-3 py-1 rounded-full bg-white/15 backdrop-blur-xl border border-white/10 text-xs font-semibold text-white">
+                    ★ {selectedEpisode.vote_average.toFixed(1)}
+                  </div>
+                )}
+                <div className="px-3 py-1 rounded-full bg-white/[0.06] backdrop-blur-xl border border-white/[0.08] text-[10px] font-bold text-white/80 uppercase tracking-widest">
+                  4K UHD
+                </div>
+                <div className="px-3 py-1 rounded-full bg-white/[0.06] backdrop-blur-xl border border-white/[0.08] text-[10px] font-bold text-white/80 uppercase tracking-widest">
+                  HDR
+                </div>
+                <div className="px-3 py-1 rounded-full bg-white/[0.06] backdrop-blur-xl border border-white/[0.08] text-[10px] font-bold text-white/80 uppercase tracking-widest">
+                  Atmos
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Row 2: Text & Providers */}
+          <div className="p-8 md:p-10 flex flex-col gap-6 text-left overflow-y-auto bg-zinc-950/30">
+            {/* Plot */}
+            {selectedEpisode.overview && (
+              <div className="flex flex-col gap-2">
+                <span className="text-xs font-semibold text-white/40 uppercase tracking-widest">
+                  Description
+                </span>
+                <p className="text-white/80 text-sm md:text-base leading-relaxed font-normal">
+                  {selectedEpisode.overview}
+                </p>
+              </div>
+            )}
+
+            {/* Where to Watch */}
+            {providers && providers.length > 0 && (
+              <div className="flex flex-col gap-3 mt-2 pt-4 border-t border-white/[0.06]">
+                <span className="text-xs font-semibold text-white/40 uppercase tracking-widest">
+                  Available to Stream
+                </span>
+                <div className="flex gap-2.5 overflow-x-auto pb-2 scrollbar-none">
+                  {providers.map((provider) => {
+                    const providerLogo = provider.logo_path
+                      ? `https://image.tmdb.org/t/p/w92${provider.logo_path}`
+                      : null;
+                    return (
+                      <div 
+                        key={provider.provider_id}
+                        className="flex items-center gap-2 px-3.5 py-2 rounded-2xl bg-white/[0.04] border border-white/[0.08] flex-shrink-0 hover:bg-white/[0.08] transition-colors duration-300"
+                      >
+                        {providerLogo && (
+                          <div className="relative w-5 h-5 rounded-md overflow-hidden shadow-sm">
+                            <Image src={providerLogo} alt={provider.provider_name || "Provider"} fill className="object-cover" unoptimized />
+                          </div>
+                        )}
+                        <span className="text-white/90 text-xs font-medium">
+                          {provider.provider_name}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>,
+      document.body
+    );
   };
 
   if (!isModal) {
@@ -299,8 +423,10 @@ export function MovieDetailsModal({
             crew={crew}
             omdbRatings={omdbRatings}
             reviews={reviews}
+            onEpisodeClick={setSelectedEpisode}
           />
         </motion.div>
+        {renderEpisodeModal()}
       </main>
     );
   }
@@ -309,7 +435,7 @@ export function MovieDetailsModal({
     <div
       ref={overlayRef}
       onClick={handleDismiss}
-      className="fixed inset-0 z-50 bg-black flex overflow-y-auto"
+      className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xl flex overflow-y-auto"
       role="dialog"
       aria-modal="true"
       aria-label={details?.title || details?.name || "Title details"}
@@ -319,7 +445,7 @@ export function MovieDetailsModal({
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.95, y: 20 }}
         transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-        className="relative w-full min-h-screen z-50 flex flex-col bg-black"
+        className="relative w-full min-h-screen z-50 flex flex-col bg-transparent"
       >
         {/* Close Button */}
         <button
@@ -348,8 +474,9 @@ export function MovieDetailsModal({
         </MovieDetailsHero>
 
         {/* Extended Details Section (Synopsis, Grid) */}
-        <MovieDetailsExtended type={type} details={details} logoUrl={logoUrl} providers={providers} watchLink={watchLink} inCinema={inCinema} recommendations={recommendations} cast={cast} crew={crew} omdbRatings={omdbRatings} reviews={reviews} />
+        <MovieDetailsExtended type={type} details={details} logoUrl={logoUrl} providers={providers} watchLink={watchLink} inCinema={inCinema} recommendations={recommendations} cast={cast} crew={crew} omdbRatings={omdbRatings} reviews={reviews} onEpisodeClick={setSelectedEpisode} />
       </motion.div>
+      {renderEpisodeModal()}
     </div>
   );
 }

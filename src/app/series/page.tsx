@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import {
   SeriesAsianSpotlightSection,
   SeriesCarouselSection,
@@ -13,6 +14,18 @@ import { SeriesDiscoveryBar } from "@/components/sections/SeriesDiscoveryBar";
 import { BingeTrackerSection } from "@/components/sections/BingeTrackerSection";
 import { SeriesCreatorsSection } from "@/components/sections/SeriesCreatorsSection";
 import { VibeMatrixSection } from "@/components/sections/VibeMatrixSection";
+
+export const metadata: Metadata = {
+  title: "TV Series",
+  description:
+    "Discover trending, top-rated, and binge-worthy TV series. Explore genres, cast, and streaming availability on FrameMeta.",
+  openGraph: {
+    title: "TV Series | FrameMeta",
+    description:
+      "Discover trending, top-rated, and binge-worthy TV series. Explore genres, cast, and streaming availability on FrameMeta.",
+  },
+  alternates: { canonical: "/series" },
+};
 import { seriesHomeContent } from "@/constants/series-home";
 import type { MovieCard } from "@/types/types";
 import { headers } from "next/headers";
@@ -26,7 +39,7 @@ import {
   getTVAnime,
   getTVByGenre,
 } from "@/lib/tmdb";
-import { getClipFeed } from "@/lib/clips";
+import { getClipFeedFast } from "@/lib/clips";
 import {
   HOME_PLATFORM_MATCHES,
   applyHomeFilters,
@@ -77,8 +90,8 @@ function filterByBinge(items: MovieCard[], binge: string): MovieCard[] {
   return items.filter((item) => {
     const runtime = item.runtime || 0;
     if (binge === "short") return runtime > 0 && runtime < 30;
-    if (binge === "limited") return (item as any).numberOfSeasons === 1;
-    if (binge === "deep") return ((item as any).numberOfSeasons || 0) >= 5;
+    if (binge === "limited") return item.numberOfSeasons === 1;
+    if (binge === "deep") return (item.numberOfSeasons || 0) >= 5;
     return true;
   });
 }
@@ -143,25 +156,32 @@ export default async function SeriesPage({
     withFallback("asian KR TV", getAsianSpotlight("KR", 12, true), []),
     withFallback("asian JP TV", getTVAnime(12, true), []),
     withFallback("asian PH TV", getRegionalPopularTVSeries("PH", 12, true), []),
-    withFallback("clips feed", getClipFeed({ page: 0, limit: 12 }), []),
+    withFallback("clips feed", getClipFeedFast(3), []),
     withFallback("genre sci-fi", getTVByGenre(10765, 10, true), []),
     withFallback("genre crime", getTVByGenre(80, 10, true), []),
     withFallback("genre comedy", getTVByGenre(35, 10, true), []),
     withFallback("genre drama", getTVByGenre(18, 10, true), []),
   ]);
 
-  const enrichedPopular = pseudoProviderCoverage(await enrichMovieCards(popular, "tv"));
-  const enrichedTrending = pseudoProviderCoverage(await enrichMovieCards(trendingDaily, "tv"));
-  const enrichedLocalTrending = pseudoProviderCoverage(await enrichMovieCards(localTrending, "tv"));
-  const enrichedOnTheAir = pseudoProviderCoverage(await enrichMovieCards(onTheAir, "tv"));
-  const enrichedTopRated = pseudoProviderCoverage(await enrichMovieCards(topRated, "tv"));
-  const enrichedKorean = pseudoProviderCoverage(await enrichMovieCards(korean, "tv"));
-  const enrichedAnime = pseudoProviderCoverage(await enrichMovieCards(anime, "tv"));
-  const enrichedFilipino = pseudoProviderCoverage(await enrichMovieCards(filipino, "tv"));
-  const enrichedGenreSciFi = pseudoProviderCoverage(await enrichMovieCards(genreSciFi, "tv"));
-  const enrichedGenreCrime = pseudoProviderCoverage(await enrichMovieCards(genreCrime, "tv"));
-  const enrichedGenreComedy = pseudoProviderCoverage(await enrichMovieCards(genreComedy, "tv"));
-  const enrichedGenreDrama = pseudoProviderCoverage(await enrichMovieCards(genreDrama, "tv"));
+  const [
+    enrichedPopular, enrichedTrending, enrichedLocalTrending,
+    enrichedOnTheAir, enrichedTopRated, enrichedKorean,
+    enrichedAnime, enrichedFilipino,
+    enrichedGenreSciFi, enrichedGenreCrime, enrichedGenreComedy, enrichedGenreDrama,
+  ] = await Promise.all([
+    enrichMovieCards(popular, "tv"),
+    enrichMovieCards(trendingDaily, "tv"),
+    enrichMovieCards(localTrending, "tv"),
+    enrichMovieCards(onTheAir, "tv"),
+    enrichMovieCards(topRated, "tv"),
+    enrichMovieCards(korean, "tv"),
+    enrichMovieCards(anime, "tv"),
+    enrichMovieCards(filipino, "tv"),
+    enrichMovieCards(genreSciFi, "tv"),
+    enrichMovieCards(genreCrime, "tv"),
+    enrichMovieCards(genreComedy, "tv"),
+    enrichMovieCards(genreDrama, "tv"),
+  ].map((p) => p.then(pseudoProviderCoverage)));
 
   // Apply platform + binge filters
   const baseFiltered = (items: MovieCard[]) =>
@@ -186,7 +206,7 @@ export default async function SeriesPage({
       (item) => item.id
     )
   );
-  const tvClips = clips.filter((c: any) => c.mediaType === "tv");
+  const tvClips = clips.filter((c) => c.mediaType === "tv");
   const filteredClips = filterClipsByPlatform(
     tvClips.length >= 3 ? tvClips : clips,
     allowedIdsForClips,

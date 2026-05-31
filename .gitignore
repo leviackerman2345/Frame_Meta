@@ -40,3 +40,10 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# developer scratch/test scripts
+/scratch
+
+# Claude Code
+.claude/
+.agent/

@@ -19,8 +19,9 @@
 - **Curated Libraries** — Browse trending movies, top-rated series, and specialized content across genres.
 - **Collections** — Access curated franchise collections including the MCU, Star Wars, DC Universe, and more.
 - **Genre Explorer** — Filter and discover content by genre with dedicated browsing pages.
+- **The Loop** — Muted cinematic preview cards with TMDB imagery for quick visual browsing.
 - **Clips & Trailers** — Watch trailers and clips directly within the platform.
-- **Advanced Search** — Full-text search across movies, TV shows, and people with instant results.
+- **Advanced Search** — Full-text search across movies, TV shows, and people with instant results and client-side caching.
 
 ### Artist & People Profiles
 - **Deep Filmography** — Comprehensive career tracking for actors, directors, and crew.
@@ -28,15 +29,29 @@
 - **People Index** — Browse and discover actors, directors, and other industry professionals.
 
 ### Editorial News
-- **NYT Integration** — Live headlines and deep-dives powered by the New York Times Article Search API.
+- **NYT Integration** — Entertainment-focused headlines powered by the New York Times Article Search API.
+- **Title-Specific News** — Related news sections in movie/TV modals fetch articles specific to each title.
 - **Archive Awareness** — Automatic fallback and staleness detection to ensure news relevance.
 - **High-Fidelity Layouts** — Multi-column editorial designs with rich typography.
 
+### SEO & Structured Data
+- **Dynamic Metadata** — `generateMetadata` on title pages with Open Graph, Twitter cards, and canonical URLs.
+- **JSON-LD** — Structured data schemas (WebSite, Organization, Movie, TVSeries, NewsArticle) for rich search results.
+- **Sitemap** — Dynamic `sitemap.xml` covering all routes.
+- **Robots.txt** — Configured crawling rules with sitemap reference.
+
 ### Performance & Design
 - **Zero-Blocking Shell** — Instant page loads via granular React Suspense boundaries.
+- **Deferred Sections** — Below-fold sections load via IntersectionObserver with a global queue (max 2 concurrent, 150ms stagger).
+- **Skeleton Loaders** — Shimmer placeholders for carousels, news, collections, and content sections.
 - **Apple-Inspired Aesthetic** — Dark-first design, Inter typography, and liquid-glass UI elements.
-- **ISR & Streaming** — Incremental Static Regeneration ensures 1-hour freshness with near-zero latency.
+- **ISR & Streaming** — Incremental Static Regeneration ensures 5-minute freshness with near-zero latency.
 - **Modal Details** — Movie/TV details open in an overlay via intercepting routes, keeping the browsing context intact.
+
+### Accessibility & Compliance
+- **Reduced Motion** — `prefers-reduced-motion` respected across animations, skeletons, and infinite scroll.
+- **Cookie Consent** — GDPR-compliant cookie banner with accept/decline options.
+- **Security Headers** — X-Content-Type-Options, X-Frame-Options, Referrer-Policy, and Permissions-Policy.
 
 ---
 
@@ -61,27 +76,35 @@
 src/
 ├── app/                  # Next.js App Router: layouts, pages, and parallel slots (@modal)
 │   ├── api/              # Internal API proxies and prefetch engines
-│   ├── actor/[id]/       # Actor profile pages
-│   ├── people/           # People index and detail pages
 │   ├── titles/[id]/      # Movie/TV detail routes (intercepted by @modal)
 │   ├── movies/           # Movie browsing page
 │   ├── series/           # Series browsing page
+│   ├── people/           # People index and detail pages
 │   ├── genres/           # Genre explorer
 │   ├── collections/      # Curated franchise collections
 │   ├── clips/            # Trailer and clip browser
 │   ├── news/             # Editorial news pages
 │   ├── search/           # Search results page
-│   └── login/            # Authentication page
+│   ├── sitemap.ts        # Dynamic sitemap generation
+│   └── robots.ts         # Robots.txt configuration
 ├── components/
-│   ├── ui/               # Atomic components (Cards, Buttons, Loaders)
+│   ├── ui/               # Atomic components (Cards, Buttons, Loaders, CookieConsent, DevNotice)
 │   ├── sections/         # Large, responsive page-level blocks (Hero, Grids, Navbar)
-│   ├── actor/            # Actor-specific components (Filmography)
-│   ├── auth/             # Authentication components
-│   ├── clips/            # Clip/trailer components
-│   ├── home/             # Home page components
+│   ├── seo/              # JSON-LD structured data component
+│   ├── titles/           # Movie/TV detail components (Modal, Extended, Hero)
+│   ├── collections/      # Collection detail components
 │   ├── people/           # People index and detail components
-│   └── search/           # Search UI components
+│   ├── search/           # Search UI components (Modal, Header)
+│   └── auth/             # Authentication components
 ├── lib/                  # TMDB/NYT/OMDb API clients and business logic
+│   ├── tmdb.ts           # Main TMDB exports
+│   ├── tmdb-movies.ts    # Movie-specific TMDB functions
+│   ├── tmdb-tv.ts        # TV-specific TMDB functions
+│   ├── tmdb-people.ts    # People TMDB functions
+│   ├── tmdb-clips.ts     # Clip/video TMDB functions
+│   ├── tmdb-cache.ts     # In-memory caching layer
+│   ├── news.ts           # NYT Article Search integration
+│   └── clips.ts          # Clip feed generation
 ├── constants/            # Static content, navigation maps, and fallback data
 └── types/                # Centralized TypeScript interfaces
 ```
@@ -124,6 +147,9 @@ src/
 
    # OMDb API — Key from https://www.omdbapi.com/apikey.aspx
    OMDB_API_KEY=your_omdb_api_key_here
+
+   # Base URL (for SEO metadata, sitemap, and canonical URLs)
+   NEXT_PUBLIC_BASE_URL=https://framemeta.app
    ```
 
 4. **Run the development server:**
@@ -140,39 +166,50 @@ src/
 ### Streaming with React Suspense
 FrameMeta uses granular Suspense boundaries to deliver an "Instant-On" experience. The page shell (Navbar, Layout) renders on the server and streams to the client immediately. Data-intensive sections like filmography and news feeds load independently, preventing slow API calls from blocking the initial paint.
 
+### Deferred Section Loading
+Below-fold sections use an IntersectionObserver-based `DeferredSection` component with a global loading queue. This prevents burst rendering by limiting concurrent mounts to 2 with 150ms stagger, reducing homepage scroll lag.
+
 ### Incremental Static Regeneration (ISR)
-A 1-hour revalidation strategy balances data freshness with performance. Movie metadata and industry news are stable enough that 60-minute caching significantly reduces API costs while keeping the platform updated with the latest releases.
+A 5-minute revalidation strategy balances data freshness with performance. Movie metadata and industry news are cached at the edge, significantly reducing API costs while keeping the platform updated with the latest releases.
 
 ### Parallel & Intercepting Routes
 The platform uses `@modal` parallel routes combined with `(.)titles` intercepting routes. Clicking a movie card opens its details in a modal overlay while keeping the background feed visible. The URL updates to `/titles/[id]`, making modals fully shareable and deep-linkable.
+
+### Optimized Search
+The search modal uses a fast API endpoint (`searchMultiFast`) that skips textless poster enrichment, reducing response time from ~3s to ~300ms. Client-side caching provides instant results for repeat queries.
 
 ---
 
 ## API Integrations
 
-- **TMDB API** — Primary source for movie/TV metadata. Uses `/discover`, `/trending`, and `/person` endpoints with textless posters and logos.
-- **NYT Article Search API** — Powers the editorial section with Lucene-filtered cinema content. Includes fallback caching for rate limit resilience (4000 req/day).
-- **OMDb API** — Supplements TMDB data with critical ratings (Rotten Tomatoes, IMDb) for the extended detail scoreboard.
+- **TMDB API** — Primary source for movie/TV metadata. Uses `/discover`, `/trending`, `/search/multi`, and `/person` endpoints with textless posters and logos.
+- **NYT Article Search API** — Powers the editorial section with entertainment-focused content filtering. Includes fallback caching for rate limit resilience.
+- **OMDb API** — Supplements TMDB data with critical ratings (Rotten Tomatoes, IMDb, Metacritic) for the extended detail scoreboard.
 
 ---
 
 ## Performance
 
 - **Streaming Suspense** — Granular loading states for independent page sections.
-- **ISR (1hr)** — Near-zero TTFB by serving pre-rendered HTML from Vercel Edge.
-- **In-memory Caching** — 30-minute server-side cache for expensive image-enrichment transforms.
+- **Deferred Sections** — IntersectionObserver with global queue prevents burst rendering.
+- **Skeleton Loaders** — Shimmer placeholders for all below-fold content.
+- **ISR (5min)** — Near-zero TTFB by serving pre-rendered HTML from Vercel Edge.
+- **In-memory Caching** — Server-side cache for TMDB data with configurable TTLs.
 - **Parallel Fetching** — Independent data resolution within Server Components to prevent waterfall delays.
-- **Hover Prefetching** — Background fetches trigger on user hover to warm the cache before clicks.
+- **Search Caching** — Client-side Map cache for instant repeat searches.
 - **fetchWithTimeout** — All external calls wrapped in `AbortController` with a 5-second deadline.
+- **Optimized LCP** — Splash screen reduced to 1.2s, priority images minimized.
 
 ---
 
 ## Security
 
 - **server-only Guard** — API clients and sensitive logic isolated to the server bundle.
+- **Security Headers** — X-Content-Type-Options, X-Frame-Options, Referrer-Policy, Permissions-Policy.
 - **Lucene Injection Protection** — Search queries sanitized before NYT API calls.
 - **Fetch Timeouts** — Global 5-second deadline on all 3rd-party API requests.
 - **Error Boundaries** — Granular recovery points ensure a failure in one section doesn't crash the page.
+- **Rate Limiting** — API routes protected with per-IP rate limiting.
 
 ---
 

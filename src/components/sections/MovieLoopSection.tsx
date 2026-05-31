@@ -85,7 +85,7 @@ function MovieLoopCard({ clip }: { clip: Clip }) {
   const playbackTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
-    if (!isHovering) {
+    if (!isHovering || !clip.youtubeId) {
       if (playbackTimeoutRef.current) clearTimeout(playbackTimeoutRef.current);
       playbackTimeoutRef.current = null;
       if (playerRef.current) {
@@ -273,10 +273,12 @@ export function MovieLoopSection({ clips }: MovieLoopSectionProps) {
         }
       />
 
-      {/* 3-Column Grid Layout */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 md:gap-6 px-1">
+      {/* Scrollable horizontal carousel container on mobile, 3-Column Grid on md+ */}
+      <div className="flex md:grid md:grid-cols-3 gap-5 md:gap-6 overflow-x-auto md:overflow-visible pb-4 md:pb-0 snap-x snap-mandatory scrollbar-hide -mx-4 px-4 md:mx-0 md:px-1">
         {displayClips.map((clip) => (
-          <MovieLoopCard key={clip.id} clip={clip} />
+          <div key={clip.id} className="w-[85%] sm:w-[48%] md:w-auto shrink-0 snap-center snap-always">
+            <MovieLoopCard clip={clip} />
+          </div>
         ))}
       </div>
     </section>

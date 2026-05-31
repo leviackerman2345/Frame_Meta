@@ -22,7 +22,6 @@ export async function GET(request: Request) {
     vercelEnv,
     tmdbTokenPresent: !!tmdbToken,
     tmdbTokenLength: tmdbToken?.length ?? 0,
-    tmdbTokenFirst4: tmdbToken?.substring(0, 4) ?? "N/A",
     nytKeyPresent: !!nytKey,
     omdbKeyPresent: !!omdbKey,
   });

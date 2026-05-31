@@ -14,14 +14,14 @@ export async function FeaturedNews() {
     id: item.id.toString(),
     title: item.title,
     excerpt: item.description || "",
-    url: item.slug ? `/news/${item.slug}` : ((item as any).url || "#"),
+    url: item.slug ? `/news/${item.slug}` : (item.url || "#"),
     source: item.source,
     publishedAt: item.date,
     thumbnailUrl: item.imageUrl || "",
   }));
 
   return (
-    <section className="w-full max-w-7xl mx-auto px-4 md:px-12 py-10 relative z-20 overflow-hidden" style={{ fontFamily: "var(--font-inter), sans-serif" }}>
+    <section className="w-full max-w-7xl mx-auto px-6 md:px-12 py-10 relative z-20 overflow-hidden" style={{ fontFamily: "var(--font-inter), sans-serif" }}>
       <div className="flex items-end justify-between mb-8 gap-5 px-2">
         <div className="max-w-[70%]">
           <h2 className="text-xl md:text-2xl font-semibold text-white tracking-tight drop-shadow-sm">

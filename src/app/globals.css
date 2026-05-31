@@ -67,7 +67,6 @@
 }
 
 :root {
-  --font-inters: "Inters", "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
   --card: oklch(1 0 0);
@@ -297,6 +296,102 @@ html[data-loading="true"] body > * {
 /* Keep the loader itself fully visible */
 html[data-loading="true"] .initial-loader {
   visibility: visible;
+}
+
+/* ─── Cinematic Loader: Film Grain & Brand Reveal ───────────────────────── */
+
+/* Film grain overlay — subtle SVG noise texture */
+@keyframes grain-shift {
+  0%, 100% { transform: translate(0, 0); }
+  10% { transform: translate(-5%, -10%); }
+  20% { transform: translate(-15%, 5%); }
+  30% { transform: translate(7%, -25%); }
+  40% { transform: translate(-5%, 25%); }
+  50% { transform: translate(-15%, 10%); }
+  60% { transform: translate(15%, 0%); }
+  70% { transform: translate(0%, 15%); }
+  80% { transform: translate(3%, 35%); }
+  90% { transform: translate(-10%, 10%); }
+}
+
+.cinematic-grain::before {
+  content: "";
+  position: absolute;
+  inset: -50%;
+  width: 200%;
+  height: 200%;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.4'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 256px 256px;
+  opacity: 0.035;
+  pointer-events: none;
+  animation: grain-shift 0.8s steps(8) infinite;
+  z-index: 1;
+}
+
+/* Cinematic vignette — radial darkening at edges */
+.cinematic-vignette::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,0.6) 100%);
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* Brand letter reveal animation */
+@keyframes letter-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+    filter: blur(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+    filter: blur(0);
+  }
+}
+
+/* Accent line expand from center */
+@keyframes line-expand {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+
+/* Bottom progress bar */
+@keyframes progress-fill {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+
+/* Reduced motion — skip all animations */
+@media (prefers-reduced-motion: reduce) {
+  .cinematic-grain::before {
+    animation: none;
+    display: none;
+  }
+  .cinematic-brand-char {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+    filter: none !important;
+  }
+  .cinematic-accent-line,
+  .cinematic-progress-bar {
+    animation: none !important;
+    transform: scaleX(1) !important;
+  }
+  .animate-infinite-scroll {
+    animation: none !important;
+  }
+  .skeleton-shimmer,
+  .skeleton-shimmer-inline {
+    animation: none !important;
+  }
+  .liquid-fill::before {
+    transition: none !important;
+  }
 }
 
 /* Liquid Fill Hover Animation */

@@ -240,7 +240,7 @@ export function ArtistFilmography({ movieCredits, tvCredits }: ArtistFilmography
                 initial="enter"
                 animate="center"
                 exit="exit"
-                className="flex md:grid md:grid-cols-4 lg:grid-cols-6 gap-4 md:gap-6 w-full overflow-x-auto md:overflow-visible pb-6 snap-x snap-mandatory scrollbar-hide"
+                className="flex md:grid md:grid-cols-4 lg:grid-cols-6 gap-4 md:gap-6 w-full overflow-x-auto md:overflow-visible pb-6 snap-x snap-mandatory scrollbar-hide -mx-6 px-6 md:mx-0 md:px-0"
               >
                 {filteredCredits.slice(0, visibleCount).map((credit, idx) => (
                   <motion.div key={`${activeFilter}-${credit.id}-${idx}`} variants={cardVariants} className="w-40 sm:w-50 md:w-full shrink-0 snap-start">

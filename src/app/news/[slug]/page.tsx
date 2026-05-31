@@ -47,30 +47,6 @@ const slugResultCache = new Map<string, Awaited<ReturnType<typeof getNewsBySlug>
 
 /* ─── Skeletons ─── */
 
-function HeroSkeleton() {
-  return (
-    <div className="pt-32 md:pt-40 px-4 sm:px-6 md:px-12 max-w-7xl mx-auto animate-pulse">
-      <div className="h-4 w-20 rounded-full bg-white/5 mb-8" />
-      <div className="space-y-4 mb-8">
-        <div className="h-4 w-28 rounded-full bg-white/5" />
-        <div className="h-10 w-full rounded-xl bg-white/5" />
-        <div className="h-10 w-4/5 rounded-xl bg-white/5" />
-        <div className="h-10 w-3/5 rounded-xl bg-white/5" />
-        <div className="h-5 w-3/4 rounded-lg bg-white/5 mt-4" />
-        <div className="h-5 w-2/3 rounded-lg bg-white/5" />
-      </div>
-      <div className="aspect-video md:aspect-[21/9] rounded-[2.5rem] bg-white/5 mb-10" />
-      <div className="flex items-center gap-4 py-6 border-t border-white/5">
-        <div className="w-11 h-11 rounded-full bg-white/5" />
-        <div className="space-y-2">
-          <div className="h-4 w-32 rounded-lg bg-white/5" />
-          <div className="h-3 w-20 rounded-lg bg-white/5" />
-        </div>
-      </div>
-    </div>
-  );
-}
-
 function ArticleSkeleton() {
   return (
     <div className="px-4 sm:px-6 md:px-12 pb-20 animate-pulse">
@@ -113,18 +89,16 @@ function RelatedSkeleton() {
 export default async function NewsArticlePage({ params }: PageProps) {
   const { slug } = await params;
 
-  let article: Awaited<ReturnType<typeof getNewsBySlug>>;
+  const cachedArticle = slugResultCache.get(slug);
+  const articlePromise = cachedArticle ? Promise.resolve(cachedArticle) : getNewsBySlug(slug);
 
-  if (slugResultCache.has(slug)) {
-    article = slugResultCache.get(slug)!;
-  } else {
-    article = await getNewsBySlug(slug);
-    slugResultCache.set(slug, article);
-  }
+  const [article, latestNews] = await Promise.all([
+    articlePromise,
+    getLatestNews(10),
+  ]);
 
+  if (!cachedArticle && article) slugResultCache.set(slug, article);
   if (!article) notFound();
-
-  const latestNews = await getLatestNews(10);
   const similarArticles = latestNews
     .filter((a) => a.slug !== slug && !!a.imageUrl)
     .slice(0, 6);

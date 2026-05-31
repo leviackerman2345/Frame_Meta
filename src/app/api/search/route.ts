@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { searchMulti } from "@/lib/tmdb";
+import { searchMultiFast } from "@/lib/tmdb";
 import { enforceRateLimit, sanitizePage, sanitizeQuery } from "@/lib/api-guard";
 
 export const dynamic = "force-dynamic";
@@ -21,7 +21,7 @@ export async function GET(request: Request) {
   }
 
   try {
-    const data = await searchMulti(query, page);
+    const data = await searchMultiFast(query, page);
     return NextResponse.json(data, {
       headers: {
         "Cache-Control": "public, s-maxage=300, stale-while-revalidate=600",

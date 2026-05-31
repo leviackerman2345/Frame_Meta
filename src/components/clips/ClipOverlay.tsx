@@ -21,10 +21,8 @@ function formatCount(n: number): string {
   return String(n);
 }
 
-interface LiquidActionButtonProps {
+interface GlassActionButtonProps {
   label: string;
-  fillClassName: string;
-  iconClassName: string;
   count?: string;
   pressed?: boolean;
   href?: string;
@@ -32,39 +30,29 @@ interface LiquidActionButtonProps {
   children: ReactNode;
 }
 
-function LiquidActionButton({
+function GlassActionButton({
   label,
-  fillClassName,
-  iconClassName,
   count,
   pressed,
   href,
   onClick,
   children,
-}: LiquidActionButtonProps) {
+}: GlassActionButtonProps) {
   const buttonContent = (
-    <>
-      <span
-        className={`absolute inset-x-0 bottom-0 h-0 rounded-t-full opacity-90 transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:h-full group-focus-visible:h-full ${fillClassName}`}
-      />
-      <span
-        className={`absolute -bottom-7 left-1/2 h-12 w-16 -translate-x-1/2 rounded-full blur-sm transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:-translate-y-8 group-focus-visible:-translate-y-8 ${fillClassName}`}
-      />
-      <span className={`relative z-10 transition-colors duration-300 ${iconClassName}`}>
-        {children}
-      </span>
-    </>
+    <span className="relative z-10 text-white transition-colors duration-300">
+      {children}
+    </span>
   );
 
   const buttonClassName = [
-    "group relative flex h-12 w-12 items-center justify-center overflow-hidden rounded-full border border-white/10",
-    "bg-black/35 backdrop-blur-md shadow-[0_10px_30px_rgba(0,0,0,0.35)]",
-    "transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-1 active:scale-95",
-    pressed ? "ring-2 ring-white/30" : "",
+    "group relative flex h-12 w-12 items-center justify-center overflow-hidden rounded-full",
+    "border border-white/15 bg-white/5 backdrop-blur-md shadow-[0_8px_32px_rgba(0,0,0,0.3)]",
+    "transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-1 hover:bg-white/15 hover:border-white/25 active:scale-95",
+    pressed ? "ring-2 ring-white/40 bg-white/20 border-white/30" : "",
   ].join(" ");
 
   return (
-    <div className="flex flex-col items-center gap-1">
+    <div className="flex flex-col items-center gap-1 select-none">
       {href ? (
         <Link href={href} className={buttonClassName} aria-label={label}>
           {buttonContent}
@@ -74,7 +62,7 @@ function LiquidActionButton({
           {buttonContent}
         </button>
       )}
-      <span className="text-white font-semibold text-xs drop-shadow-md">
+      <span className="text-zinc-300 font-medium text-[10px] uppercase tracking-widest drop-shadow-md select-none mt-1 group-hover:text-white transition-colors duration-200">
         {count ?? label}
       </span>
     </div>
@@ -177,45 +165,38 @@ export default function ClipOverlay({ clip, isActive }: ClipOverlayProps) {
 
       {/* Right-side action bar */}
       <div className="absolute right-4 bottom-28 flex flex-col items-center gap-7 z-20">
-        <LiquidActionButton
+        <GlassActionButton
           label="Wishlist"
-          fillClassName="bg-amber-400"
-          iconClassName={isWishlisted ? "text-zinc-950" : "text-white group-hover:text-zinc-950 group-focus-visible:text-zinc-950"}
           pressed={isWishlisted}
           onClick={handleWishlist}
           count={isWishlisted ? "Saved" : "Save"}
         >
-          {isWishlisted ? <Check className="h-6 w-6" /> : <Plus className="h-7 w-7" />}
-        </LiquidActionButton>
+          {isWishlisted ? <Check className="h-6 w-6 text-emerald-400" /> : <Plus className="h-6 w-6" />}
+        </GlassActionButton>
 
-        <LiquidActionButton
+        <GlassActionButton
           label="Share"
-          fillClassName="bg-sky-400"
-          iconClassName="text-white group-hover:text-zinc-950 group-focus-visible:text-zinc-950"
           onClick={handleShare}
         >
-          <Share2 className="h-6 w-6" />
-        </LiquidActionButton>
+          <Share2 className="h-5.5 w-5.5" />
+        </GlassActionButton>
 
-        <LiquidActionButton
+        <GlassActionButton
           label="Clip"
-          fillClassName="bg-emerald-400"
-          iconClassName="text-white group-hover:text-zinc-950 group-focus-visible:text-zinc-950"
           href={`/titles/${clip.tmdbId}?type=${clip.mediaType}`}
           count={formatCount(clip.popularity || 0)}
         >
-          <Clapperboard className="h-6 w-6" />
-        </LiquidActionButton>
+          <Clapperboard className="h-5.5 w-5.5" />
+        </GlassActionButton>
       </div>
 
       {/* Bottom gradient scrim behind text — ensures text is readable over any video content */}
       <div className="absolute bottom-0 left-0 right-0 h-72 bg-gradient-to-t from-black/85 via-black/40 to-transparent pointer-events-none z-10" />
 
-      {/* Bottom-left info panel */}
-      {/* Using standard Next.js Link to trigger the @modal intercepting route. This pattern maintains URL state for sharing while rendering over the current scroll position. */}
+      {/* Bottom-left info panel with responsive width safety limit */}
       <Link
         href={`/titles/${clip.tmdbId}?type=${clip.mediaType}`}
-        className="absolute left-4 bottom-28 z-20 max-w-[85%] flex items-end gap-4 hover:bg-white/5 rounded-2xl transition-colors duration-200 cursor-pointer group p-2 -ml-2"
+        className="absolute left-4 bottom-28 z-20 max-w-[calc(100%-80px)] md:max-w-[75%] flex items-end gap-4 hover:bg-white/5 rounded-2xl transition-colors duration-200 cursor-pointer group p-2 -ml-2"
       >
         {clip.posterPath && (
           <motion.div

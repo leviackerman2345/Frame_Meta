@@ -20,7 +20,7 @@ export function CollectionDetailsExtended({ data }: CollectionDetailsExtendedPro
   return (
     <div className="flex flex-col bg-black min-h-screen">
       {/* 1st Section: Hero (Matched to Movie Modal Hero Design) */}
-      <div className="relative w-full overflow-hidden min-h-screen md:min-h-screen flex flex-col">
+      <div className="relative w-full overflow-hidden min-h-[70vh] sm:min-h-[80vh] md:min-h-screen flex flex-col">
         {/* Close Button - Matched to Movie Modal position */}
         <button
           onClick={() => router.back()}
@@ -45,20 +45,20 @@ export function CollectionDetailsExtended({ data }: CollectionDetailsExtendedPro
         </div>
 
         {/* Content Section */}
-        <div className="relative z-30 flex flex-col justify-end items-center text-center md:items-start md:text-left flex-1 p-6 sm:p-10 md:p-16 lg:p-24 w-full min-h-screen md:min-h-screen">
+        <div className="relative z-30 flex flex-col justify-end items-center text-center md:items-start md:text-left flex-1 p-6 sm:p-10 md:p-16 lg:p-24 w-full min-h-[70vh] sm:min-h-[80vh] md:min-h-screen">
           {/* Title */}
-          <h2 className="text-4xl sm:text-6xl md:text-8xl font-black tracking-tight subpixel-antialiased drop-shadow-[0_4px_16px_rgba(0,0,0,0.9)] text-white mb-8 md:mb-10">
+          <h2 className="text-3xl sm:text-5xl md:text-7xl lg:text-8xl font-black tracking-tight subpixel-antialiased drop-shadow-[0_4px_16px_rgba(0,0,0,0.9)] text-white mb-8 md:mb-10">
             {title}
           </h2>
 
 
           {/* Action Buttons */}
-          <div className="flex flex-nowrap items-center justify-center md:justify-start gap-2 sm:gap-4 w-full md:w-auto mb-10 md:mb-12">
-            <button className="flex-1 md:flex-none flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-8 py-3 md:py-3.5 rounded-full bg-white text-black hover:bg-zinc-200 font-bold text-xs sm:text-sm md:text-lg shadow-xl transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98] cursor-pointer whitespace-nowrap">
+          <div className="flex flex-wrap md:flex-nowrap items-center justify-center md:justify-start gap-3 md:gap-4 w-full md:w-auto mb-10 md:mb-12">
+            <button className="flex-1 md:flex-none flex items-center justify-center gap-1.5 sm:gap-2 px-4 sm:px-8 py-3 md:py-3.5 rounded-full bg-white text-black hover:bg-zinc-200 font-bold text-xs sm:text-sm md:text-lg shadow-xl transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98] cursor-pointer whitespace-nowrap">
               <Sparkles className="w-4 h-4 md:w-5 md:h-5 shrink-0" />
               Watch Collection
             </button>
-            <button className="flex-1 md:flex-none flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-8 py-3 md:py-3.5 rounded-full bg-zinc-800/60 backdrop-blur-md border border-white/10 hover:bg-zinc-700/60 text-white font-semibold text-xs sm:text-sm md:text-lg transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98] cursor-pointer whitespace-nowrap">
+            <button className="flex-1 md:flex-none flex items-center justify-center gap-1.5 sm:gap-2 px-4 sm:px-8 py-3 md:py-3.5 rounded-full bg-zinc-800/60 backdrop-blur-md border border-white/10 hover:bg-zinc-700/60 text-white font-semibold text-xs sm:text-sm md:text-lg transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98] cursor-pointer whitespace-nowrap">
               <Plus className="w-4 h-4 md:w-5 md:h-5 shrink-0" />
               My Wish List
             </button>
@@ -79,17 +79,15 @@ export function CollectionDetailsExtended({ data }: CollectionDetailsExtendedPro
       <div className="relative z-30 w-full px-6 sm:px-10 md:px-16 lg:px-24 py-20 md:py-28 flex flex-col gap-16 md:gap-24">
         {/* Background Image with Glassmorphism */}
         {backdropUrl && (
-          <div className="absolute inset-0 z-[-1] pointer-events-none">
-            <div className="sticky top-0 w-full h-dvh">
-              <Image
-                src={backdropUrl}
-                alt={title || "Background"}
-                fill
-                className="object-cover brightness-75 contrast-[1.1] saturate-[1.1]"
-                unoptimized
-              />
-              <div className="absolute inset-0 bg-black/15 backdrop-blur-3xl" />
-            </div>
+          <div className="absolute inset-0 z-[-1] pointer-events-none overflow-hidden">
+            <Image
+              src={backdropUrl}
+              alt={title || "Background"}
+              fill
+              className="object-cover brightness-75 contrast-[1.1] saturate-[1.1] blur-2xl scale-110"
+              unoptimized
+            />
+            <div className="absolute inset-0 bg-black/15" />
           </div>
         )}
 
@@ -99,7 +97,7 @@ export function CollectionDetailsExtended({ data }: CollectionDetailsExtendedPro
         </h4>
 
         {/* Synopsis Section */}
-        <div className="max-w-306 text-left w-full mx-auto flex flex-col gap-4">
+        <div className="max-w-7xl text-left w-full mx-auto flex flex-col gap-4">
           <h3 className="text-4xl md:text-5xl font-bold tracking-tight text-white">
             Synopsis
           </h3>
@@ -109,7 +107,7 @@ export function CollectionDetailsExtended({ data }: CollectionDetailsExtendedPro
         </div>
 
         {/* Metadata Grid (Matched to Movie Modal Design) */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-16 gap-y-5 max-w-306 text-left w-full mx-auto">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-16 gap-y-5 max-w-7xl text-left w-full mx-auto">
           {/* Left Metadata Column */}
           <div className="flex flex-col gap-4">
             <div className="text-sm md:text-base">
@@ -149,7 +147,7 @@ export function CollectionDetailsExtended({ data }: CollectionDetailsExtendedPro
 
         {/* Titles Grid (Matched to Movie Modal "Episode Guide" Style) */}
         {parts.length > 0 && (
-          <div className="max-w-306 w-full mx-auto flex flex-col gap-8 text-left">
+          <div className="max-w-7xl w-full mx-auto flex flex-col gap-8 text-left">
             <div>
               <h3 className="text-3xl md:text-4xl font-bold tracking-tight text-white mb-2">
                 Titles in Collection
@@ -178,7 +176,7 @@ export function CollectionDetailsExtended({ data }: CollectionDetailsExtendedPro
 
         {/* Coming Soon Section */}
         {data.comingSoon && data.comingSoon.length > 0 && (
-          <div className="max-w-306 w-full mx-auto flex flex-col gap-8 text-left">
+          <div className="max-w-7xl w-full mx-auto flex flex-col gap-8 text-left">
             <div>
               <h3 className="text-3xl md:text-4xl font-bold tracking-tight text-white mb-2">
                 Coming Soon
@@ -213,6 +211,7 @@ export function CollectionDetailsExtended({ data }: CollectionDetailsExtendedPro
             title="Behind the Camera"
             subtitle="The directors, writers, and producers who masterminded this cinematic universe"
             cast={data.crew as any}
+            variant="crew"
           />
         )}
 

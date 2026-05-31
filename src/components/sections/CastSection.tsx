@@ -2,6 +2,7 @@
 
 import { useRef } from "react";
 import { CastCard } from "@/components/ui/CastCard";
+import { CrewCard } from "@/components/ui/CrewCard";
 import { SectionHeader } from "@/components/sections/SectionHeader";
 
 interface CastSectionProps {
@@ -17,12 +18,14 @@ interface CastSectionProps {
     appearanceCount?: number;
     allCharacters?: string[];
   }[];
+  variant?: "cast" | "crew";
 }
 
 export function CastSection({
   title = "The Cast",
   subtitle = "A collection of the distinguished talent behind this production",
-  cast
+  cast,
+  variant = "cast"
 }: CastSectionProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const indicatorRef = useRef<HTMLDivElement>(null);
@@ -65,7 +68,11 @@ export function CastSection({
             key={`${actor.id}-${actor.displayRole || actor.character || actor.job || idx}-${idx}`}
             className="w-[calc(100%-48px)] sm:w-[calc((100%-32px)/2)] lg:w-[calc((100%-48px)/3)] shrink-0 snap-start snap-always"
           >
-            <CastCard actor={actor} index={idx} />
+            {variant === "crew" ? (
+              <CrewCard crew={actor} index={idx} />
+            ) : (
+              <CastCard actor={actor} index={idx} />
+            )}
           </div>
         ))}
       </div>

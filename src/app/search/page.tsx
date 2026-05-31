@@ -336,6 +336,7 @@ function SearchPageContent() {
 
       <div className="container mx-auto max-w-7xl relative z-10">
         <SearchHeader
+          query={searchQuery}
           genres={genres}
           activeGenre={activeGenre}
           onGenreSelect={(genre) => setActiveGenre(genre)}

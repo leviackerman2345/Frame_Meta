@@ -29,7 +29,7 @@ function Strip({
       </div>
 
       {items.length > 0 ? (
-        <div className="flex gap-4 md:gap-6 overflow-x-auto pb-2 custom-scrollbar snap-x snap-mandatory px-1 scroll-smooth">
+        <div className="flex gap-4 md:gap-6 overflow-x-auto pb-2 custom-scrollbar snap-x snap-mandatory px-1 scroll-smooth scrollbar-hide">
           {items.map((item) => (
             <MediaCard key={item.id} data={item} variant="slider" />
           ))}

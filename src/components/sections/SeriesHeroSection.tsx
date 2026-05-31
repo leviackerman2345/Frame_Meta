@@ -111,6 +111,7 @@ export function SeriesHeroSection({ items }: SeriesHeroSectionProps) {
               className="object-cover object-center pointer-events-none"
               sizes="100vw"
               priority
+              unoptimized
             />
           </motion.div>
         </AnimatePresence>

@@ -42,7 +42,7 @@ export function MovieRail({
       />
 
       {items.length > 0 ? (
-        <div className="flex gap-4 md:gap-5 overflow-x-auto pb-4 custom-scrollbar snap-x snap-mandatory px-1 scroll-smooth">
+        <div className="flex gap-4 md:gap-5 overflow-x-auto pb-4 custom-scrollbar snap-x snap-mandatory px-1 scroll-smooth scrollbar-hide">
           {items.map((item) => (
             <MediaCard key={item.id} data={item} variant="slider" />
           ))}

@@ -5,6 +5,7 @@ import { Suspense } from "react";
 import { Navbar } from "@/components/sections/Navbar";
 import { Footer } from "@/components/sections/Footer";
 import { LoginModal } from "@/components/ui/LoginModal";
+import { SearchModal } from "@/components/search/SearchModal";
 
 const HIDDEN_ROUTES = ["/login"];
 
@@ -24,6 +25,7 @@ export function LayoutShell({ children }: { children: React.ReactNode }) {
       {children}
       {!isFullscreen && <Footer />}
       <LoginModal />
+      <SearchModal />
     </>
   );
 }

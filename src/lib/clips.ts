@@ -244,6 +244,43 @@ export async function getClipFeed(options?: {
   }
 }
 
+/**
+ * Fast clip feed that uses TMDB images directly without fetching YouTube videos.
+ * Designed for homepage/section use where speed is critical.
+ */
+export async function getClipFeedFast(limit: number = 3): Promise<Clip[]> {
+  try {
+    const sources = await getPopularTitlesForClips({ page: 1, limit: limit * 2 });
+
+    const clips: Clip[] = sources
+      .filter((source) => source.backdropPath || source.posterPath)
+      .slice(0, limit)
+      .map((source, index) => ({
+        id: `fast-${source.tmdbId}-${index}`,
+        tmdbId: source.tmdbId,
+        title: source.title,
+        description: source.title,
+        youtubeId: "",
+        thumbnailUrl: source.backdropPath
+          ? getTMDBImageUrl(source.backdropPath, "w780")
+          : getTMDBImageUrl(source.posterPath, "w500"),
+        category: deriveCategory(source.genreIds),
+        mediaType: source.mediaType,
+        year: source.year,
+        popularity: source.popularity,
+        tags: [],
+        duration: 0,
+        posterPath: source.posterPath ? getTMDBImageUrl(source.posterPath, "w500") : null,
+        certification: null,
+      }));
+
+    return clips.length > 0 ? clips : getFallbackClips("all", 0, limit);
+  } catch (error) {
+    console.warn("[clips] Fast clip feed failed, using fallback.", error);
+    return getFallbackClips("all", 0, limit);
+  }
+}
+
 export async function getTotalClips(category?: Clip["category"] | "all"): Promise<number> {
   try {
     return 1000;

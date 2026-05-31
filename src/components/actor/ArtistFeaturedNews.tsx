@@ -94,7 +94,7 @@ export function ArtistFeaturedNews({ name, articles: initialArticles }: ArtistFe
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true }}
-            className="flex gap-4 md:gap-8 overflow-x-auto pb-10 custom-scrollbar snap-x snap-mandatory no-scrollbar scroll-smooth w-full"
+            className="flex gap-4 md:gap-8 overflow-x-auto pb-10 custom-scrollbar snap-x snap-mandatory no-scrollbar scroll-smooth w-full -mx-6 px-6 md:mx-0 md:px-0"
           >
             {sortedArticles.map((article) => (
               <motion.div 

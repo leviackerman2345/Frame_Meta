@@ -35,8 +35,6 @@ export default async function ReferenceQualityPage() {
     requestHeaders.get("x-vercel-ip-country") ||
     requestHeaders.get("cf-ipcountry") ||
     "PH";
-  const localCountry = /^[A-Z]{2}$/.test(detectedCountry) ? detectedCountry : "PH";
-
   const [
     topRatedMovies,
     popularMovies,
@@ -53,14 +51,16 @@ export default async function ReferenceQualityPage() {
     withFallback("trending tv", getTrendingTVSeries("day", true), []),
   ]);
 
-  const enrichedMovies = await enrichMovieCards(
-    [...topRatedMovies, ...popularMovies, ...trendingMovies],
-    "movie"
-  );
-  const enrichedTV = await enrichMovieCards(
-    [...topRatedTV, ...popularTV, ...trendingTV],
-    "tv"
-  );
+  const [enrichedMovies, enrichedTV] = await Promise.all([
+    enrichMovieCards(
+      [...topRatedMovies, ...popularMovies, ...trendingMovies],
+      "movie"
+    ),
+    enrichMovieCards(
+      [...topRatedTV, ...popularTV, ...trendingTV],
+      "tv"
+    ),
+  ]);
 
   // Deduplicate by id and merge
   const seen = new Set<number>();

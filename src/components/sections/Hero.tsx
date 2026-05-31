@@ -111,7 +111,7 @@ export function Hero({ posters: customPosters }: { posters?: string[] }) {
                     fill
                     className="object-cover transition-transform duration-700 group-hover:scale-105"
                     sizes="(max-width: 768px) 100px, 200px"
-                    priority={index < 4}
+                    priority={index < 3}
                   />
                   {/* Subtle glass border */}
                   <div className="absolute inset-0 rounded-xl md:rounded-2xl border border-white/[0.08] pointer-events-none" />
