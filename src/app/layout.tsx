@@ -86,7 +86,7 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className="min-h-full flex flex-col bg-black overflow-x-hidden" suppressHydrationWarning>
+      <body className="min-h-full flex flex-col bg-black overflow-x-clip" suppressHydrationWarning>
         <AuthProvider>
           <InitialLoader />
           <DevNotice />
