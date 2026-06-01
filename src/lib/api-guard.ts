@@ -9,21 +9,22 @@ const DEFAULT_MAX_QUERY_LENGTH = 100;
 const MAX_RATE_LIMIT_KEYS = 10_000;
 
 function getClientIp(request: Request): string {
+  // On Vercel, x-real-ip is set by the platform and is not spoofable.
+  const vercelIp = request.headers.get("x-real-ip");
+  if (vercelIp) return vercelIp;
+
+  // On other platforms, take the LAST entry in x-forwarded-for
+  // (rightmost = closest to server, hardest for clients to spoof).
   const forwardedFor = request.headers.get("x-forwarded-for");
   if (forwardedFor) {
-    const first = forwardedFor.split(",")[0]?.trim();
-    if (first) return first;
+    const parts = forwardedFor.split(",");
+    const last = parts[parts.length - 1]?.trim();
+    if (last) return last;
   }
 
-  const fallbackIp = (
-    request.headers.get("x-real-ip") ||
-    request.headers.get("cf-connecting-ip") ||
-    "unknown"
-  );
-  if (fallbackIp !== "unknown") return fallbackIp;
-
-  // Last-resort entropy to reduce global lockstep on unknown sources.
-  return `unknown:${request.headers.get("user-agent") || "ua-missing"}`;
+  // Last-resort: combine user-agent length + first char for rate limit bucketing.
+  const ua = request.headers.get("user-agent") || "ua-missing";
+  return `unknown:${ua.length}:${ua.charCodeAt(0)}`;
 }
 
 function pruneRateLimitStore(now: number) {

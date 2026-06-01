@@ -49,8 +49,7 @@ const getAccessToken = () => {
     console.warn("[TMDB] Warning: TMDB_ACCESS_TOKEN is undefined. Check Vercel Environment Variables.");
     hasLoggedMissingToken = true;
   } else if (token && !hasLoggedMissingToken) {
-    const masked = `${token.substring(0, 4)}...${token.substring(token.length - 4)}`;
-    console.log(`[TMDB] Token loaded: ${masked} (Length: ${token.length})`);
+    console.log("[TMDB] Token loaded successfully.");
     hasLoggedMissingToken = true;
   }
   return token;
@@ -106,15 +105,7 @@ export const fetchFromTMDB = async (endpoint: string, options: TMDBFetchOptions 
         }
 
         if (!response.ok) {
-          let errorDetail = "";
-          try {
-            const errorData = await response.json();
-            errorDetail = JSON.stringify(errorData);
-          } catch {
-            errorDetail = "Could not parse error response body";
-          }
-          console.warn(`[TMDB] API Warning: ${response.status} ${response.statusText} at ${endpoint}`);
-          console.warn(`[TMDB] Error Detail: ${errorDetail}`);
+          console.warn(`[TMDB] API Warning: ${response.status} at ${endpoint}`);
           return { results: [], parts: [] };
         }
 

@@ -1,14 +1,22 @@
 import { NextResponse } from "next/server";
 import { fetchFromTMDB, getTMDBImageUrl, getTitleLogo } from "@/lib/tmdb";
+import { enforceRateLimit } from "@/lib/api-guard";
 
 export async function GET(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const { id } = await params;
+  const rateLimitResponse = enforceRateLimit(request, "collection", 30);
+  if (rateLimitResponse) return rateLimitResponse;
+
+  const { id: idStr } = await params;
+  const id = parseInt(idStr, 10);
+  if (isNaN(id) || id <= 0) {
+    return NextResponse.json({ error: "Invalid collection ID" }, { status: 400 });
+  }
 
   try {
-    const collection = await fetchFromTMDB(`/collection/${id}?language=en-US`);
+    const collection = await fetchFromTMDB(`/collection/${String(id)}?language=en-US`);
     
     if (!collection) {
       return NextResponse.json({ error: "Collection not found" }, { status: 404 });
@@ -16,7 +24,7 @@ export async function GET(
 
     const today = new Date().toISOString().split("T")[0];
     const releasedParts = (collection.parts || []).filter((p: any) => (p.release_date || p.first_air_date) && (p.release_date || p.first_air_date) <= today);
-    const logoUrl = await getTitleLogo(Number(id), "collection").catch(() => null);
+    const logoUrl = await getTitleLogo(id, "collection").catch(() => null);
 
     const formattedParts = releasedParts.map((p: any) => ({
       id: p.id,

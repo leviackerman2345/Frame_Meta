@@ -29,6 +29,7 @@ export async function getTextlessPosterUrl(
   id: number,
   type: "movie" | "tv" = "movie"
 ): Promise<string | null> {
+  if (type !== "movie" && type !== "tv") return null;
   const cacheKey = `${type}-${id}`;
   if (textlessPosterCache.has(cacheKey)) {
     return textlessPosterCache.get(cacheKey)!;
@@ -56,6 +57,7 @@ export async function getAnyPosterUrl(
   id: number,
   type: "movie" | "tv" = "movie"
 ): Promise<string | null> {
+  if (type !== "movie" && type !== "tv") return null;
   const cacheKey = `any-${type}-${id}`;
   if (textlessPosterCache.has(cacheKey)) {
     return textlessPosterCache.get(cacheKey)!;
@@ -80,6 +82,7 @@ export async function getAnyPosterUrl(
 }
 
 export async function getTitleLogo(id: number, type: "movie" | "tv" | "collection" = "movie"): Promise<string | null> {
+  if (type !== "movie" && type !== "tv" && type !== "collection") return null;
   const cacheKey = `logo-${type}-${id}`;
   if (titleLogoCache.has(cacheKey)) {
     return titleLogoCache.get(cacheKey)!;

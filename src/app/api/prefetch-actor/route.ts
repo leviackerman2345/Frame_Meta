@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getPersonBasicInfo } from "@/lib/tmdb";
+import { enforceRateLimit } from "@/lib/api-guard";
 
 /**
  * GET /api/prefetch-actor?id=<personId>
@@ -14,6 +15,9 @@ import { getPersonBasicInfo } from "@/lib/tmdb";
  * only the in-memory cache side-effect matters.
  */
 export async function GET(request: NextRequest) {
+  const rateLimitResponse = enforceRateLimit(request, "prefetch-actor", 20);
+  if (rateLimitResponse) return rateLimitResponse;
+
   const { searchParams } = request.nextUrl;
   const id = searchParams.get("id");
 
