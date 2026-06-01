@@ -188,6 +188,143 @@ The search modal uses a fast API endpoint (`searchMultiFast`) that skips textles
 
 ---
 
+## Study Guide: How to Learn From This Project
+
+This section is for developers who want to understand how this app works, piece by piece. Follow the steps in order — each one builds on the previous.
+
+### Step 1: Run It Locally
+
+Before reading any code, get the app running and click around.
+
+```bash
+git clone https://github.com/leviackerman2345/Frame_Meta.git
+cd Frame_Meta
+npm install
+cp .env.example .env.local   # fill in your API keys
+npm run dev
+```
+
+Open `http://localhost:3000`. Browse the homepage, click a movie, open a modal, search for something. Get a feel for what the app does before you read how it does it.
+
+### Step 2: Understand the File Structure
+
+Don't read every file. Start with the high-level map:
+
+| Directory | What it does |
+|-----------|-------------|
+| `src/app/` | Pages and routes (Next.js App Router) |
+| `src/components/` | UI building blocks |
+| `src/lib/` | API clients and business logic |
+| `src/types/` | TypeScript type definitions |
+| `src/constants/` | Static data and fallbacks |
+
+**Key insight:** In Next.js App Router, each folder in `src/app/` is a route. `src/app/movies/page.tsx` = the `/movies` page. `src/app/titles/[id]/page.tsx` = the `/titles/123` page (dynamic route).
+
+### Step 3: Trace One Feature End-to-End
+
+Pick one feature and follow it from the URL to the screen. The best one to start with is **"Click a movie card → see its details in a modal."**
+
+Here's the data flow:
+
+```
+1. User clicks a movie card (src/components/ui/MediaCard.tsx)
+2. Next.js intercepts the navigation → @modal/(.)titles/[id]/page.tsx
+3. Server Component calls getTitleDetailsBundle(id, type) (src/lib/title-details.ts)
+4. That function calls getTitleFullDetails() (src/lib/tmdb-client.ts)
+5. TMDB API returns JSON with movie data + watch/providers + credits
+6. Data flows as props to MovieDetailsModal (src/components/titles/MovieDetailsModal.tsx)
+7. Modal renders Hero, Extended details, cast, reviews, providers
+```
+
+**Read these files in this order:**
+1. `src/app/@modal/(.)titles/[id]/page.tsx` — the intercepted route
+2. `src/lib/title-details.ts` — the data fetching orchestrator
+3. `src/lib/tmdb-client.ts` — the TMDB API client
+4. `src/components/titles/MovieDetailsModal.tsx` — the modal component
+
+### Step 4: Understand Server vs Client Components
+
+This project uses both. The rule is simple:
+
+- **Server Components** (default) — Fetch data, call APIs, access env vars. No `useState`, no `useEffect`, no event handlers. Files: `page.tsx`, `layout.tsx`, any component without `"use client"`.
+- **Client Components** — Handle interactivity (clicks, animations, modals). Start with `"use client"` at the top. Can't directly call server-side code.
+
+**Find examples:**
+- Server Component: `src/app/titles/[id]/page.tsx` (fetches data, passes to client)
+- Client Component: `src/components/titles/MovieDetailsExtended.tsx` (handles UI interactions)
+
+### Step 5: Understand the Caching Strategy
+
+The app uses three layers of caching. Trace each one:
+
+1. **Next.js ISR** — `export const revalidate = 300` in page files means the page is re-generated every 5 minutes
+2. **In-memory cache** — `src/lib/tmdb-cache.ts` uses JavaScript `Map` objects with TTLs (30 min for collections, 1 hour for videos)
+3. **Client-side cache** — SWR and `useSWR` for client-side data fetching with automatic revalidation
+
+**Read:** `src/lib/tmdb-cache.ts` — it's short and shows how caching works without a database.
+
+### Step 6: Understand the API Layer
+
+All external API calls go through `src/lib/tmdb-client.ts`. Study these patterns:
+
+- **`fetchFromTMDB()`** — The core function. Handles auth, timeouts, retries, request deduplication, and error handling
+- **`fetchWithTimeout()`** in `src/lib/fetch-utils.ts` — Wraps `fetch` with `AbortController` for timeout
+- **`enforceRateLimit()`** in `src/lib/api-guard.ts` — Per-IP rate limiting for API routes
+
+**Key pattern:** `inFlightRequests` Map prevents duplicate simultaneous requests to the same endpoint. If two components request the same data at the same time, only one API call is made.
+
+### Step 7: Understand the Component Patterns
+
+Study how components are structured:
+
+- **`MediaCard.tsx`** — The reusable movie/TV card. Notice how it handles images, loading states, and click navigation
+- **`SectionHeader.tsx`** — Consistent section titles across the app
+- **`DeferredSection.tsx`** — IntersectionObserver-based lazy loading with a global queue
+- **`Skeleton.tsx`** — Shimmer loading placeholders
+
+**Pattern to notice:** Most sections follow this structure:
+```
+<DeferredSection>
+  <SectionHeader title="..." subtitle="..." />
+  <div className="horizontal-scroll-container">
+    {items.map(item => <MediaCard key={item.id} ... />)}
+  </div>
+</DeferredSection>
+```
+
+### Step 8: Understand the Routing Architecture
+
+This is the most advanced pattern in the project. It uses Next.js parallel and intercepting routes:
+
+- `src/app/layout.tsx` — Root layout with `{children}` and `{modal}` slots
+- `src/app/@modal/` — Parallel route slot for modals
+- `src/app/@modal/(.)titles/[id]/` — Intercepting route that catches `/titles/[id]` navigation
+- `src/app/@modal/default.tsx` — Returns `null` when no modal is active
+
+**How it works:** When you click a movie card, Next.js shows the modal overlay instead of navigating to a new page. The URL still changes to `/titles/123`, so the link is shareable. If you refresh the page, you get the full page version instead of the modal.
+
+### Step 9: Study the Security Patterns
+
+After understanding the basics, study how the app handles security:
+
+- **`src/lib/api-guard.ts`** — Rate limiting, IP extraction, input sanitization
+- **`src/lib/tmdb-client.ts`** — Server-only imports, token management, error handling
+- **`next.config.ts`** — Security headers (HSTS, X-Frame-Options, etc.)
+- **API routes** in `src/app/api/` — How they validate inputs and protect against injection
+
+### Step 10: Build Something
+
+The best way to learn is to modify the project:
+
+1. **Add a new page** — Create `src/app/genres/[id]/page.tsx` that shows movies by genre
+2. **Add a new API route** — Create `src/app/api/movies/top-rated/route.ts`
+3. **Modify the detail page** — Add a "Similar Movies" section using the recommendations data
+4. **Add a feature** — Let users filter movies by year on the movies page
+
+If you get stuck, trace how an existing similar feature works and copy the pattern.
+
+---
+
 ## Performance
 
 - **Streaming Suspense** — Granular loading states for independent page sections.
