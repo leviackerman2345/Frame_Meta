@@ -70,6 +70,7 @@ export interface TMDBProvider {
   provider_id: number;
   provider_name?: string;
   logo_path?: string;
+  category?: "flatrate" | "rent" | "buy";
 }
 
 export interface TMDBSeason {

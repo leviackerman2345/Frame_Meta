@@ -11,6 +11,7 @@ import { MovieDetailsHero } from "./MovieDetailsHero";
 import { MovieDetailsMeta } from "./MovieDetailsMeta";
 import { MovieDetailsExtended } from "./MovieDetailsExtended";
 import { getTMDBImageUrl } from "@/lib/tmdb";
+import { getProviderLink, getCategoryLabel, getCategoryColor } from "@/lib/provider-links";
 import type {
   MovieCard,
   OMDbRating,
@@ -214,9 +215,16 @@ export function MovieDetailsModal({
                     const providerLogo = provider.logo_path
                       ? `https://image.tmdb.org/t/p/w92${provider.logo_path}`
                       : null;
+                    const providerUrl = getProviderLink(provider, details.id, type);
+                    const categoryLabel = getCategoryLabel(provider.category);
+                    const categoryColor = getCategoryColor(provider.category);
                     return (
-                      <div 
+                      <a
                         key={provider.provider_id}
+                        href={providerUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        title={`${provider.provider_name} — ${categoryLabel}`}
                         className="flex items-center gap-2 px-3.5 py-2 rounded-2xl bg-white/[0.04] border border-white/[0.08] flex-shrink-0 hover:bg-white/[0.08] transition-colors duration-300"
                       >
                         {providerLogo && (
@@ -227,7 +235,10 @@ export function MovieDetailsModal({
                         <span className="text-white/90 text-xs font-medium">
                           {provider.provider_name}
                         </span>
-                      </div>
+                        <span className={`px-1.5 py-0.5 rounded-full text-[9px] font-medium border ${categoryColor}`}>
+                          {categoryLabel}
+                        </span>
+                      </a>
                     );
                   })}
                 </div>

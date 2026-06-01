@@ -12,6 +12,7 @@ import { RelatedNewsSection } from "@/components/sections/RelatedNewsSection";
 import { SectionHeader } from "@/components/sections/SectionHeader";
 import { getTMDBImageUrl } from "@/lib/tmdb";
 import { safeExternalUrl } from "@/lib/utils";
+import { getProviderLink, getCategoryLabel, getCategoryColor } from "@/lib/provider-links";
 import type {
   MovieCard,
   OMDbRating,
@@ -703,14 +704,18 @@ export function MovieDetailsExtended({
               const providerLogo = provider.logo_path
                 ? `https://image.tmdb.org/t/p/w92${provider.logo_path}`
                 : null;
+              const providerUrl = getProviderLink(provider, details.id, type, safeWatchLink);
+              const categoryLabel = getCategoryLabel(provider.category);
+              const categoryColor = getCategoryColor(provider.category);
 
               return (
                 <a
                   key={provider.provider_id}
-                  href={safeWatchLink || "#"}
+                  href={providerUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-4 p-3 rounded-2xl bg-zinc-900/60 backdrop-blur-md border border-white/10 hover:bg-zinc-800/60 hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 shadow-lg cursor-pointer"
+                  title={`${provider.provider_name} — ${categoryLabel}`}
+                  className="group relative flex items-center gap-4 p-3 rounded-2xl bg-zinc-900/60 backdrop-blur-md border border-white/10 hover:bg-zinc-800/60 hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 shadow-lg cursor-pointer"
                 >
                   <div className="relative w-12 h-12 rounded-xl overflow-hidden bg-zinc-800 flex-shrink-0">
                     {providerLogo ? (
@@ -727,9 +732,14 @@ export function MovieDetailsExtended({
                       </div>
                     )}
                   </div>
-                  <span className="text-zinc-200 font-semibold text-sm md:text-base">
-                    {provider.provider_name || "Provider"}
-                  </span>
+                  <div className="flex flex-col min-w-0">
+                    <span className="text-zinc-200 font-semibold text-sm md:text-base truncate">
+                      {provider.provider_name || "Provider"}
+                    </span>
+                    <span className={`inline-flex self-start mt-1 px-2 py-0.5 rounded-full text-[10px] font-medium border ${categoryColor}`}>
+                      {categoryLabel}
+                    </span>
+                  </div>
                 </a>
               );
             })}
@@ -1220,9 +1230,16 @@ export function MovieDetailsExtended({
                       const providerLogo = provider.logo_path
                         ? `https://image.tmdb.org/t/p/w92${provider.logo_path}`
                         : null;
+                      const providerUrl = getProviderLink(provider, details.id, type);
+                      const categoryLabel = getCategoryLabel(provider.category);
+                      const categoryColor = getCategoryColor(provider.category);
                       return (
-                        <div 
+                        <a
                           key={provider.provider_id}
+                          href={providerUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          title={`${provider.provider_name} — ${categoryLabel}`}
                           className="flex items-center gap-2 px-3.5 py-2 rounded-2xl bg-white/[0.04] border border-white/[0.08] flex-shrink-0 hover:bg-white/[0.08] transition-colors duration-300"
                         >
                           {providerLogo && (
@@ -1233,7 +1250,10 @@ export function MovieDetailsExtended({
                           <span className="text-white/90 text-xs font-medium">
                             {provider.provider_name}
                           </span>
-                        </div>
+                          <span className={`px-1.5 py-0.5 rounded-full text-[9px] font-medium border ${categoryColor}`}>
+                            {categoryLabel}
+                          </span>
+                        </a>
                       );
                     })}
                   </div>

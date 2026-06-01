@@ -113,9 +113,21 @@ export async function getTitleDetailsBundle(
   const rent = (usProviders.rent || []) as TMDBProvider[];
   const buy = (usProviders.buy || []) as TMDBProvider[];
 
+  // Tag each provider with its category before merging.
+  // Priority: flatrate > rent > buy (prefer subscription over purchase).
   const allProvidersMap = new Map<number, TMDBProvider>();
-  [...flatrate, ...rent, ...buy].forEach((provider) => {
-    allProvidersMap.set(provider.provider_id, provider);
+  flatrate.forEach((p) => {
+    allProvidersMap.set(p.provider_id, { ...p, category: "flatrate" });
+  });
+  rent.forEach((p) => {
+    if (!allProvidersMap.has(p.provider_id)) {
+      allProvidersMap.set(p.provider_id, { ...p, category: "rent" });
+    }
+  });
+  buy.forEach((p) => {
+    if (!allProvidersMap.has(p.provider_id)) {
+      allProvidersMap.set(p.provider_id, { ...p, category: "buy" });
+    }
   });
 
   const providers = Array.from(allProvidersMap.values());
